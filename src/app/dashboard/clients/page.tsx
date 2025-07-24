@@ -718,14 +718,14 @@ function ClientsPageWithSearchParams() {
 
       {/* Contact Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedContact ? 'Edit Contact' : 'Add New Contact'}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
               <Label>Name *</Label>
               <Input
@@ -735,24 +735,25 @@ function ClientsPageWithSearchParams() {
               />
             </div>
 
-            <div>
-              <Label>Email</Label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="Enter email address"
-              />
-            </div>
-
-            <div>
-              <Label>Phone</Label>
-              <Input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Enter phone number"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Enter email"
+                />
+              </div>
+              <div>
+                <Label>Phone</Label>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="Enter phone"
+                />
+              </div>
             </div>
 
             <div>
@@ -773,30 +774,31 @@ function ClientsPageWithSearchParams() {
               />
             </div>
 
-            <div>
-              <Label>Value</Label>
-              <Input
-                value={formData.value}
-                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                placeholder="Enter value (e.g., $5000, Monthly Retainer)"
-              />
-            </div>
-
-            <div>
-              <Label>Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value as any })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="lead">Lead</SelectItem>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="inactive">Archived</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Value</Label>
+                <Input
+                  value={formData.value}
+                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                  placeholder="e.g., $5000"
+                />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lead">Lead</SelectItem>
+                    <SelectItem value="client">Client</SelectItem>
+                    <SelectItem value="inactive">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div>
@@ -805,11 +807,11 @@ function ClientsPageWithSearchParams() {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Add any notes about this contact"
-                rows={3}
+                rows={2}
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
+            <div className="flex gap-2 pt-2">
               <Button onClick={handleSaveContact} className="flex-1">
                 {selectedContact ? 'Update' : 'Create'} Contact
               </Button>
