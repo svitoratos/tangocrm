@@ -46,6 +46,8 @@ interface ContactFormData {
   email: string;
   phone: string;
   company: string;
+  address: string;
+  value: string;
   status: 'lead' | 'client' | 'inactive';
   notes: string;
   tags: string[];
@@ -90,7 +92,9 @@ function ClientsPageWithSearchParams() {
     email: '',
     phone: '',
     company: '',
-    status: 'lead',
+    address: '',
+    value: '',
+    status: 'client',
     notes: '',
     tags: []
   });
@@ -153,7 +157,9 @@ function ClientsPageWithSearchParams() {
       email: '',
       phone: '',
       company: '',
-      status: 'lead',
+      address: '',
+      value: '',
+      status: 'client',
       notes: '',
       tags: []
     });
@@ -167,6 +173,8 @@ function ClientsPageWithSearchParams() {
       email: contact.email || '',
       phone: contact.phone || '',
       company: contact.company || '',
+      address: contact.address || '',
+      value: contact.value || '',
       status: contact.status,
       notes: contact.notes || '',
       tags: contact.tags || []
@@ -753,6 +761,24 @@ function ClientsPageWithSearchParams() {
                 value={formData.company}
                 onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 placeholder="Enter company name"
+              />
+            </div>
+
+            <div>
+              <Label>Address</Label>
+              <Input
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder="Enter address"
+              />
+            </div>
+
+            <div>
+              <Label>Value</Label>
+              <Input
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                placeholder="Enter value (e.g., $5000, Monthly Retainer)"
               />
             </div>
 

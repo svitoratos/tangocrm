@@ -5,6 +5,8 @@ export interface Client {
   email?: string;
   phone?: string;
   company?: string;
+  address?: string;
+  value?: string;
   status: 'lead' | 'client' | 'inactive';
   notes?: string;
   tags?: string[];
@@ -18,6 +20,8 @@ export interface CreateClientData {
   email?: string;
   phone?: string;
   company?: string;
+  address?: string;
+  value?: string;
   status?: 'lead' | 'client' | 'inactive';
   notes?: string;
   tags?: string[];
@@ -59,7 +63,9 @@ export async function createClient(clientData: CreateClientData, niche: string):
       email: clientData.email,
       phone: clientData.phone,
       company: clientData.company,
-      status: clientData.status || 'lead',
+      address: clientData.address,
+      value: clientData.value,
+      status: clientData.status || 'client',
       notes: clientData.notes,
       tags: clientData.tags || [],
       created_at: new Date().toISOString(),
