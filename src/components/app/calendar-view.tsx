@@ -413,16 +413,6 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
           💡 Drag events to reschedule
         </div>
         <button
-          onClick={() => {
-            console.log('Current events:', events);
-            console.log('Dragged event:', draggedEvent);
-            console.log('Drag over date:', dragOverDate);
-          }}
-          className="px-2 py-1 text-xs bg-gray-500 text-white rounded"
-        >
-          Debug
-        </button>
-        <button
           onClick={() => setIsEventModalOpen(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
