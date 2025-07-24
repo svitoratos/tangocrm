@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Manrope } from "next/font/google";
 import Image from "next/image";
 import React, { useEffect, useRef } from "react";
-import { RoughNotation, RoughNotationGroup } from "react-rough-notation";
+import { RoughNotation, RoughNotationGroup } from "@/components/ui/rough-notation";
 import { animate, stagger, useInView } from "motion/react";
 
 const manrope = Manrope({ subsets: ["latin"], weight: ["400", "700"] });
