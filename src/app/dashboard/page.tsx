@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertCircle, Menu, Share2, Trophy, User, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SignedIn, SignedOut, RedirectToSignIn, useClerk } from "@clerk/nextjs";
+import { SignedIn, SignedOut, RedirectToSignIn, useClerk, useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { NicheProvider } from "@/contexts/NicheContext";
 import { TimezoneProvider } from "@/contexts/TimezoneContext";
@@ -109,6 +109,7 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
 // Main Content Component
   const MainContent: React.FC = () => {
     const { activeSection, selectedNiche, isLoading, setActiveSection } = useAppContext();
+    const { user } = useUser();
 
     const currentNavItem = NAVIGATION_ITEMS.find(item => item.id === activeSection);
     
@@ -165,7 +166,7 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
             onNavigate={(section: string) => {
               setActiveSection(section);
             }}
-            userName={activeSection === 'dashboard' ? 'Sarah' : undefined}
+            userName={activeSection === 'dashboard' ? getUserDisplayName(user) : undefined}
           />
         )}
       </div>
@@ -196,11 +197,30 @@ const LoadingScreen: React.FC = () => (
   </div>
 );
 
+// Get user's display name helper function
+const getUserDisplayName = (user: any) => {
+  if (!user) return 'User';
+  
+  // Try to get the full name first
+  if (user.fullName) return user.fullName;
+  
+  // Fall back to first name
+  if (user.firstName) return user.firstName;
+  
+  // Fall back to email
+  if (user.emailAddresses?.[0]?.emailAddress) {
+    return user.emailAddresses[0].emailAddress.split('@')[0];
+  }
+  
+  return 'User';
+};
+
 // Main Dashboard Component
 function MainDashboardWithSearchParams() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { signOut } = useClerk();
+  const { user } = useUser();
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [selectedNiche, setSelectedNiche] = useState("creator");

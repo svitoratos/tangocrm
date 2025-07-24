@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useAdmin } from '@/hooks/use-admin'
+import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 
 interface NavigationItemProps {
@@ -153,6 +154,44 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   isCollapsed = false,
   onToggleCollapse = () => {}
 }) => {
+  const { user } = useUser();
+  
+  // Get user's display name from Clerk
+  const getUserDisplayName = () => {
+    if (!user) return 'User';
+    
+    // Try to get the full name first
+    if (user.fullName) return user.fullName;
+    
+    // Fall back to first name
+    if (user.firstName) return user.firstName;
+    
+    // Fall back to email
+    if (user.emailAddresses?.[0]?.emailAddress) {
+      return user.emailAddresses[0].emailAddress.split('@')[0];
+    }
+    
+    return 'User';
+  };
+  
+  // Get user's initials for avatar
+  const getUserInitials = () => {
+    if (!user) return 'U';
+    
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    
+    if (user.firstName) {
+      return user.firstName[0].toUpperCase();
+    }
+    
+    if (user.emailAddresses?.[0]?.emailAddress) {
+      return user.emailAddresses[0].emailAddress[0].toUpperCase();
+    }
+    
+    return 'U';
+  };
   const niches: Niche[] = [
     { 
       id: 'creator', 
@@ -469,16 +508,16 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               )}
             >
               <Avatar className="w-8 h-8">
-                <AvatarImage src="/placeholder-avatar.jpg" />
+                <AvatarImage src={user?.imageUrl || "/placeholder-avatar.jpg"} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  S
+                  {getUserInitials()}
                 </AvatarFallback>
               </Avatar>
               
               {!isCollapsed && (
                 <div className="ml-3 flex-1 text-left min-w-0">
                   <div className="text-sm font-medium text-foreground truncate">
-                    Sarah
+                    {getUserDisplayName()}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
                     {currentNiche.label}
