@@ -24,6 +24,7 @@ import { NicheProvider } from "@/contexts/NicheContext";
 import { TimezoneProvider } from "@/contexts/TimezoneContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { PaymentVerification } from "@/components/app/payment-verification";
+import { usePaymentStatus } from "@/hooks/use-payment-status";
 
 // Types
 interface AppContextType {
@@ -208,7 +209,9 @@ function MainDashboardWithSearchParams() {
   const [error, setError] = useState<string | null>(null);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const [subscribedNiches, setSubscribedNiches] = useState<string[]>(["creator", "coach", "podcaster", "freelancer"]);
+  
+  // Get actual subscribed niches from payment status
+  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading } = usePaymentStatus();
 
   // Handle URL parameters for section and niche
   useEffect(() => {
@@ -219,30 +222,33 @@ function MainDashboardWithSearchParams() {
       setActiveSection(sectionParam);
     }
     
-    if (nicheParam && AVAILABLE_NICHES.find(niche => niche.id === nicheParam)) {
+    // Only allow switching to subscribed niches
+    if (nicheParam && AVAILABLE_NICHES.find(niche => niche.id === nicheParam) && subscribedNiches.includes(nicheParam)) {
       setSelectedNiche(nicheParam);
     }
-  }, [searchParams]);
+  }, [searchParams, subscribedNiches]);
 
-  // Check if user has completed onboarding - simplified for local storage
+  // Check if user has completed onboarding and set initial niche
   useEffect(() => {
     checkOnboardingStatus();
   }, []);
 
-  // Handle upgrade success redirect - simplified for local storage
+  // Set initial niche based on user's subscriptions
+  useEffect(() => {
+    if (!paymentStatusLoading && subscribedNiches.length > 0) {
+      // If current selected niche is not in subscribed niches, switch to primary niche
+      if (!subscribedNiches.includes(selectedNiche)) {
+        setSelectedNiche(primaryNiche || subscribedNiches[0]);
+      }
+    }
+  }, [subscribedNiches, selectedNiche, primaryNiche, paymentStatusLoading]);
+
+  // Handle upgrade success redirect
   useEffect(() => {
     const upgradeStatus = searchParams.get('upgrade');
     const upgradedNiche = searchParams.get('niche');
     
     if (upgradeStatus === 'success' && upgradedNiche) {
-      // Add the newly upgraded niche to the user's subscriptions
-      setSubscribedNiches(prev => {
-        if (!prev.includes(upgradedNiche)) {
-          return [...prev, upgradedNiche];
-        }
-        return prev;
-      });
-      
       // Switch to the newly upgraded niche
       setSelectedNiche(upgradedNiche);
       
@@ -258,13 +264,8 @@ function MainDashboardWithSearchParams() {
   }, [searchParams]);
 
   const checkOnboardingStatus = async () => {
-          // Skip onboarding check for development - allow direct access
-    
-    // For local storage version, skip onboarding check
+    // Skip onboarding check for development - allow direct access
     setIsCheckingOnboarding(false);
-    
-    // In development, allow all niches
-    setSubscribedNiches(["creator", "coach", "podcaster", "freelancer"]);
   };
 
   // Handle client-side mounting to prevent hydration mismatches
@@ -292,10 +293,8 @@ function MainDashboardWithSearchParams() {
   
   // Check if user has the Tango Core plan (any paid subscription)
   const hasCorePlan = () => {
-    // This function is used by the sidebar navigation
-    // The actual payment verification is handled by the PaymentVerification component
-    // and middleware, so we can return true here as a fallback
-    return true;
+    // Check if user has any active subscription
+    return subscribedNiches.length > 0;
   };
 
   // Context value
@@ -335,6 +334,12 @@ function MainDashboardWithSearchParams() {
   };
 
   const handleNicheChange = (niche: string) => {
+    // Only allow switching to subscribed niches
+    if (!subscribedNiches.includes(niche)) {
+      console.warn(`User not subscribed to niche: ${niche}`);
+      return;
+    }
+    
     setSelectedNiche(niche);
     
     // Auto-switch to analytics dashboard for coach niche
