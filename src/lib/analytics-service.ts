@@ -144,88 +144,105 @@ class AnalyticsService {
 
   // Opportunities Analytics
   private async getOpportunitiesAnalytics(niche: string, userId: string) {
-    const { data: opportunities, error } = await supabase
-      .from('opportunities')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('niche', niche);
+    try {
+      const response = await fetch(`/api/opportunities?niche=${niche}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching opportunities:', response.statusText);
+        return { opportunities: { total: 0, byStage: {}, totalValue: 0, averageValue: 0, conversionRate: 0, recentActivity: [] } };
+      }
+
+      const opportunities = await response.json();
+
+      const total = opportunities.length;
+      const byStage = opportunities.reduce((acc: Record<string, number>, opp: any) => {
+        acc[opp.stage] = (acc[opp.stage] || 0) + 1;
+        return acc;
+      }, {});
+
+      const totalValue = opportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
+      const averageValue = total > 0 ? totalValue / total : 0;
+
+      // For coach niche, include both 'won' and 'paid' statuses for conversion rate
+      const wonOpportunities = opportunities.filter((opp: any) => {
+        if (niche === 'coach') {
+          return opp.status === 'won' || opp.status === 'paid';
+        }
+        return opp.status === 'won';
+      }).length;
+      const conversionRate = total > 0 ? (wonOpportunities / total) * 100 : 0;
+
+      const recentActivity = opportunities
+        .sort((a: any, b: any) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+        .slice(0, 5);
+
+      return {
+        opportunities: {
+          total,
+          byStage,
+          totalValue,
+          averageValue,
+          conversionRate,
+          recentActivity
+        }
+      };
+    } catch (error) {
       console.error('Error fetching opportunities:', error);
       return { opportunities: { total: 0, byStage: {}, totalValue: 0, averageValue: 0, conversionRate: 0, recentActivity: [] } };
     }
-
-    const total = opportunities.length;
-    const byStage = opportunities.reduce((acc, opp) => {
-      acc[opp.stage] = (acc[opp.stage] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const totalValue = opportunities.reduce((sum, opp) => sum + (opp.value || 0), 0);
-    const averageValue = total > 0 ? totalValue / total : 0;
-
-    // For coach niche, include both 'won' and 'paid' statuses for conversion rate
-    const wonOpportunities = opportunities.filter(opp => {
-      if (niche === 'coach') {
-        return opp.status === 'won' || opp.status === 'paid';
-      }
-      return opp.status === 'won';
-    }).length;
-    const conversionRate = total > 0 ? (wonOpportunities / total) * 100 : 0;
-
-    const recentActivity = opportunities
-      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-      .slice(0, 5);
-
-    return {
-      opportunities: {
-        total,
-        byStage,
-        totalValue,
-        averageValue,
-        conversionRate,
-        recentActivity
-      }
-    };
   }
 
   // Clients Analytics
   private async getClientsAnalytics(userId: string) {
-    const { data: clients, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('user_id', userId);
+    try {
+      const response = await fetch('/api/clients', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching clients:', response.statusText);
+        return { clients: { total: 0, active: 0, newThisMonth: 0, retentionRate: 0, byStatus: {} } };
+      }
+
+      const clients = await response.json();
+
+      const total = clients.length;
+      const active = clients.filter((client: any) => client.status === 'client').length;
+      
+      const thisMonth = new Date();
+      thisMonth.setDate(1);
+      const newThisMonth = clients.filter((client: any) => 
+        new Date(client.created_at) >= thisMonth
+      ).length;
+
+      const byStatus = clients.reduce((acc: Record<string, number>, client: any) => {
+        acc[client.status] = (acc[client.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const retentionRate = total > 0 ? (active / total) * 100 : 0;
+
+      return {
+        clients: {
+          total,
+          active,
+          newThisMonth,
+          retentionRate,
+          byStatus
+        }
+      };
+    } catch (error) {
       console.error('Error fetching clients:', error);
       return { clients: { total: 0, active: 0, newThisMonth: 0, retentionRate: 0, byStatus: {} } };
     }
-
-    const total = clients.length;
-    const active = clients.filter(client => client.status === 'active').length;
-    
-    const thisMonth = new Date();
-    thisMonth.setDate(1);
-    const newThisMonth = clients.filter(client => 
-      new Date(client.created_at) >= thisMonth
-    ).length;
-
-    const byStatus = clients.reduce((acc, client) => {
-      acc[client.status] = (acc[client.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const retentionRate = total > 0 ? (active / total) * 100 : 0;
-
-    return {
-      clients: {
-        total,
-        active,
-        newThisMonth,
-        retentionRate,
-        byStatus
-      }
-    };
   }
 
   // Revenue Analytics
@@ -283,97 +300,123 @@ class AnalyticsService {
 
   // Content Analytics
   private async getContentAnalytics(niche: string, userId: string) {
-    const { data: content, error } = await supabase
-      .from('content_items')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('niche', niche);
+    try {
+      const response = await fetch(`/api/content-items?niche=${niche}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching content:', response.statusText);
+        return { content: { total: 0, published: 0, engagement: 0, averageViews: 0, byType: {} } };
+      }
+
+      const content = await response.json();
+
+      const total = content.length;
+      const published = content.filter((item: any) => item.status === 'published').length;
+      
+      const totalViews = content.reduce((sum: number, item: any) => sum + (item.views || 0), 0);
+      const averageViews = total > 0 ? totalViews / total : 0;
+
+      const byType = content.reduce((acc: Record<string, number>, item: any) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        content: {
+          total,
+          published,
+          engagement: totalViews,
+          averageViews,
+          byType
+        }
+      };
+    } catch (error) {
       console.error('Error fetching content:', error);
       return { content: { total: 0, published: 0, engagement: 0, averageViews: 0, byType: {} } };
     }
-
-    const total = content.length;
-    const published = content.filter(item => item.status === 'published').length;
-    
-    const totalViews = content.reduce((sum, item) => sum + (item.views || 0), 0);
-    const averageViews = total > 0 ? totalViews / total : 0;
-
-    const byType = content.reduce((acc, item) => {
-      acc[item.type] = (acc[item.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      content: {
-        total,
-        published,
-        engagement: totalViews,
-        averageViews,
-        byType
-      }
-    };
   }
 
   // Goals Analytics
   private async getGoalsAnalytics(userId: string) {
-    const { data: goals, error } = await supabase
-      .from('goals')
-      .select('*')
-      .eq('user_id', userId);
+    try {
+      const response = await fetch('/api/goals', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching goals:', response.statusText);
+        return { goals: { total: 0, completed: 0, progress: 0, averageProgress: 0 } };
+      }
+
+      const goals = await response.json();
+
+      const total = goals.length;
+      const completed = goals.filter((goal: any) => goal.status === 'completed').length;
+      const averageProgress = goals.length > 0 
+        ? goals.reduce((sum: number, goal: any) => sum + (goal.progress_percentage || 0), 0) / goals.length 
+        : 0;
+
+      return {
+        goals: {
+          total,
+          completed,
+          progress: averageProgress,
+          averageProgress
+        }
+      };
+    } catch (error) {
       console.error('Error fetching goals:', error);
       return { goals: { total: 0, completed: 0, progress: 0, averageProgress: 0 } };
     }
-
-    const total = goals.length;
-    const completed = goals.filter(goal => goal.status === 'completed').length;
-    const averageProgress = goals.length > 0 
-      ? goals.reduce((sum, goal) => sum + (goal.progress_percentage || 0), 0) / goals.length 
-      : 0;
-
-    return {
-      goals: {
-        total,
-        completed,
-        progress: averageProgress,
-        averageProgress
-      }
-    };
   }
 
   // Calendar Analytics
   private async getCalendarAnalytics(userId: string) {
-    const { data: events, error } = await supabase
-      .from('calendar_events')
-      .select('*')
-      .eq('user_id', userId);
+    try {
+      const response = await fetch('/api/calendar-events', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching calendar events:', response.statusText);
+        return { calendar: { totalEvents: 0, upcoming: 0, completed: 0, byType: {} } };
+      }
+
+      const events = await response.json();
+
+      const totalEvents = events.length;
+      const now = new Date();
+      const upcoming = events.filter((event: any) => new Date(event.start_time) > now).length;
+      const completed = events.filter((event: any) => new Date(event.end_time) < now).length;
+
+      const byType = events.reduce((acc: Record<string, number>, event: any) => {
+        acc[event.event_type] = (acc[event.event_type] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        calendar: {
+          totalEvents,
+          upcoming,
+          completed,
+          byType
+        }
+      };
+    } catch (error) {
       console.error('Error fetching calendar events:', error);
       return { calendar: { totalEvents: 0, upcoming: 0, completed: 0, byType: {} } };
     }
-
-    const totalEvents = events.length;
-    const now = new Date();
-    const upcoming = events.filter(event => new Date(event.start_time) > now).length;
-    const completed = events.filter(event => new Date(event.end_time) < now).length;
-
-    const byType = events.reduce((acc, event) => {
-      acc[event.event_type] = (acc[event.event_type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      calendar: {
-        totalEvents,
-        upcoming,
-        completed,
-        byType
-      }
-    };
   }
 
   // Niche-specific Analytics
@@ -393,88 +436,163 @@ class AnalyticsService {
   }
 
   private async getCreatorAnalytics(userId: string) {
-    const { data: opportunities, error } = await supabase
-      .from('opportunities')
-      .select('*, clients(name)')
-      .eq('user_id', userId)
-      .eq('niche', 'creator')
-      .eq('status', 'won');
+    try {
+      const response = await fetch('/api/opportunities?niche=creator', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching creator analytics:', response.statusText);
+        return { creator: { brandDeals: 0, sponsoredContent: 0, averageDealValue: 0, topBrands: [] } };
+      }
+
+      const opportunities = await response.json();
+      const wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won');
+
+      const brandDeals = wonOpportunities.length;
+      const sponsoredContent = wonOpportunities.filter((opp: any) => opp.type === 'sponsorship').length;
+      const averageDealValue = brandDeals > 0 
+        ? wonOpportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0) / brandDeals 
+        : 0;
+
+      const topBrands = wonOpportunities
+        .sort((a: any, b: any) => (b.value || 0) - (a.value || 0))
+        .slice(0, 5)
+        .map((opp: any) => ({
+          name: opp.clients?.name || 'Unknown',
+          value: opp.value,
+          type: opp.type
+        }));
+
+      return {
+        creator: {
+          brandDeals,
+          sponsoredContent,
+          averageDealValue,
+          topBrands
+        }
+      };
+    } catch (error) {
       console.error('Error fetching creator analytics:', error);
       return { creator: { brandDeals: 0, sponsoredContent: 0, averageDealValue: 0, topBrands: [] } };
     }
-
-    const brandDeals = opportunities.length;
-    const sponsoredContent = opportunities.filter(opp => opp.type === 'sponsorship').length;
-    const averageDealValue = brandDeals > 0 
-      ? opportunities.reduce((sum, opp) => sum + (opp.value || 0), 0) / brandDeals 
-      : 0;
-
-    const topBrands = opportunities
-      .sort((a, b) => (b.value || 0) - (a.value || 0))
-      .slice(0, 5)
-      .map(opp => ({
-        name: opp.clients?.name || 'Unknown',
-        value: opp.value,
-        type: opp.type
-      }));
-
-    return {
-      creator: {
-        brandDeals,
-        sponsoredContent,
-        averageDealValue,
-        topBrands
-      }
-    };
   }
 
   private async getCoachAnalytics(userId: string) {
-    const { data: content, error } = await supabase
-      .from('content_items')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('niche', 'coach')
-      .eq('type', 'program');
+    try {
+      const response = await fetch('/api/content-items?niche=coach', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching coach analytics:', response.statusText);
+        return { coach: { programs: { total: 0, active: 0 }, studentsEnrolled: 0, averageProgramValue: 0, completionRate: 0 } };
+      }
+
+      const content = await response.json();
+      const programs = content.filter((item: any) => item.type === 'program');
+
+      const totalPrograms = programs.length;
+      const activePrograms = programs.filter((item: any) => item.status === 'active').length;
+      const studentsEnrolled = programs.reduce((sum: number, item: any) => sum + (item.enrolled || 0), 0);
+      const averageProgramValue = totalPrograms > 0 
+        ? programs.reduce((sum: number, item: any) => sum + (item.price || 0), 0) / totalPrograms 
+        : 0;
+
+      const completedPrograms = programs.filter((item: any) => item.status === 'completed').length;
+      const completionRate = totalPrograms > 0 ? (completedPrograms / totalPrograms) * 100 : 0;
+
+      return {
+        coach: {
+          programs: {
+            total: totalPrograms,
+            active: activePrograms
+          },
+          studentsEnrolled,
+          averageProgramValue,
+          completionRate
+        }
+      };
+    } catch (error) {
       console.error('Error fetching coach analytics:', error);
       return { coach: { programs: { total: 0, active: 0 }, studentsEnrolled: 0, averageProgramValue: 0, completionRate: 0 } };
     }
-
-    const totalPrograms = content.length;
-    const activePrograms = content.filter(item => item.status === 'active').length;
-    const studentsEnrolled = content.reduce((sum, item) => sum + (item.enrolled || 0), 0);
-    const averageProgramValue = totalPrograms > 0 
-      ? content.reduce((sum, item) => sum + (item.price || 0), 0) / totalPrograms 
-      : 0;
-
-    const completedPrograms = content.filter(item => item.status === 'completed').length;
-    const completionRate = totalPrograms > 0 ? (completedPrograms / totalPrograms) * 100 : 0;
-
-    return {
-      coach: {
-        programs: {
-          total: totalPrograms,
-          active: activePrograms
-        },
-        studentsEnrolled,
-        averageProgramValue,
-        completionRate
-      }
-    };
   }
 
   private async getPodcasterAnalytics(userId: string) {
-    const { data: content, error } = await supabase
-      .from('content_items')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('niche', 'podcaster')
-      .eq('type', 'episode');
+    try {
+      const response = await fetch('/api/content-items?niche=podcaster', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching podcaster analytics:', response.statusText);
+        return { 
+          podcaster: { 
+            episodes: { total: 0, publishedThisMonth: 0 },
+            guests: { total: 0, newThisMonth: 0 },
+            totalViews: 0, 
+            averageViews: 0, 
+            topEpisodes: [] 
+          } 
+        };
+      }
+
+      const content = await response.json();
+      const episodes = content.filter((item: any) => item.type === 'episode');
+
+      const totalEpisodes = episodes.length;
+      const currentMonth = new Date().getMonth();
+      const publishedThisMonth = episodes.filter((item: any) => {
+        const itemDate = new Date(item.created_at);
+        return itemDate.getMonth() === currentMonth;
+      }).length;
+
+      const uniqueGuests = [...new Set(episodes.map((item: any) => item.guest).filter(Boolean))];
+      const totalGuests = uniqueGuests.length;
+      const newGuestsThisMonth = episodes.filter((item: any) => {
+        const itemDate = new Date(item.created_at);
+        return itemDate.getMonth() === currentMonth && item.guest;
+      }).length;
+
+      const totalViews = episodes.reduce((sum: number, item: any) => sum + (item.views || 0), 0);
+      const averageViews = totalEpisodes > 0 ? totalViews / totalEpisodes : 0;
+
+      const topEpisodes = episodes
+        .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
+        .slice(0, 5)
+        .map((item: any) => ({
+          title: item.title,
+          views: item.views || 0,
+          guest: item.guest,
+          duration: item.duration
+        }));
+
+      return {
+        podcaster: {
+          episodes: {
+            total: totalEpisodes,
+            publishedThisMonth
+          },
+          guests: {
+            total: totalGuests,
+            newThisMonth: newGuestsThisMonth
+          },
+          totalViews,
+          averageViews,
+          topEpisodes
+        }
+      };
+    } catch (error) {
       console.error('Error fetching podcaster analytics:', error);
       return { 
         podcaster: { 
@@ -486,81 +604,46 @@ class AnalyticsService {
         } 
       };
     }
-
-    const totalEpisodes = content.length;
-    const currentMonth = new Date().getMonth();
-    const publishedThisMonth = content.filter(item => {
-      const itemDate = new Date(item.created_at);
-      return itemDate.getMonth() === currentMonth;
-    }).length;
-
-    const uniqueGuests = [...new Set(content.map(item => item.guest).filter(Boolean))];
-    const totalGuests = uniqueGuests.length;
-    const newGuestsThisMonth = content.filter(item => {
-      const itemDate = new Date(item.created_at);
-      return itemDate.getMonth() === currentMonth && item.guest;
-    }).length;
-
-    const totalViews = content.reduce((sum, item) => sum + (item.views || 0), 0);
-    const averageViews = totalEpisodes > 0 ? totalViews / totalEpisodes : 0;
-
-    const topEpisodes = content
-      .sort((a, b) => (b.views || 0) - (a.views || 0))
-      .slice(0, 5)
-      .map(item => ({
-        title: item.title,
-        views: item.views || 0,
-        guest: item.guest,
-        duration: item.duration
-      }));
-
-    return {
-      podcaster: {
-        episodes: {
-          total: totalEpisodes,
-          publishedThisMonth
-        },
-        guests: {
-          total: totalGuests,
-          newThisMonth: newGuestsThisMonth
-        },
-        totalViews,
-        averageViews,
-        topEpisodes
-      }
-    };
   }
 
   private async getFreelancerAnalytics(userId: string) {
-    const { data: opportunities, error } = await supabase
-      .from('opportunities')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('niche', 'freelancer');
+    try {
+      const response = await fetch('/api/opportunities?niche=freelancer', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (error) {
+      if (!response.ok) {
+        console.error('Error fetching freelancer analytics:', response.statusText);
+        return { freelancer: { opportunities: 0, billableHours: 0, utilizationRate: 0, averageOpportunityValue: 0 } };
+      }
+
+      const opportunities = await response.json();
+
+      const totalOpportunities = opportunities.length;
+      const completedOpportunities = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid').length;
+      const averageOpportunityValue = totalOpportunities > 0 
+        ? opportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0) / totalOpportunities 
+        : 0;
+
+      // Simplified calculations - in real implementation, you'd track actual billable hours
+      const billableHours = completedOpportunities * 40; // Assume 40 hours per opportunity
+      const utilizationRate = 85; // This would be calculated from actual time tracking
+
+      return {
+        freelancer: {
+          opportunities: totalOpportunities,
+          billableHours,
+          utilizationRate,
+          averageOpportunityValue
+        }
+      };
+    } catch (error) {
       console.error('Error fetching freelancer analytics:', error);
       return { freelancer: { opportunities: 0, billableHours: 0, utilizationRate: 0, averageOpportunityValue: 0 } };
     }
-
-    const totalOpportunities = opportunities.length;
-    const completedOpportunities = opportunities.filter(opp => opp.status === 'won' || opp.status === 'paid').length;
-    const averageOpportunityValue = totalOpportunities > 0 
-      ? opportunities.reduce((sum, opp) => sum + (opp.value || 0), 0) / totalOpportunities 
-      : 0;
-
-    // Simplified calculations - in real implementation, you'd track actual billable hours
-    const billableHours = completedOpportunities * 40; // Assume 40 hours per opportunity
-    const utilizationRate = 85; // This would be calculated from actual time tracking
-
-    return {
-      freelancer: {
-        opportunities: totalOpportunities,
-        billableHours,
-        utilizationRate,
-        averageOpportunityValue
-      }
-    };
   }
 
   // Helper method to generate monthly revenue data for charts
