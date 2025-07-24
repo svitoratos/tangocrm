@@ -1,0 +1,366 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Shadcn/UI Core Colors - Modified */
+  --color-background: #ffffff;
+  --color-foreground: #334155; /* Slate 800 */
+
+  --color-card: #ffffff;
+  --color-card-foreground: #334155;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #334155;
+
+  --color-primary: #10b981; /* Emerald */
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #f0fdf4; /* Emerald 50 */
+  --color-secondary-foreground: #042f2b; /* Emerald 950 */
+
+  --color-muted: #f1f5f9; /* Slate 100 */
+  --color-muted-foreground: #64748b; /* Slate 500 */
+
+  --color-accent: #f97316; /* Orange 600 - Accent */
+  --color-accent-foreground: #ffffff;
+
+  --color-destructive: #ef4444; /* Red 500 */
+  --color-destructive-foreground: #fafafa;
+
+  --color-border: #e2e8f0; /* Slate 200 */
+  --color-input: #e2e8f0;
+  --color-ring: #10b981; /* Emerald 500 */
+
+  /* Shadcn/UI Chart Colors - Placeholder, adjust if specific chart colors are needed */
+  --color-chart-1: #10b981;
+  --color-chart-2: #f97316;
+  --color-chart-3: #64748b;
+  --color-chart-4: #475569;
+  --color-chart-5: #334155;
+
+  /* Additional Design System Colors */
+  --color-background-soft: #f8fafc; /* Slate 50 */
+  --color-neutral-dark: #334155; /* Slate 800 */
+  --color-neutral-medium: #475569; /* Slate 700 */
+  --color-neutral-light: #64748b; /* Slate 500 */
+
+  /* Sidebar Specific Colors (monday.com inspired) */
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #334155;
+  --color-sidebar-primary: #10b981;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f0fdf4;
+  --color-sidebar-accent-foreground: #042f2b;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-ring: #10b981;
+
+  /* Shadcn/UI Radius & Animation */
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: #e2e8f0; /* Slate 200 */
+  }
+}
+
+@layer base {
+  :root {
+    /* Shadcn/UI Core Token Mappings */
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --card: var(--color-card);
+    --card-foreground: var(--color-card-foreground);
+    --popover: var(--color-popover);
+    --popover-foreground: var(--color-popover-foreground);
+    --primary: var(--color-primary);
+    --primary-foreground: var(--color-primary-foreground);
+    --secondary: var(--color-secondary);
+    --secondary-foreground: var(--color-secondary-foreground);
+    --muted: var(--color-muted);
+    --muted-foreground: var(--color-muted-foreground);
+    --accent: var(--color-accent);
+    --accent-foreground: var(--color-accent-foreground);
+    --destructive: var(--color-destructive);
+    --destructive-foreground: var(--color-destructive-foreground);
+    --border: var(--color-border);
+    --input: var(--color-input);
+    --ring: var(--color-ring);
+    --chart-1: var(--color-chart-1);
+    --chart-2: var(--color-chart-2);
+    --chart-3: var(--color-chart-3);
+    --chart-4: var(--color-chart-4);
+    --chart-5: var(--color-chart-5);
+    --radius: var(--radius-lg);
+
+    /* Sidebar Token Mappings */
+    --sidebar-background: var(--color-sidebar);
+    --sidebar-foreground: var(--color-sidebar-foreground);
+    --sidebar-primary: var(--color-sidebar-primary);
+    --sidebar-primary-foreground: var(--color-sidebar-primary-foreground);
+    --sidebar-accent: var(--color-sidebar-accent);
+    --sidebar-accent-foreground: var(--color-sidebar-accent-foreground);
+    --sidebar-border: var(--color-sidebar-border);
+    --sidebar-ring: var(--color-sidebar-ring);
+
+    /* Font Variables */
+    --font-display: var(--font-inter), "Inter", sans-serif;
+    --font-body: var(--font-inter), "Inter", sans-serif;
+  }
+
+  .light {
+    /* Light mode is the default, so these are already set above */
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), Inter, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-inter), Inter, sans-serif;
+  }
+
+  /* Specific global styles for a monday.com-like feel */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure no scrollbars appear anywhere */
+  html, body {
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Remove all scrollbar styles to prevent unwanted scrollbars */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  ::-webkit-scrollbar-track {
+    display: none;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    display: none;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    display: none;
+  }
+
+  ::-webkit-scrollbar-corner {
+    display: none;
+  }
+
+  * {
+    box-sizing: border-box;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .overflow-auto {
+    overflow: auto;
+  }
+
+  .overflow-x-auto {
+    overflow-x: auto;
+  }
+
+  .overflow-y-auto {
+    overflow-y: auto;
+  }
+
+  .min-w-full {
+    min-width: 100%;
+  }
+
+  .main-content-container {
+    overflow-y: auto;
+  }
+
+  .dashboard-content {
+    overflow-y: auto;
+  }
+
+  .flex-1:not(.sidebar-container) {
+    flex: 1;
+  }
+
+  .w-full:not(.sidebar-container *) {
+    width: 100%;
+  }
+
+  .h-screen {
+    height: 100vh;
+  }
+
+  /* Force scrollbars to be visible */
+  .min-w-full {
+    min-width: 100%;
+  }
+  
+  /* Force specific containers to show scrollbars - more targeted approach */
+  .main-content-container {
+    overflow-y: auto;
+  }
+  
+  .dashboard-content {
+    overflow-y: auto;
+  }
+  
+  /* Only apply to main content areas, not sidebar */
+  .flex-1:not(.sidebar-container) {
+    flex: 1;
+  }
+  
+  .w-full:not(.sidebar-container *) {
+    width: 100%;
+  }
+  
+  /* Ensure the main dashboard container shows scrollbars */
+  .h-screen {
+    height: 100vh;
+  }
+  
+  /* Make scrollbars more prominent for better visibility */
+  ::-webkit-scrollbar {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--color-muted) !important;
+    border-radius: 7px !important;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-neutral-medium) !important;
+    border-radius: 7px !important;
+    border: 2px solid var(--background) !important;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-neutral-dark) !important;
+  }
+  
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+}
+
+.dark {
+  /* Shadcn/UI Core Colors - Dark Mode */
+  --background: #020817;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #059669;
+  --primary-foreground: #f0fdf4;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #64748b;
+  --accent: #ea580c;
+  --accent-foreground: #f8fafc;
+  --destructive: #dc2626;
+  --destructive-foreground: #f8fafc;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #059669;
+  --chart-1: #059669;
+  --chart-2: #ea580c;
+  --chart-3: #64748b;
+  --chart-4: #475569;
+  --chart-5: #334155;
+
+  /* Custom Design System Colors - Dark Mode */
+  --color-background: #020817;
+  --color-foreground: #f8fafc;
+  --color-card: #0f172a;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #0f172a;
+  --color-popover-foreground: #f8fafc;
+  --color-primary: #059669;
+  --color-primary-foreground: #f0fdf4;
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #f8fafc;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #64748b;
+  --color-accent: #ea580c;
+  --color-accent-foreground: #f8fafc;
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #f8fafc;
+  --color-border: #1e293b;
+  --color-input: #1e293b;
+  --color-ring: #059669;
+  --color-background-soft: #0f172a;
+  --color-neutral-dark: #f8fafc;
+  --color-neutral-medium: #cbd5e1;
+  --color-neutral-light: #94a3b8;
+
+  /* Sidebar Specific Colors - Dark Mode */
+  --color-sidebar: #0f172a;
+  --color-sidebar-foreground: #f8fafc;
+  --color-sidebar-primary: #059669;
+  --color-sidebar-primary-foreground: #f0fdf4;
+  --color-sidebar-accent: #1e293b;
+  --color-sidebar-accent-foreground: #f8fafc;
+  --color-sidebar-border: #1e293b;
+  --color-sidebar-ring: #059669;
+
+  /* Sidebar Token Mappings - Dark Mode */
+  --sidebar-background: var(--color-sidebar);
+  --sidebar-foreground: var(--color-sidebar-foreground);
+  --sidebar-primary: var(--color-sidebar-primary);
+  --sidebar-primary-foreground: var(--color-sidebar-primary-foreground);
+  --sidebar-accent: var(--color-sidebar-accent);
+  --sidebar-accent-foreground: var(--color-sidebar-accent-foreground);
+  --sidebar-border: var(--color-sidebar-border);
+  --sidebar-ring: var(--color-sidebar-ring);
+}

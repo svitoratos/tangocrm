@@ -1,0 +1,12 @@
+{
+  "points": [
+    {"lat": 40.7128, "lng": -74.0060, "size": 0.1, "color": "#3b82f6"},
+    {"lat": 51.5074, "lng": -0.1278, "size": 0.1, "color": "#3b82f6"},
+    {"lat": 35.6762, "lng": 139.6503, "size": 0.1, "color": "#3b82f6"},
+    {"lat": -33.8688, "lng": 151.2093, "size": 0.1, "color": "#3b82f6"}
+  ],
+  "arcs": [
+    {"startLat": 40.7128, "startLng": -74.0060, "endLat": 51.5074, "endLng": -0.1278, "color": "#3b82f6"},
+    {"startLat": 51.5074, "startLng": -0.1278, "endLat": 35.6762, "endLng": 139.6503, "color": "#3b82f6"}
+  ]
+}
