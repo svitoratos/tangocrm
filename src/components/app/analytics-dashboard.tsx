@@ -86,7 +86,8 @@ import {
   Phone,
   Grid3X3,
   List,
-  MoreVertical
+  MoreVertical,
+  RefreshCw
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -1189,6 +1190,16 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     refreshInterval: 30000 // Refresh every 30 seconds
   });
 
+  // Track last refresh time
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+
+  // Update last refresh time when data changes
+  useEffect(() => {
+    if (analyticsData && !analyticsLoading) {
+      setLastRefreshTime(new Date());
+    }
+  }, [analyticsData, analyticsLoading]);
+
   // Clients state
   const [contacts, setContacts] = useState<Client[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Client[]>([]);
@@ -1229,6 +1240,30 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       refreshAnalytics();
     }
   }, [activeNiche, refreshAnalytics]);
+
+  // Refresh data when component becomes visible (e.g., when navigating back to analytics)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && refreshAnalytics) {
+        refreshAnalytics();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refreshAnalytics]);
+
+  // Refresh data when user returns to the analytics dashboard (e.g., after updating data)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (refreshAnalytics) {
+        refreshAnalytics();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [refreshAnalytics]);
 
   // Clients functions
   const loadClients = async () => {
@@ -1477,22 +1512,40 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <motion.h1 
-            className={`text-4xl font-bold mb-2 ${
-              activeNiche === 'creator' || activeNiche === 'coach' || activeNiche === 'podcaster' || activeNiche === 'freelancer'
-                ? 'bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent'
-                : 'text-foreground'
-            }`}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            {activeNiche === 'creator' ? 'Creator Analytics Dashboard' : 
-             activeNiche === 'coach' ? 'Coach Analytics Dashboard' : 
-             activeNiche === 'podcaster' ? 'Podcaster Analytics Dashboard' :
-             activeNiche === 'freelancer' ? 'Freelancer Analytics Dashboard' :
-             'Analytics Dashboard'}
-          </motion.h1>
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <motion.h1 
+              className={`text-4xl font-bold ${
+                activeNiche === 'creator' || activeNiche === 'coach' || activeNiche === 'podcaster' || activeNiche === 'freelancer'
+                  ? 'bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent'
+                  : 'text-foreground'
+              }`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              {activeNiche === 'creator' ? 'Creator Analytics Dashboard' : 
+               activeNiche === 'coach' ? 'Coach Analytics Dashboard' : 
+               activeNiche === 'podcaster' ? 'Podcaster Analytics Dashboard' :
+               activeNiche === 'freelancer' ? 'Freelancer Analytics Dashboard' :
+               'Analytics Dashboard'}
+            </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button
+                onClick={refreshAnalytics}
+                variant="outline"
+                size="sm"
+                className="ml-2 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200"
+                disabled={analyticsLoading}
+              >
+                <RefreshCw className={`w-4 h-4 mr-1 ${analyticsLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </motion.div>
+          </div>
           <motion.p 
             className="text-gray-600 text-lg"
             initial={{ opacity: 0 }}
@@ -1501,7 +1554,17 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           >
             Your media empire metrics at a glance
           </motion.p>
-                </div>
+          {lastRefreshTime && (
+            <motion.p 
+              className="text-sm text-gray-500 mt-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Last updated: {lastRefreshTime.toLocaleTimeString()}
+            </motion.p>
+          )}
+        </div>
 
                 {/* Navigation Tabs */}
         <div className="flex justify-center mb-8">
