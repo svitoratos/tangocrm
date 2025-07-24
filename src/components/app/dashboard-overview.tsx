@@ -63,7 +63,7 @@ import { fetchClients } from '@/lib/client-service'
 interface MetricCardProps {
   title: string
   value: string
-  change: number
+  change?: number
   icon: React.ComponentType<{ className?: string }>
   trend: 'up' | 'down'
   color: 'emerald' | 'orange' | 'blue' | 'purple' | 'cyan'
@@ -167,21 +167,23 @@ const MetricCard: React.FC<MetricCardProps> = ({
             >
               <Icon className="w-6 h-6" />
             </motion.div>
-            <motion.div 
-              className="flex items-center space-x-1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              {trend === 'up' ? (
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-red-600" />
-              )}
-              <span className={`text-sm font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
-                {change > 0 ? '+' : ''}{change}%
-              </span>
-            </motion.div>
+            {change !== undefined && (
+              <motion.div 
+                className="flex items-center space-x-1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                {trend === 'up' ? (
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-600" />
+                )}
+                <span className={`text-sm font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {change > 0 ? '+' : ''}{change}%
+                </span>
+              </motion.div>
+            )}
           </div>
           <div className="flex-1 flex flex-col justify-end">
             <div className="flex items-center justify-between mb-1">
@@ -871,7 +873,7 @@ export default function DashboardOverview({
       { 
         title: 'Opportunities', 
         value: opportunitiesCount.toString(), 
-        change: 8, 
+        change: undefined, 
         icon: Target, 
         trend: 'up' as const, 
         color: 'blue' as const,
@@ -880,7 +882,7 @@ export default function DashboardOverview({
       { 
         title: 'Brands/Clients', 
         value: clientsCount.toString(), 
-        change: 15, 
+        change: undefined, 
         icon: Users, 
         trend: 'up' as const, 
         color: 'purple' as const,
@@ -889,7 +891,7 @@ export default function DashboardOverview({
       { 
         title: 'Revenue', 
         value: `$${totalRevenue.toLocaleString()}`, 
-        change: 23, 
+        change: undefined, 
         icon: DollarSign, 
         trend: 'up' as const, 
         color: 'emerald' as const,
@@ -902,7 +904,7 @@ export default function DashboardOverview({
       { 
         title: 'Growth Rate', 
         value: `${growthRate.toFixed(1)}%`, 
-        change: 12, 
+        change: undefined, 
         icon: Target, 
         trend: 'up' as const, 
         color: 'cyan' as const,
@@ -926,7 +928,7 @@ export default function DashboardOverview({
           { 
             title: 'Opportunities', 
             value: opportunitiesCount.toString(), 
-            change: 18, 
+            change: undefined, 
             icon: Target, 
             trend: 'up' as const, 
             color: 'blue' as const,
@@ -935,7 +937,7 @@ export default function DashboardOverview({
           { 
             title: 'Clients', 
             value: clientsCount.toString(), 
-            change: 15, 
+            change: undefined, 
             icon: Users, 
             trend: 'up' as const, 
             color: 'emerald' as const,
@@ -944,7 +946,7 @@ export default function DashboardOverview({
           { 
             title: 'Programs', 
             value: '12', 
-            change: 3, 
+            change: undefined, 
             icon: Growth, 
             trend: 'up' as const, 
             color: 'purple' as const,
@@ -953,7 +955,7 @@ export default function DashboardOverview({
           { 
             title: 'Revenue', 
             value: `$${totalRevenue.toLocaleString()}`, 
-            change: 22, 
+            change: undefined, 
             icon: DollarSign, 
             trend: 'up' as const, 
             color: 'orange' as const,
@@ -1014,7 +1016,7 @@ export default function DashboardOverview({
           { 
             title: 'Opportunities', 
             value: opportunitiesCount.toString(), 
-            change: 16, 
+            change: undefined, 
             icon: Target, 
             trend: 'up' as const, 
             color: 'emerald' as const,
@@ -1023,7 +1025,7 @@ export default function DashboardOverview({
           { 
             title: 'Clients', 
             value: clientsCount.toString(), 
-            change: 10, 
+            change: undefined, 
             icon: Users, 
             trend: 'up' as const, 
             color: 'blue' as const,
@@ -1032,7 +1034,7 @@ export default function DashboardOverview({
           { 
             title: 'Revenue', 
             value: `$${totalRevenue.toLocaleString()}`, 
-            change: 19, 
+            change: undefined, 
             icon: DollarSign, 
             trend: 'up' as const, 
             color: 'orange' as const,
@@ -1045,7 +1047,7 @@ export default function DashboardOverview({
           { 
             title: 'Growth Rate', 
             value: '94%', 
-            change: 3, 
+            change: undefined, 
             icon: Growth, 
             trend: 'up' as const, 
             color: 'purple' as const,

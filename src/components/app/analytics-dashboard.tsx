@@ -104,7 +104,7 @@ import { fetchClients, createClient, updateClient, deleteClient, Client } from '
 const MetricCard: React.FC<{
   title: string;
   value: string;
-  change: number;
+  change?: number;
   icon: React.ComponentType<{ className?: string }>;
   trend: 'up' | 'down';
   color: 'emerald' | 'orange' | 'blue' | 'purple' | 'red' | 'yellow' | 'pink' | 'indigo' | 'cyan';
@@ -156,21 +156,23 @@ const MetricCard: React.FC<{
             >
             <Icon className="w-6 h-6" />
             </motion.div>
-            <motion.div 
-              className="flex items-center space-x-1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-            {trend === 'up' ? (
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-red-600" />
+            {change !== undefined && (
+              <motion.div 
+                className="flex items-center space-x-1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+              {trend === 'up' ? (
+                <TrendingUp className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-red-600" />
+              )}
+                <span className={`text-sm font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
+                {change}%
+              </span>
+              </motion.div>
             )}
-              <span className={`text-sm font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
-              {change}%
-            </span>
-            </motion.div>
         </div>
         <div>
           <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
@@ -2541,7 +2543,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <MetricCard
                   title="Average Deal Size"
                   value="$12,750"
-                  change={18}
+                  change={undefined}
                   icon={DollarSign}
                   trend="up"
                   color="emerald"
@@ -2550,7 +2552,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <MetricCard
                   title="Monthly Recurring"
                   value="$8,200"
-                  change={25}
+                  change={undefined}
                   icon={Activity}
                   trend="up"
                   color="blue"

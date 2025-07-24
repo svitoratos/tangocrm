@@ -44,7 +44,7 @@ export const PipelineOverviewSection = () => {
                     <TrendingUp className="h-4 w-4 text-emerald-600" />
                   </div>
                   <div className="text-2xl font-bold text-emerald-800">$24.5K</div>
-                  <div className="text-xs text-emerald-600 mt-1">+12% from last month</div>
+                  <div className="text-xs text-emerald-600 mt-1">Revenue tracking</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-xl border border-blue-200/50">
@@ -53,7 +53,7 @@ export const PipelineOverviewSection = () => {
                     <Users className="h-4 w-4 text-blue-600" />
                   </div>
                   <div className="text-2xl font-bold text-blue-800">18</div>
-                  <div className="text-xs text-blue-600 mt-1">+3 this week</div>
+                  <div className="text-xs text-blue-600 mt-1">Active partnerships</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-6 rounded-xl border border-orange-200/50">
@@ -62,7 +62,7 @@ export const PipelineOverviewSection = () => {
                     <Target className="h-4 w-4 text-orange-600" />
                   </div>
                   <div className="text-2xl font-bold text-orange-800">92%</div>
-                  <div className="text-xs text-orange-600 mt-1">Above industry avg</div>
+                  <div className="text-xs text-orange-600 mt-1">Success rate</div>
                 </div>
               </div>
 
