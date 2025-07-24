@@ -52,6 +52,9 @@ function SignInWithSearchParams() {
                   footerActionLink: "text-emerald-500 hover:text-emerald-600",
                   rootBox: "w-full flex justify-center",
                 },
+                layout: {
+                  unsafe_disableDevelopmentModeWarnings: true,
+                },
               }}
             />
           </div>
