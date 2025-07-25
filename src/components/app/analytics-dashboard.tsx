@@ -86,8 +86,7 @@ import {
   Phone,
   Grid3X3,
   List,
-  MoreVertical,
-  RefreshCw
+  MoreVertical
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -1639,22 +1638,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                activeNiche === 'freelancer' ? 'Freelancer Analytics Dashboard' :
                'Analytics Dashboard'}
             </motion.h1>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Button
-                onClick={refreshAnalytics}
-                variant="outline"
-                size="sm"
-                className="ml-2 hover:bg-blue-50 hover:border-blue-200 transition-all duration-200"
-                disabled={analyticsLoading}
-              >
-                <RefreshCw className={`w-4 h-4 mr-1 ${analyticsLoading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-            </motion.div>
           </div>
           <motion.p 
             className="text-gray-600 text-lg"
