@@ -3625,12 +3625,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Clients</span>
+                      <span className="text-sm text-gray-600">Clients</span>
                       <span className="font-bold text-gray-900">{analyticsData?.clients?.total || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Active Clients</span>
-                      <span className="font-bold text-gray-900">{analyticsData?.clients?.active || 0}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-emerald-600 h-2 rounded-full" style={{ width: `${analyticsData?.clients?.total && analyticsData?.clients?.active ? (analyticsData.clients.active / analyticsData.clients.total) * 100 : 0}%` }}></div>
@@ -3660,12 +3656,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Revenue</span>
+                      <span className="text-sm text-gray-600">Revenue</span>
                       <span className="font-bold text-gray-900">${analyticsData?.revenue?.total?.toLocaleString() || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Monthly Revenue</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.revenue?.monthly?.toLocaleString() || 0}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${analyticsData?.revenue?.growthRate || 0}%` }}></div>
