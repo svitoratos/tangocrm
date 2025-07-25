@@ -121,27 +121,25 @@ const MetricCard: React.FC<MetricCardProps> = ({
           <Icon className={`w-6 h-6 ${colorClasses[color as keyof typeof colorClasses]}`} />
         </div>
         
-        <div className="flex-1 flex flex-col justify-end">
-          <div className="text-3xl font-bold text-gray-900 mb-2">
-            {typeof value === 'number' ? formatNumber(value) : value}
-          </div>
-          
-          {change !== undefined && (
-            <div className="flex items-center gap-2">
-              <div className={`flex items-center gap-1 text-sm font-medium ${
-                trend === 'up' ? 'text-green-600' : 
-                trend === 'down' ? 'text-red-600' : 'text-gray-600'
-              }`}>
-                {trend === 'up' && <TrendingUp className="w-4 h-4" />}
-                {trend === 'down' && <TrendingDown className="w-4 h-4" />}
-                {change > 0 ? '+' : ''}{change}%
-              </div>
-              {subtitle && (
-                <span className="text-xs text-gray-500">{subtitle}</span>
-              )}
-            </div>
-          )}
+        <div className="text-3xl font-bold text-gray-900 mb-2">
+          {typeof value === 'number' ? formatNumber(value) : value}
         </div>
+        
+        {change !== undefined && (
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-1 text-sm font-medium ${
+              trend === 'up' ? 'text-green-600' : 
+              trend === 'down' ? 'text-red-600' : 'text-gray-600'
+            }`}>
+              {trend === 'up' && <TrendingUp className="w-4 h-4" />}
+              {trend === 'down' && <TrendingDown className="w-4 h-4" />}
+              {change > 0 ? '+' : ''}{change}%
+            </div>
+            {subtitle && (
+              <span className="text-xs text-gray-500">{subtitle}</span>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   );

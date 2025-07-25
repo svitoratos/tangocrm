@@ -222,19 +222,17 @@ const MetricCard: React.FC<MetricCardProps> = ({
             </div>
           </div>
           
-          <div className="flex-1 flex flex-col justify-end">
-            <motion.p 
-              className="text-2xl font-bold text-gray-900 mb-1"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              {value}
-            </motion.p>
-            {subtitle && (
-              <p className="text-xs text-gray-500">{subtitle}</p>
-            )}
-          </div>
+          <motion.p 
+            className="text-2xl font-bold text-gray-900 mb-1"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            {value}
+          </motion.p>
+          {subtitle && (
+            <p className="text-xs text-gray-500">{subtitle}</p>
+          )}
         </div>
       </Card>
     </motion.div>
