@@ -1240,7 +1240,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
   // Add state for chart and stage breakdown
   const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; value: number }[]>([]);
-  const [oppsByStage, setOppsByStage] = useState<Record<string, number>>({});
+  const [opportunitiesForCharts, setOpportunitiesForCharts] = useState<any[]>([]);
 
   // Trigger refresh when component mounts or niche changes
   useEffect(() => {
@@ -1317,17 +1317,11 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           monthlyData[monthIndex] += opp.value || 0;
         });
         setRevenueByMonth(months.map((month, index) => ({ month, value: monthlyData[index] })));
-        // Opportunities by stage: count all by stage
-        const byStage: Record<string, number> = {};
-        opportunities.forEach((opp: any) => {
-          if (opp.stage) {
-            byStage[opp.stage] = (byStage[opp.stage] || 0) + 1;
-          }
-        });
-        setOppsByStage(byStage);
+        // Store opportunities for charts (GrowthRateChart expects array of opportunities)
+        setOpportunitiesForCharts(opportunities);
       } catch (error) {
         setRevenueByMonth([]);
-        setOppsByStage({});
+        setOpportunitiesForCharts([]);
       }
     };
     fetchAndCalculateCharts();
@@ -1880,7 +1874,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <RevenueChart data={revenueByMonth} />
-                <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
+                <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               </div>
               
               {/* Brands/Clients Grid */}
@@ -2455,7 +2449,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
+              <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Opportunities"
@@ -2487,7 +2481,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
+              <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Follower Growth"
@@ -2519,7 +2513,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
+              <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Follower Growth"
@@ -3027,7 +3021,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
+              <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Follower Growth"
@@ -3427,7 +3421,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
+              <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
             </motion.div>
           )}
 
