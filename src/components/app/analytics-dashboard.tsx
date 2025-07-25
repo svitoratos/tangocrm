@@ -2695,65 +2695,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               <RevenueChart data={revenueByMonth} />
-              
-              {/* Brands/Clients Grid */}
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <Crown className="w-5 h-5 text-blue-600" />
-                    Brands/Clients
-                  </h3>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    {brands.length} Partners
-                  </Badge>
-        </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {brands.slice(0, 8).map((brand, index) => (
-                    <motion.div
-                      key={brand.id}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      className="relative group"
-                    >
-                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto mb-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {brand.name.charAt(0)}
-          </div>
-                          <h4 className="font-semibold text-gray-900 text-xs">{brand.name}</h4>
-                          <div className="text-xs text-gray-500 mt-1">{brand.industry}</div>
-                          
-                          <div className="mt-2">
-                            <div className="flex items-center justify-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`w-2 h-2 ${i < brand.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                />
-          ))}
-        </div>
-                            <div className="text-xs text-gray-600 mt-1 font-medium">${(brand.totalRevenue / 1000).toFixed(0)}k</div>
-      </div>
-
-                          <Badge 
-                            variant="secondary" 
-                            className={`mt-2 text-xs ${
-                              brand.status === 'Active' ? 'bg-green-100 text-green-800' :
-                              brand.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {brand.status}
-                          </Badge>
-                        </div>
-                      </Card>
-                    </motion.div>
-          ))}
-        </div>
-              </Card>
             </motion.div>
           )}
 
