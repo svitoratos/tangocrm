@@ -2992,13 +2992,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       <span className="text-sm text-gray-600">New This Month</span>
                       <span className="font-bold text-gray-900">{analyticsData?.clients?.newThisMonth || 0}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Retention Rate</span>
-                      <span className="font-bold text-gray-900">{analyticsData?.clients?.total && analyticsData?.clients?.active ? Math.round((analyticsData.clients.active / analyticsData.clients.total) * 100) : 0}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-emerald-600 h-2 rounded-full" style={{ width: `${analyticsData?.clients?.total && analyticsData?.clients?.active ? (analyticsData.clients.active / analyticsData.clients.total) * 100 : 0}%` }}></div>
-                    </div>
                   </div>
                 </Card>
 
