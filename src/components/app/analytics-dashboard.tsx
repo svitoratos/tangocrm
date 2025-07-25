@@ -484,13 +484,18 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
   // Map stage IDs to stage names
   const mapStageIdToStageName = (stageId: string, niche: string) => {
     const stages = getNicheStages(niche);
+    console.log('Available stages for', niche, ':', stages.map(s => ({ id: s.id, name: s.name })));
+    console.log('Looking for stageId:', stageId);
     const stage = stages.find(s => s.id === stageId);
+    console.log('Found stage:', stage);
     return stage ? stage.name : 'Outreach / Pitched';
   };
 
   // Group opportunities by stage
   const stageData = (Array.isArray(data) ? data : []).reduce((acc: any, opportunity: any) => {
+    console.log('Processing opportunity:', opportunity.title, 'stage:', opportunity.stage, 'niche:', activeNiche);
     const stageName = mapStageIdToStageName(opportunity.stage, activeNiche);
+    console.log('Mapped to stage name:', stageName);
     if (!acc[stageName]) {
       acc[stageName] = { count: 0, totalValue: 0, opportunities: [] };
     }
