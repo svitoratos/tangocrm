@@ -2931,7 +2931,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           )}
 
           {/* Brands/Clients Section */}
-          {activeSection === 'brands' && activeNiche !== 'podcaster' && (
+          {activeSection === 'brands' && activeNiche !== 'podcaster' && activeNiche !== 'freelancer' && (
         <motion.div
               key="brands"
           initial={{ opacity: 0, y: 20 }}
