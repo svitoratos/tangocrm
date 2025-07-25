@@ -1378,11 +1378,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const loadClients = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/clients${activeNiche ? `?niche=${activeNiche}` : ''}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch clients');
-      }
-      const data = await response.json();
+      // Use the same fetchClients function as the clients page
+      const { fetchClients } = await import('@/lib/client-service');
+      const data = await fetchClients(activeNiche);
       setContacts(data);
       setFilteredContacts(data);
     } catch (error) {
@@ -1503,7 +1501,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         await updateClient(selectedContact.id, saveData);
       } else {
         // Create new contact
-        await createClient(saveData, currentNiche || 'coach');
+        await createClient(saveData, activeNiche || 'coach');
       }
       
       await loadClients();
