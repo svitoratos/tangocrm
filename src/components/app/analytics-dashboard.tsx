@@ -1394,7 +1394,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
   // Load clients when coach or podcaster section is active
   useEffect(() => {
-    if ((activeNiche === 'coach' && activeSection === 'clients') || 
+    if ((activeNiche === 'coach') || 
         (activeNiche === 'podcaster' && activeSection === 'growth')) {
       loadClients();
     }

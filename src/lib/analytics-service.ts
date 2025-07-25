@@ -116,7 +116,7 @@ class AnalyticsService {
       nicheData
     ] = await Promise.all([
       this.getOpportunitiesAnalytics(niche, currentUserId),
-      this.getClientsAnalytics(currentUserId),
+      this.getClientsAnalytics(niche, currentUserId),
       this.getRevenueAnalytics(niche, currentUserId),
       this.getContentAnalytics(niche, currentUserId),
       this.getGoalsAnalytics(currentUserId),
@@ -198,21 +198,11 @@ class AnalyticsService {
   }
 
   // Clients Analytics
-  private async getClientsAnalytics(userId: string) {
+  private async getClientsAnalytics(niche: string, userId: string) {
     try {
-      const response = await fetch('/api/clients', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.error('Error fetching clients:', response.statusText);
-        return { clients: { total: 0, active: 0, newThisMonth: 0, retentionRate: 0, byStatus: {} } };
-      }
-
-      const clients = await response.json();
+      // Use the same fetchClients function as the clients page
+      const { fetchClients } = await import('./client-service');
+      const clients = await fetchClients(niche);
 
       const total = clients.length;
       const active = clients.filter((client: any) => client.status === 'client').length;
