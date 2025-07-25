@@ -99,7 +99,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useNiche } from '@/contexts/NicheContext';
-import { fetchClients, createClient, updateClient, deleteClient, Client } from '@/lib/client-service';
+import { createClient, updateClient, deleteClient, Client } from '@/lib/client-service';
 
 // Enhanced Metric Card with Glassmorphism
 const MetricCard: React.FC<{
@@ -1234,6 +1234,10 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   // Use real data only - no fallback to mock data
   const data = analyticsData;
 
+  // Add state for calculated revenue and growth rate
+  const [calculatedRevenue, setCalculatedRevenue] = useState<number>(0);
+  const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
+
   // Trigger refresh when component mounts or niche changes
   useEffect(() => {
     if (refreshAnalytics) {
@@ -1265,11 +1269,40 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     return () => window.removeEventListener('focus', handleFocus);
   }, [refreshAnalytics]);
 
+  // Calculate revenue and growth rate from opportunities (dashboard logic)
+  useEffect(() => {
+    const fetchAndCalculateMetrics = async () => {
+      try {
+        const response = await fetch(`/api/opportunities?niche=${activeNiche || 'creator'}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch opportunities for metrics');
+        }
+        const opportunities = await response.json();
+        // Revenue: sum of value for won (and paid for coach)
+        const wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid');
+        const totalRevenue = wonOpportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
+        setCalculatedRevenue(totalRevenue);
+        // Growth Rate: percent of won (and paid for coach) out of all
+        const totalOpportunities = opportunities.length;
+        const growthRate = totalOpportunities > 0 ? (wonOpportunities.length / totalOpportunities) * 100 : 0;
+        setCalculatedGrowthRate(growthRate);
+      } catch (error) {
+        setCalculatedRevenue(0);
+        setCalculatedGrowthRate(0);
+      }
+    };
+    fetchAndCalculateMetrics();
+  }, [activeNiche, lastRefreshTime]);
+
   // Clients functions
   const loadClients = async () => {
     try {
       setLoading(true);
-      const data = await fetchClients(activeNiche || 'coach');
+      const response = await fetch(`/api/clients${activeNiche ? `?niche=${activeNiche}` : ''}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch clients');
+      }
+      const data = await response.json();
       setContacts(data);
       setFilteredContacts(data);
     } catch (error) {
@@ -1295,8 +1328,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       try {
         // For now, we'll use clients data as brands for creator niche
         if (activeNiche === 'creator' && activeSection === 'brands') {
-          const clientsData = await fetchClients(activeNiche);
-          const brandsData = clientsData.map(client => ({
+          const response = await fetch(`/api/clients?niche=${activeNiche}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch clients for brands');
+          }
+          const clientsData = await response.json();
+          const brandsData = clientsData.map((client: any) => ({
             id: client.id,
             name: client.name,
             industry: client.company || 'Unknown',
@@ -1625,7 +1662,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Revenue"
-                      value={analyticsData?.revenue?.total ? `$${analyticsData.revenue.total.toLocaleString()}` : "$0"}
+                      value={`$${calculatedRevenue.toLocaleString()}`}
                       change={analyticsData?.revenue?.growthRate || 0}
                       icon={DollarSign}
                       trend="up"
@@ -1634,8 +1671,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Growth Rate"
-                      value={`${analyticsData?.revenue?.growthRate || 0}%`}
-                      change={analyticsData?.revenue?.growthRate || 0}
+                      value={`${calculatedGrowthRate.toFixed(1)}%`}
+                      change={calculatedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
@@ -1751,8 +1788,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Growth Rate"
-                      value={`${analyticsData?.revenue?.growthRate || 0}%`}
-                      change={analyticsData?.revenue?.growthRate || 0}
+                      value={`${calculatedGrowthRate.toFixed(1)}%`}
+                      change={calculatedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
@@ -1790,8 +1827,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Growth Rate"
-                      value={`${analyticsData?.revenue?.growthRate || 0}%`}
-                      change={analyticsData?.revenue?.growthRate || 0}
+                      value={`${calculatedGrowthRate.toFixed(1)}%`}
+                      change={calculatedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"

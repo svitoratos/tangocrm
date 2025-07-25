@@ -397,7 +397,10 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
   }, [stages]);
 
   const totalValue = useMemo(() => {
+    // Exclude opportunities in 'paid', 'completed', 'published', 'delivered', and 'archived' stages from potential value
+    const excludedStageIds = ['paid', 'completed', 'published', 'delivered', 'archived'];
     return stages.reduce((total, stage) => {
+      if (excludedStageIds.includes(stage.id)) return total;
       return total + stage.opportunities.reduce((stageTotal, opp) => {
         return stageTotal + opp.dealValue;
       }, 0);
