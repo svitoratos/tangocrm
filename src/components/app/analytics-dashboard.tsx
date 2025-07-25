@@ -1238,6 +1238,10 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [calculatedRevenue, setCalculatedRevenue] = useState<number>(0);
   const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
 
+  // Add state for chart and stage breakdown
+  const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; value: number }[]>([]);
+  const [oppsByStage, setOppsByStage] = useState<Record<string, number>>({});
+
   // Trigger refresh when component mounts or niche changes
   useEffect(() => {
     if (refreshAnalytics) {
@@ -1292,6 +1296,41 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       }
     };
     fetchAndCalculateMetrics();
+  }, [activeNiche, lastRefreshTime]);
+
+  // Calculate revenue by month and opportunities by stage from opportunities (dashboard logic)
+  useEffect(() => {
+    const fetchAndCalculateCharts = async () => {
+      try {
+        const response = await fetch(`/api/opportunities?niche=${activeNiche || 'creator'}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch opportunities for charts');
+        }
+        const opportunities = await response.json();
+        // Revenue by month: only won or paid
+        const wonPaidOpps = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyData = new Array(12).fill(0);
+        wonPaidOpps.forEach((opp: any) => {
+          const date = new Date(opp.created_at);
+          const monthIndex = date.getMonth();
+          monthlyData[monthIndex] += opp.value || 0;
+        });
+        setRevenueByMonth(months.map((month, index) => ({ month, value: monthlyData[index] })));
+        // Opportunities by stage: count all by stage
+        const byStage: Record<string, number> = {};
+        opportunities.forEach((opp: any) => {
+          if (opp.stage) {
+            byStage[opp.stage] = (byStage[opp.stage] || 0) + 1;
+          }
+        });
+        setOppsByStage(byStage);
+      } catch (error) {
+        setRevenueByMonth([]);
+        setOppsByStage({});
+      }
+    };
+    fetchAndCalculateCharts();
   }, [activeNiche, lastRefreshTime]);
 
   // Clients functions
@@ -1840,7 +1879,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <RevenueChart data={data?.revenue?.byMonth || []} />
+                <RevenueChart data={revenueByMonth} />
                 <GrowthRateChart data={data?.opportunities || []} activeNiche={activeNiche} />
               </div>
               
@@ -2317,7 +2356,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               {/* Revenue Growth Chart */}
-              <RevenueChart data={data?.revenue?.byMonth || []} />
+              <RevenueChart data={revenueByMonth} />
               
               {/* Top Programs */}
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
@@ -2638,7 +2677,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <RevenueChart data={data?.revenue?.byMonth || []} />
+              <RevenueChart data={revenueByMonth} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Average Deal Size"
@@ -2730,7 +2769,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <RevenueChart data={data?.revenue?.byMonth || []} />
+              <RevenueChart data={revenueByMonth} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Average Episode Revenue"
