@@ -73,6 +73,9 @@ interface MetricCardProps {
   showPeriodFilter?: boolean
   period?: string
   onPeriodChange?: (period: string) => void
+  showGrowthTypeFilter?: boolean
+  growthType?: string
+  onGrowthTypeChange?: (type: string) => void
 }
 
 interface ActivityItem {
@@ -131,7 +134,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
   activeNiche = 'creator',
   showPeriodFilter = false,
   period = 'this-quarter',
-  onPeriodChange
+  onPeriodChange,
+  showGrowthTypeFilter = false,
+  growthType = 'revenue',
+  onGrowthTypeChange
 }) => {
   
   return (
@@ -188,19 +194,32 @@ const MetricCard: React.FC<MetricCardProps> = ({
           <div className="flex-1 flex flex-col justify-end">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-              {showPeriodFilter && onPeriodChange && (
-                <Select value={period} onValueChange={onPeriodChange}>
-                  <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="min-w-[120px]">
-                    <SelectItem value="this-month">Month</SelectItem>
-                    <SelectItem value="this-quarter">Quarter</SelectItem>
-                    <SelectItem value="ytd">YTD</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
+              <div className="flex gap-2">
+                {showGrowthTypeFilter && onGrowthTypeChange && (
+                  <Select value={growthType} onValueChange={onGrowthTypeChange}>
+                    <SelectTrigger className="h-7 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="min-w-[100px]">
+                      <SelectItem value="revenue">Revenue</SelectItem>
+                      <SelectItem value="clients">Clients</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+                {showPeriodFilter && onPeriodChange && (
+                  <Select value={period} onValueChange={onPeriodChange}>
+                    <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="min-w-[120px]">
+                      <SelectItem value="this-month">Month</SelectItem>
+                      <SelectItem value="this-quarter">Quarter</SelectItem>
+                      <SelectItem value="ytd">YTD</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
             <motion.p 
               className="text-2xl font-bold text-gray-900 mb-1"
@@ -432,6 +451,7 @@ export default function DashboardOverview({
   // Period filter states
   const [revenuePeriod, setRevenuePeriod] = useState('this-quarter');
   const [growthPeriod, setGrowthPeriod] = useState('this-quarter');
+  const [growthType, setGrowthType] = useState('revenue');
   const [customDateRange, setCustomDateRange] = useState({
     startDate: '',
     endDate: ''
@@ -868,6 +888,10 @@ export default function DashboardOverview({
     }
   };
 
+  const handleGrowthTypeChange = (type: string) => {
+    setGrowthType(type);
+  };
+
   const getCreatorMetrics = () => {
     return [
       { 
@@ -903,16 +927,19 @@ export default function DashboardOverview({
       },
       { 
         title: 'Growth Rate', 
-        value: `${growthRate.toFixed(1)}%`, 
+        value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${((clientsCount / Math.max(opportunitiesCount, 1)) * 100).toFixed(1)}%`, 
         change: undefined, 
         icon: Target, 
         trend: 'up' as const, 
         color: 'cyan' as const,
-        subtitle: getPeriodSubtitle(growthPeriod),
+        subtitle: growthType === 'revenue' ? 'Revenue growth' : 'Client growth',
         onClick: () => onNavigate('analytics'),
         showPeriodFilter: true,
         period: growthPeriod,
-        onPeriodChange: handleGrowthPeriodChange
+        onPeriodChange: handleGrowthPeriodChange,
+        showGrowthTypeFilter: true,
+        growthType: growthType,
+        onGrowthTypeChange: handleGrowthTypeChange
       }
     ]
   }
