@@ -194,7 +194,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           <div className="flex-1 flex flex-col justify-end">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-1">
                 {showGrowthTypeFilter && onGrowthTypeChange && (
                   <Select value={growthType} onValueChange={onGrowthTypeChange}>
                     <SelectTrigger className="h-7 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
