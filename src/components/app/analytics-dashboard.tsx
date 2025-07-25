@@ -86,7 +86,8 @@ import {
   Phone,
   Grid3X3,
   List,
-  MoreVertical
+  MoreVertical,
+  Play
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -1448,6 +1449,43 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   useEffect(() => {
     if (activeNiche === 'coach' || activeNiche === 'podcaster' || activeNiche === 'freelancer') {
       loadClients();
+    }
+  }, [activeNiche]);
+
+  // Load episodes data for podcaster niche
+  const loadEpisodes = async () => {
+    try {
+      if (activeNiche === 'podcaster') {
+        const response = await fetch('/api/content-items?niche=podcaster');
+        if (response.ok) {
+          const contentItems = await response.json();
+          const episodeItems = contentItems.filter((item: any) => item.type === 'episode');
+          
+          // Transform the data to match the expected format
+          const transformedEpisodes = episodeItems.map((item: any) => ({
+            title: item.title,
+            views: item.views || 0,
+            guest: item.guest,
+            duration: item.duration,
+            date: item.created_at,
+            description: item.description
+          }));
+          
+          setEpisodes(transformedEpisodes);
+          setFilteredEpisodes(transformedEpisodes);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading episodes:', error);
+      setEpisodes([]);
+      setFilteredEpisodes([]);
+    }
+  };
+
+  // Load episodes when podcaster niche is active
+  useEffect(() => {
+    if (activeNiche === 'podcaster') {
+      loadEpisodes();
     }
   }, [activeNiche]);
 
@@ -2932,6 +2970,98 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         >
               <BrandPortfolio brands={brands} />
         </motion.div>
+          )}
+
+          {/* Podcaster Episodes Section */}
+          {activeSection === 'brands' && activeNiche === 'podcaster' && (
+            <motion.div
+              key="podcaster-episodes"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              {/* Header */}
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Episodes</h1>
+                <p className="text-sm text-muted-foreground">
+                  All episodes you've created as a podcaster
+                </p>
+              </div>
+
+              {/* Episodes Grid */}
+              <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-100 border-0 shadow-xl">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Radio className="w-5 h-5 text-purple-600" />
+                    Your Episodes
+                  </h3>
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                    {episodes.length} Total Episodes
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredEpisodes.map((episode, index) => (
+                    <motion.div
+                      key={episode.title}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      className="relative group"
+                    >
+                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                              {episode.title}
+                            </h4>
+                            {episode.guest && (
+                              <p className="text-xs text-gray-600 mb-2">
+                                Guest: {episode.guest}
+                              </p>
+                            )}
+                          </div>
+                          <Badge variant="secondary" className="bg-purple-50 text-purple-700 text-xs">
+                            {episode.views?.toLocaleString() || 0} views
+                          </Badge>
+                        </div>
+                        
+                        {episode.duration && (
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                            <Play className="w-3 h-3" />
+                            <span>{episode.duration}</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <span className="text-xs text-gray-600">Published</span>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {filteredEpisodes.length === 0 && (
+                  <div className="text-center py-8">
+                    <Radio className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Episodes Yet</h3>
+                    <p className="text-gray-600 mb-4">Start creating your first episode to see it here</p>
+                    <Button 
+                      onClick={() => window.location.href = '/dashboard?section=programs&niche=podcaster'}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Episode
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </motion.div>
           )}
 
 
