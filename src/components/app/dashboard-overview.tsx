@@ -1083,16 +1083,19 @@ export default function DashboardOverview({
           },
           { 
             title: 'Growth Rate', 
-            value: '94%', 
+            value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${((clientsCount / Math.max(opportunitiesCount, 1)) * 100).toFixed(1)}%`, 
             change: undefined, 
-            icon: Growth, 
+            icon: Target, 
             trend: 'up' as const, 
-            color: 'purple' as const,
-            subtitle: getPeriodSubtitle(growthPeriod),
+            color: 'cyan' as const,
+            subtitle: growthType === 'revenue' ? 'Revenue growth' : 'Client growth',
             onClick: () => onNavigate('analytics'),
             showPeriodFilter: true,
             period: growthPeriod,
-            onPeriodChange: handleGrowthPeriodChange
+            onPeriodChange: handleGrowthPeriodChange,
+            showGrowthTypeFilter: true,
+            growthType: growthType,
+            onGrowthTypeChange: handleGrowthTypeChange
           }
         ]
 
