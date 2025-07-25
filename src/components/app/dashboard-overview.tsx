@@ -165,7 +165,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         )}
         
         <div className="relative z-10 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <motion.div 
               className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white shadow-lg`}
               whileHover={{ rotate: 5, scale: 1.1 }}
@@ -192,12 +192,12 @@ const MetricCard: React.FC<MetricCardProps> = ({
             )}
           </div>
           
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-medium text-gray-600">{title}</h3>
             <div className="flex flex-col gap-1">
               {showGrowthTypeFilter && onGrowthTypeChange && (
                 <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                  <SelectTrigger className="h-7 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                  <SelectTrigger className="h-6 w-18 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[100px]">
@@ -208,7 +208,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               )}
               {showPeriodFilter && onPeriodChange && (
                 <Select value={period} onValueChange={onPeriodChange}>
-                  <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                  <SelectTrigger className="h-6 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[120px]">
