@@ -165,13 +165,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
         )}
         
         <div className="relative z-10 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <motion.div 
-              className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white shadow-lg`}
+              className={`p-2 rounded-lg bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white shadow-lg`}
               whileHover={{ rotate: 5, scale: 1.1 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="w-5 h-5" />
             </motion.div>
             {change !== undefined && (
               <motion.div 
@@ -181,11 +181,11 @@ const MetricCard: React.FC<MetricCardProps> = ({
                 transition={{ delay: 0.2 }}
               >
                 {trend === 'up' ? (
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <TrendingUp className="w-3 h-3 text-emerald-600" />
                 ) : (
-                  <TrendingDown className="w-4 h-4 text-red-600" />
+                  <TrendingDown className="w-3 h-3 text-red-600" />
                 )}
-                <span className={`text-sm font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
+                <span className={`text-xs font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
                   {change > 0 ? '+' : ''}{change}%
                 </span>
               </motion.div>
@@ -194,10 +194,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
           
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5">
               {showGrowthTypeFilter && onGrowthTypeChange && (
                 <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                  <SelectTrigger className="h-6 w-18 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-1">
+                  <SelectTrigger className="h-5 w-16 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[100px]">
@@ -208,7 +208,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               )}
               {showPeriodFilter && onPeriodChange && (
                 <Select value={period} onValueChange={onPeriodChange}>
-                  <SelectTrigger className="h-6 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-1">
+                  <SelectTrigger className="h-5 w-18 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[120px]">
