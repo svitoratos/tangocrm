@@ -204,7 +204,7 @@ const MetricCard: React.FC<{
                 <SelectContent>
                   <SelectItem value="this-month">This Month</SelectItem>
                   <SelectItem value="this-quarter">This Quarter</SelectItem>
-                  <SelectItem value="this-year">YTD</SelectItem>
+                  <SelectItem value="ytd">YTD</SelectItem>
                   <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
