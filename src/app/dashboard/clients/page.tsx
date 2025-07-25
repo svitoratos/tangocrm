@@ -73,7 +73,7 @@ const gradientClasses = {
   cyan: 'bg-gradient-to-br from-cyan-50 to-cyan-100'
 } as const
 
-function ClientsPageWithSearchParams() {
+function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?: string }) {
   const searchParams = useSearchParams();
   const [contacts, setContacts] = useState<Client[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Client[]>([]);
@@ -81,7 +81,6 @@ function ClientsPageWithSearchParams() {
   const [selectedContact, setSelectedContact] = useState<Client | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeNiche, setActiveNiche] = useState('creator');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -840,10 +839,10 @@ function LoadingFallback() {
   );
 }
 
-export default function ClientsPage() {
+export default function ClientsPage({ activeNiche }: { activeNiche?: string }) {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ClientsPageWithSearchParams />
+      <ClientsPageWithSearchParams activeNiche={activeNiche} />
     </Suspense>
   );
 }

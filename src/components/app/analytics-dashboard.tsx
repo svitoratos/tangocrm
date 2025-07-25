@@ -1513,6 +1513,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const handleSaveContact = async () => {
     try {
       const saveData = formData;
+      console.log('🔧 Creating client with niche:', activeNiche || 'coach');
 
       if (selectedContact) {
         // Update existing contact
