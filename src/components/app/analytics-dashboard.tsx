@@ -2817,98 +2817,17 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </Badge>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    {
-                      name: 'Life Transformation Program',
-                      description: '6-month comprehensive life coaching program',
-                      duration: '6 months',
-                      price: analyticsData?.coach?.averageProgramValue || 25000,
-                      enrolled: Math.floor((analyticsData?.coach?.studentsEnrolled || 0) * 0.4),
-                      completion: analyticsData?.coach?.completionRate || 85,
-                      status: 'Active'
-                    },
-                    {
-                      name: 'Career Breakthrough Coaching',
-                      description: '3-month career development and advancement program',
-                      duration: '3 months',
-                      price: Math.max(0, (analyticsData?.coach?.averageProgramValue || 25000) - 7000),
-                      enrolled: Math.floor((analyticsData?.coach?.studentsEnrolled || 0) * 0.3),
-                      completion: Math.max(0, (analyticsData?.coach?.completionRate || 85) - 7),
-                      status: 'Active'
-                    },
-                    {
-                      name: 'Mindset Mastery Course',
-                      description: '4-month mindset and personal development program',
-                      duration: '4 months',
-                      price: Math.max(0, (analyticsData?.coach?.averageProgramValue || 25000) + 7000),
-                      enrolled: Math.floor((analyticsData?.coach?.studentsEnrolled || 0) * 0.2),
-                      completion: Math.min(100, (analyticsData?.coach?.completionRate || 85) + 7),
-                      status: 'Active'
-                    },
-                    {
-                      name: 'Business Scaling Mastery',
-                      description: '5-month business growth and scaling program',
-                      duration: '5 months',
-                      price: Math.max(0, (analyticsData?.coach?.averageProgramValue || 25000) - 5000),
-                      enrolled: Math.floor((analyticsData?.coach?.studentsEnrolled || 0) * 0.1),
-                      completion: Math.max(0, (analyticsData?.coach?.completionRate || 85) - 15),
-                      status: 'Active'
-                    }
-                  ].map((program, index) => (
-                    <motion.div
-                      key={program.name}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      className="relative group"
-                    >
-                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                        <div className="text-center">
-                          <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {program.name.charAt(0)}
-                          </div>
-                          <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                            {program.name}
-                          </h4>
-                          <div className="text-xs text-gray-500 mb-3">
-                            {program.description}
-                          </div>
-                          
-                          <div className="space-y-2 text-xs">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Duration:</span>
-                              <span className="font-medium text-gray-900">{program.duration}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Price:</span>
-                              <span className="font-medium text-gray-900">${program.price.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Enrolled:</span>
-                              <span className="font-medium text-gray-900">{program.enrolled} students</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Completion:</span>
-                              <span className="font-medium text-gray-900">{program.completion}%</span>
-                            </div>
-                          </div>
-                          
-                          <Badge 
-                            variant="secondary" 
-                            className={`mt-3 text-xs ${
-                              program.status === 'Active' ? 'bg-green-100 text-green-800' :
-                              program.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {program.status}
-                          </Badge>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  ))}
+                <div className="text-center py-8">
+                  <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Programs Yet</h3>
+                  <p className="text-gray-600 mb-4">Start creating your first coaching program to see it here</p>
+                  <Button
+                    onClick={() => window.location.href = '/dashboard?section=programs&niche=coach'}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Program
+                  </Button>
                 </div>
               </Card>
             </motion.div>
