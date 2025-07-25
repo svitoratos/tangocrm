@@ -1271,6 +1271,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   // Add state for calculated revenue and growth rate
   const [calculatedRevenue, setCalculatedRevenue] = useState<number>(0);
   const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
+  const [calculatedClientGrowthRate, setCalculatedClientGrowthRate] = useState<number>(0);
 
   // Add state for chart and stage breakdown
   const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; value: number }[]>([]);
@@ -1402,6 +1403,15 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       console.log('🔧 fetchClients returned:', data);
       setContacts(data);
       setFilteredContacts(data);
+      
+      // Calculate client growth rate
+      const currentClientCount = data.length;
+      // For now, assume previous count was 0 (you went from 0 to current count)
+      const previousClientCount = 0;
+      const clientGrowthRate = previousClientCount > 0 
+        ? ((currentClientCount - previousClientCount) / previousClientCount) * 100 
+        : currentClientCount > 0 ? 100 : 0; // If you had 0 before and now have clients, it's 100% growth
+      setCalculatedClientGrowthRate(clientGrowthRate);
     } catch (error) {
       console.error('Error loading clients:', error);
       setContacts([]);
@@ -3599,7 +3609,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                         </SelectContent>
                       </Select>
                       <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                        +{calculatedGrowthRate.toFixed(1)}%
+                        +{calculatedClientGrowthRate.toFixed(1)}%
                       </Badge>
                     </div>
                   </div>
