@@ -1379,6 +1379,19 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     try {
       setLoading(true);
       console.log('🔧 Loading clients for niche:', activeNiche);
+      
+      // Debug: Check what's in localStorage
+      const stored = localStorage.getItem('tango-clients');
+      console.log('🔧 Raw localStorage data:', stored);
+      if (stored) {
+        const allClients = JSON.parse(stored);
+        console.log('🔧 All clients in localStorage:', allClients);
+        console.log('🔧 Clients by niche:', allClients.reduce((acc: any, client: any) => {
+          acc[client.niche] = (acc[client.niche] || 0) + 1;
+          return acc;
+        }, {}));
+      }
+      
       // Use the same fetchClients function as the clients page
       const { fetchClients } = await import('@/lib/client-service');
       const data = await fetchClients(activeNiche);
