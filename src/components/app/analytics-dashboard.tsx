@@ -1870,6 +1870,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="emerald"
                       gradient="bg-gradient-to-br from-emerald-50 to-emerald-100"
+                      showPeriodFilter={true}
+                      period={revenueGrowthPeriod}
+                      onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
                     />
                   </>
                 ) : activeNiche === 'freelancer' ? (
