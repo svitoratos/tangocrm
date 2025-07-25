@@ -111,6 +111,9 @@ const MetricCard: React.FC<{
   subtitle?: string;
   onClick?: () => void;
   gradient?: string;
+  showPeriodFilter?: boolean;
+  period?: string;
+  onPeriodChange?: (period: string) => void;
 }> = ({ 
   title, 
   value, 
@@ -120,7 +123,10 @@ const MetricCard: React.FC<{
   color,
   subtitle,
   onClick,
-  gradient
+  gradient,
+  showPeriodFilter = false,
+  period = 'this-quarter',
+  onPeriodChange
 }) => {
   const colorClasses = {
     emerald: 'from-emerald-500 to-emerald-600',
@@ -185,6 +191,23 @@ const MetricCard: React.FC<{
           </motion.p>
           {subtitle && (
             <p className="text-xs text-gray-500">{subtitle}</p>
+          )}
+          
+          {/* Period Filter Dropdown */}
+          {showPeriodFilter && onPeriodChange && (
+            <div className="mt-auto pt-2">
+              <Select value={period} onValueChange={onPeriodChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="this-month">This Month</SelectItem>
+                  <SelectItem value="this-quarter">This Quarter</SelectItem>
+                  <SelectItem value="this-year">YTD</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
         </div>
       </Card>
@@ -1877,6 +1900,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="emerald"
                       gradient="bg-gradient-to-br from-emerald-50 to-emerald-100"
+                      showPeriodFilter={true}
+                      period={freelancerRevenuePeriod}
+                      onPeriodChange={(period) => setFreelancerRevenuePeriod(period)}
                     />
                     <MetricCard
                       title="Growth Rate"
@@ -1886,6 +1912,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showPeriodFilter={true}
+                      period={revenueGrowthPeriod}
+                      onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
                     />
                   </>
                 ) : (
