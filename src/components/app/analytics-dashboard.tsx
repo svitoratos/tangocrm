@@ -3597,51 +3597,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Growth Analytics</h1>
                 <p className="text-sm text-muted-foreground">
-                  Track your project growth, client acquisition, and revenue performance
+                  Track your client acquisition and revenue performance
                 </p>
               </div>
 
               {/* Growth Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Opportunities</h3>
-                    <div className="flex items-center gap-2">
-                      <Select value={freelancerOpportunitiesPeriod} onValueChange={setFreelancerOpportunitiesPeriod}>
-                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[120px]">
-                          <SelectItem value="this-month">Month</SelectItem>
-                          <SelectItem value="this-quarter">Quarter</SelectItem>
-                          <SelectItem value="ytd">YTD</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Badge variant="secondary" className="bg-indigo-100 text-indigo-800">
-                        {analyticsData?.opportunities?.total || 0} Total
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Opportunities</span>
-                      <span className="font-bold text-gray-900">{analyticsData?.opportunities?.total || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Won Opportunities</span>
-                      <span className="font-bold text-gray-900">{Math.round((analyticsData?.opportunities?.conversionRate || 0) * (analyticsData?.opportunities?.total || 0) / 100)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Avg Deal Value</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.opportunities?.averageValue?.toLocaleString() || 0}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${analyticsData?.opportunities?.conversionRate || 0}%` }}></div>
-                    </div>
-                  </div>
-                </Card>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Clients</h3>
@@ -3668,7 +3629,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       <span className="font-bold text-gray-900">{analyticsData?.clients?.total || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Clients</span>
+                      <span className="text-sm text-gray-600">Active Clients</span>
                       <span className="font-bold text-gray-900">{analyticsData?.clients?.active || 0}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -3699,16 +3660,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Revenue</span>
+                      <span className="text-sm text-gray-600">Total Revenue</span>
                       <span className="font-bold text-gray-900">${analyticsData?.revenue?.total?.toLocaleString() || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Monthly Revenue</span>
                       <span className="font-bold text-gray-900">${analyticsData?.revenue?.monthly?.toLocaleString() || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Avg Deal Size</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.revenue?.averageDealSize?.toLocaleString() || 0}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-orange-600 h-2 rounded-full" style={{ width: `${analyticsData?.revenue?.growthRate || 0}%` }}></div>
@@ -3716,225 +3673,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                 </Card>
               </div>
-
-              {/* Detailed Growth Charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-6 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Project Performance</h3>
-                    <Select defaultValue="6months">
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3months">3 Months</SelectItem>
-                        <SelectItem value="6months">6 Months</SelectItem>
-                        <SelectItem value="12months">12 Months</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Web Development</div>
-                        <div className="text-sm text-gray-500">Most profitable</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">$28,400</div>
-                        <div className="text-sm text-green-600">+32%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Consulting</div>
-                        <div className="text-sm text-gray-500">High value</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">$24,600</div>
-                        <div className="text-sm text-green-600">+28%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Design Services</div>
-                        <div className="text-sm text-gray-500">Steady demand</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">$18,200</div>
-                        <div className="text-sm text-green-600">+19%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Strategy Planning</div>
-                        <div className="text-sm text-gray-500">Premium service</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">$15,800</div>
-                        <div className="text-sm text-green-600">+25%</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Client Acquisition</h3>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Growing
-                    </Badge>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Referrals</div>
-                        <div className="text-sm text-gray-500">Client recommendations</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">42%</div>
-                        <div className="text-sm text-green-600">+15%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">LinkedIn</div>
-                        <div className="text-sm text-gray-500">Professional network</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">28%</div>
-                        <div className="text-sm text-green-600">+12%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Direct Outreach</div>
-                        <div className="text-sm text-gray-500">Proactive sales</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">18%</div>
-                        <div className="text-sm text-green-600">+8%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Portfolio Site</div>
-                        <div className="text-sm text-gray-500">Organic discovery</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">12%</div>
-                        <div className="text-sm text-green-600">+5%</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Additional Freelancer Metrics */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="p-6 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Utilization & Efficiency</h3>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      Optimal
-                    </Badge>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Billable Hours</div>
-                        <div className="text-sm text-gray-500">This month</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">142 hrs</div>
-                        <div className="text-sm text-green-600">+18%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Utilization Rate</div>
-                        <div className="text-sm text-gray-500">Time efficiency</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">85%</div>
-                        <div className="text-sm text-green-600">+5%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Project Completion</div>
-                        <div className="text-sm text-gray-500">On-time delivery</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">94%</div>
-                        <div className="text-sm text-green-600">+3%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Client Satisfaction</div>
-                        <div className="text-sm text-gray-500">Average rating</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">4.8/5</div>
-                        <div className="text-sm text-green-600">+0.2</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900">Market Position</h3>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                      Strong
-                    </Badge>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Industry Average Rate</div>
-                        <div className="text-sm text-gray-500">Market benchmark</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">$95/hr</div>
-                        <div className="text-sm text-green-600">+32% above</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Repeat Clients</div>
-                        <div className="text-sm text-gray-500">Loyalty indicator</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">68%</div>
-                        <div className="text-sm text-green-600">+12%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Project Pipeline</div>
-                        <div className="text-sm text-gray-500">Upcoming work</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">$156K</div>
-                        <div className="text-sm text-green-600">+45%</div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                      <div>
-                        <div className="font-medium text-gray-900">Market Demand</div>
-                        <div className="text-sm text-gray-500">Industry growth</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gray-900">High</div>
-                        <div className="text-sm text-green-600">+18%</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-
             </motion.div>
           )}
 
