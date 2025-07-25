@@ -481,49 +481,16 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
 
   const stages = getNicheStages(activeNiche);
   
-  // Map database status to stage names
-  const mapStatusToStageName = (status: string, niche: string) => {
-    const statusMap: Record<string, Record<string, string>> = {
-      creator: {
-        'prospecting': 'Outreach / Pitched',
-        'qualification': 'Awaiting Response',
-        'proposal': 'Contract Signed',
-        'negotiation': 'Negotiation',
-        'won': 'Paid',
-        'lost': 'Archived / Lost'
-      },
-      coach: {
-        'prospecting': 'New Lead',
-        'qualification': 'Discovery Call Scheduled',
-        'proposal': 'Proposal Sent',
-        'negotiation': 'Negotiation',
-        'won': 'Paid',
-        'lost': 'Archived / Lost'
-      },
-      podcaster: {
-        'prospecting': 'Guest/Sponsor Outreach',
-        'qualification': 'In Conversation',
-        'proposal': 'Agreement in Place',
-        'negotiation': 'Negotiation',
-        'won': 'Published',
-        'lost': 'Archived / Lost'
-      },
-      freelancer: {
-        'prospecting': 'New Inquiry',
-        'qualification': 'Discovery Call',
-        'proposal': 'Proposal Sent',
-        'negotiation': 'Contract Signed',
-        'won': 'Delivered',
-        'lost': 'Archived / Lost'
-      }
-    };
-
-    return statusMap[niche]?.[status] || 'Outreach / Pitched';
+  // Map stage IDs to stage names
+  const mapStageIdToStageName = (stageId: string, niche: string) => {
+    const stages = getNicheStages(niche);
+    const stage = stages.find(s => s.id === stageId);
+    return stage ? stage.name : 'Outreach / Pitched';
   };
 
   // Group opportunities by stage
   const stageData = (Array.isArray(data) ? data : []).reduce((acc: any, opportunity: any) => {
-    const stageName = mapStatusToStageName(opportunity.stage, activeNiche);
+    const stageName = mapStageIdToStageName(opportunity.stage, activeNiche);
     if (!acc[stageName]) {
       acc[stageName] = { count: 0, totalValue: 0, opportunities: [] };
     }
