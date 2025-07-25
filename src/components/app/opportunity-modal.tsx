@@ -1826,13 +1826,23 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="episodeTitle">Episode Title</Label>
+                <Label htmlFor="dealValue">Deal Value</Label>
                 <Input
-                  id="episodeTitle"
-                  value={formData.episodeTitle || ""}
-                  onChange={(e) => handleInputChange("episodeTitle", e.target.value)}
+                  id="dealValue"
+                  type="number"
+                  value={formData.dealValue || ""}
+                  onChange={(e) => handleInputChange("dealValue", parseFloat(e.target.value))}
+                  placeholder="Enter deal value"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="episodeTitle">Episode Title</Label>
+              <Input
+                id="episodeTitle"
+                value={formData.episodeTitle || ""}
+                onChange={(e) => handleInputChange("episodeTitle", e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="duration">Duration</Label>
