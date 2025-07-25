@@ -1,4 +1,4 @@
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkClient, auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { checkRole } from '@/utils/roles';
 
@@ -6,7 +6,15 @@ export async function GET() {
   try {
     // Check if the requesting user is an admin
     if (!(await checkRole('admin'))) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      // Temporary bypass for your email during development
+      const { sessionClaims } = await auth();
+      const userEmail = sessionClaims?.email;
+      
+      if (userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com') {
+        console.log('🔧 Temporary admin access granted for:', userEmail);
+      } else {
+        return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      }
     }
 
     const client = await clerkClient();
@@ -42,7 +50,15 @@ export async function POST(request: Request) {
   try {
     // Check if the requesting user is an admin
     if (!(await checkRole('admin'))) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      // Temporary bypass for your email during development
+      const { sessionClaims } = await auth();
+      const userEmail = sessionClaims?.email;
+      
+      if (userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com') {
+        console.log('🔧 Temporary admin access granted for:', userEmail);
+      } else {
+        return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      }
     }
 
     const { userId, action } = await request.json();
