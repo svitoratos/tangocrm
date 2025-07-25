@@ -495,6 +495,7 @@ export default function DashboardOverview({
         // Load clients count
         try {
           const clients = await fetchClients(activeNiche);
+          console.log('Dashboard - Clients loaded for', activeNiche, ':', clients.length, 'clients');
           setClientsCount(clients.length);
         } catch (error) {
           console.error('Failed to fetch clients:', error);
@@ -937,7 +938,7 @@ export default function DashboardOverview({
       },
       { 
         title: 'Growth Rate', 
-        value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${((clientsCount / Math.max(opportunitiesCount, 1)) * 100).toFixed(1)}%`, 
+        value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${clientsCount > 0 ? 100 : 0}%`, 
         change: undefined, 
         icon: Target, 
         trend: 'up' as const, 
