@@ -2695,26 +2695,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               <RevenueChart data={revenueByMonth} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MetricCard
-                  title="Average Deal Size"
-                  value="$12,750"
-                  change={undefined}
-                  icon={DollarSign}
-                  trend="up"
-                  color="emerald"
-                  subtitle="Per brand deal"
-                />
-                <MetricCard
-                  title="Monthly Recurring"
-                  value="$8,200"
-                  change={undefined}
-                  icon={Activity}
-                  trend="up"
-                  color="blue"
-                  subtitle="Steady income"
-                />
-          </div>
               
               {/* Brands/Clients Grid */}
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
