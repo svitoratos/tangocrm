@@ -232,6 +232,12 @@ function MainDashboardWithSearchParams() {
   
   // Get actual subscribed niches from payment status
   const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading } = usePaymentStatus();
+  const { user: currentUser } = useUser();
+  
+  // Ensure admin users always have access to all niches
+  const adminEmails = ['stevenvitoratos@gmail.com', 'stevenvitoratos@getbondlyapp.com'];
+  const isAdmin = currentUser?.emailAddresses?.[0]?.emailAddress && adminEmails.includes(currentUser.emailAddresses[0].emailAddress);
+  const availableNiches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : subscribedNiches;
 
   // Handle URL parameters for section and niche
   useEffect(() => {
@@ -243,7 +249,7 @@ function MainDashboardWithSearchParams() {
     }
     
     // Only allow switching to subscribed niches
-    if (nicheParam && AVAILABLE_NICHES.find(niche => niche.id === nicheParam) && subscribedNiches.includes(nicheParam)) {
+    if (nicheParam && AVAILABLE_NICHES.find(niche => niche.id === nicheParam) && availableNiches.includes(nicheParam)) {
       setSelectedNiche(nicheParam);
     }
   }, [searchParams, subscribedNiches]);
@@ -255,13 +261,13 @@ function MainDashboardWithSearchParams() {
 
   // Set initial niche based on user's subscriptions
   useEffect(() => {
-    if (!paymentStatusLoading && subscribedNiches.length > 0) {
-      // If current selected niche is not in subscribed niches, switch to primary niche
-      if (!subscribedNiches.includes(selectedNiche)) {
-        setSelectedNiche(primaryNiche || subscribedNiches[0]);
+    if (!paymentStatusLoading && availableNiches.length > 0) {
+      // If current selected niche is not in available niches, switch to primary niche
+      if (!availableNiches.includes(selectedNiche)) {
+        setSelectedNiche(primaryNiche || availableNiches[0]);
       }
     }
-  }, [subscribedNiches, selectedNiche, primaryNiche, paymentStatusLoading]);
+  }, [availableNiches, selectedNiche, primaryNiche, paymentStatusLoading]);
 
   // Handle upgrade success redirect
   useEffect(() => {
@@ -309,12 +315,12 @@ function MainDashboardWithSearchParams() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const isSubscribed = (niche: string) => subscribedNiches.includes(niche);
+  const isSubscribed = (niche: string) => availableNiches.includes(niche);
   
   // Check if user has the Tango Core plan (any paid subscription)
   const hasCorePlan = () => {
     // Check if user has any active subscription
-    return subscribedNiches.length > 0;
+    return availableNiches.length > 0;
   };
 
   // Context value
@@ -327,7 +333,7 @@ function MainDashboardWithSearchParams() {
     setSidebarCollapsed,
     isLoading,
     error,
-    subscribedNiches,
+    subscribedNiches: availableNiches,
     isSubscribed
   };
 
@@ -354,8 +360,8 @@ function MainDashboardWithSearchParams() {
   };
 
   const handleNicheChange = (niche: string) => {
-    // Only allow switching to subscribed niches
-    if (!subscribedNiches.includes(niche)) {
+    // Only allow switching to available niches
+    if (!availableNiches.includes(niche)) {
       console.warn(`User not subscribed to niche: ${niche}`);
       return;
     }
@@ -438,7 +444,7 @@ function MainDashboardWithSearchParams() {
               onAddNiche={handleAddNiche}
               onSettings={handleSettings}
               onLogout={handleLogout}
-              subscribedNiches={subscribedNiches}
+              subscribedNiches={availableNiches}
               isSubscribed={isSubscribed}
               hasCorePlan={hasCorePlan}
               isCollapsed={sidebarCollapsed}
