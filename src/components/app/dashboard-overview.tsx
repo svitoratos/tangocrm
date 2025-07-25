@@ -1083,7 +1083,7 @@ export default function DashboardOverview({
           },
           { 
             title: 'Growth Rate', 
-            value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${((clientsCount / Math.max(opportunitiesCount, 1)) * 100).toFixed(1)}%`, 
+            value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${clientsCount > 0 ? 100 : 0}%`, 
             change: undefined, 
             icon: Target, 
             trend: 'up' as const, 
