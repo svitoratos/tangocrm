@@ -3619,7 +3619,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                         </SelectContent>
                       </Select>
                       <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                        +{analyticsData?.clients?.newThisMonth || 0}%
+                        +{calculatedGrowthRate.toFixed(1)}%
                       </Badge>
                     </div>
                   </div>
@@ -3647,7 +3647,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                         </SelectContent>
                       </Select>
                       <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                        +{analyticsData?.revenue?.growthRate || 0}%
+                        +{calculatedGrowthRate.toFixed(1)}%
                       </Badge>
                     </div>
                   </div>
