@@ -1378,24 +1378,21 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   }, [activeNiche, activeSection]);
 
-  // Load brands data for creator niche
+  // Load brands data for creator niche (using same data source as clients page)
   useEffect(() => {
     const loadBrands = async () => {
       try {
-        // For now, we'll use clients data as brands for creator niche
         if (activeNiche === 'creator' && activeSection === 'brands') {
-          const response = await fetch(`/api/clients?niche=${activeNiche}`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch clients for brands');
-          }
-          const clientsData = await response.json();
+          // Use the same fetchClients function as the clients page
+          const { fetchClients } = await import('@/lib/client-service');
+          const clientsData = await fetchClients(activeNiche);
           const brandsData = clientsData.map((client: any) => ({
             id: client.id,
             name: client.name,
             industry: client.company || 'Unknown',
-            rating: Math.floor(Math.random() * 5) + 1, // Random rating for demo
-            totalRevenue: Math.floor(Math.random() * 10000) + 1000, // Random revenue for demo
-            status: client.status === 'client' ? 'Active' : 'Pending'
+            rating: client.status === 'client' ? 5 : client.status === 'lead' ? 3 : 1, // Realistic rating based on status
+            totalRevenue: client.value ? parseFloat(client.value.replace(/[^0-9.]/g, '')) : 0, // Use actual value if available
+            status: client.status === 'client' ? 'Active' : client.status === 'lead' ? 'Pending' : 'Inactive'
           }));
           setBrands(brandsData);
         }
