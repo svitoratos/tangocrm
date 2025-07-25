@@ -17,20 +17,24 @@ export async function GET(request: NextRequest) {
     // Check if user is admin
     const userEmail = sessionClaims?.email as string
     const isAdmin = isAdminEmail(userEmail)
+    
+    console.log('🔧 Payment status check for:', userEmail, 'isAdmin:', isAdmin)
 
     // Get user profile from database
     const user = await userOperations.getProfile(userId)
     
     if (!user) {
       // User doesn't exist in database yet, hasn't completed onboarding
-      return NextResponse.json({
+      const response = {
         hasCompletedOnboarding: isAdmin, // Admins bypass onboarding
         hasActiveSubscription: isAdmin, // Admins bypass subscription requirement
         subscriptionStatus: isAdmin ? 'active' : 'inactive',
         subscriptionTier: isAdmin ? 'admin' : 'free',
         primaryNiche: isAdmin ? 'creator' : null,
         niches: isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : [] // Admins get all niches
-      })
+      }
+      console.log('🔧 No user profile found, returning:', response)
+      return NextResponse.json(response)
     }
 
     // Check if user has completed onboarding
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
     const primaryNiche = user.primary_niche || 'creator'
     const niches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : (user.niches || [primaryNiche])
 
-    return NextResponse.json({
+    const response = {
       hasCompletedOnboarding,
       hasActiveSubscription,
       subscriptionStatus: isAdmin ? 'active' : (user.subscription_status || 'inactive'),
@@ -51,7 +55,10 @@ export async function GET(request: NextRequest) {
       primaryNiche,
       niches,
       stripeCustomerId: user.stripe_customer_id
-    })
+    }
+    
+    console.log('🔧 User profile found, returning:', response)
+    return NextResponse.json(response)
   } catch (error) {
     console.error('Error checking payment status:', error)
     return NextResponse.json(
