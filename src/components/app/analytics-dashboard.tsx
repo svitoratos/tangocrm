@@ -1435,6 +1435,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       const clientGrowthRate = previousClientCount > 0 
         ? ((currentClientCount - previousClientCount) / previousClientCount) * 100 
         : currentClientCount > 0 ? 100 : 0; // If you had 0 before and now have clients, it's 100% growth
+      console.log('Client growth calculation:', { currentClientCount, previousClientCount, clientGrowthRate });
       setCalculatedClientGrowthRate(clientGrowthRate);
     } catch (error) {
       console.error('Error loading clients:', error);
