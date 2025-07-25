@@ -3619,7 +3619,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                         </SelectContent>
                       </Select>
                       <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                        {analyticsData?.clients?.total || 0} Total
+                        +{analyticsData?.clients?.newThisMonth || 0}%
                       </Badge>
                     </div>
                   </div>
@@ -3627,10 +3627,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Clients</span>
                       <span className="font-bold text-gray-900">{analyticsData?.clients?.total || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Growth Rate</span>
-                      <span className="font-bold text-gray-900">+{analyticsData?.clients?.newThisMonth || 0}%</span>
                     </div>
                   </div>
                 </Card>
