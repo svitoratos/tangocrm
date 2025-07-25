@@ -1279,7 +1279,10 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyData = new Array(12).fill(0);
         wonPaidOpps.forEach((opp: any) => {
-          const date = new Date(opp.created_at);
+          // Use actual_close_date if available, otherwise use updated_at, fallback to created_at
+          const date = opp.actual_close_date ? new Date(opp.actual_close_date) : 
+                      opp.updated_at ? new Date(opp.updated_at) : 
+                      new Date(opp.created_at);
           const monthIndex = date.getMonth();
           monthlyData[monthIndex] += opp.value || 0;
         });
