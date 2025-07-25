@@ -2748,26 +2748,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MetricCard
-                  title="Follower Growth"
-                  value={analyticsData?.growth?.followers ? `+${analyticsData.growth.followers.toLocaleString()}` : "+0"}
-                  change={analyticsData?.growth?.followerGrowth || 0}
-                  icon={Users}
-                  trend="up"
-                  color="blue"
-                  subtitle="This month"
-                />
-                <MetricCard
-                  title="Engagement Rate"
-                  value={`${analyticsData?.growth?.engagementRate || 0}%`}
-                  change={analyticsData?.growth?.engagementGrowth || 0}
-                  icon={Activity}
-                  trend="up"
-                  color="purple"
-                  subtitle="Above average"
-                />
-              </div>
             </motion.div>
           )}
 
