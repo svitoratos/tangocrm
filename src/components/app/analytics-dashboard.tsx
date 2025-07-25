@@ -3013,12 +3013,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Avg Deal Size</span>
-                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / (opportunitiesForCharts.filter((opp: any) => {
-                        if ((activeNiche || 'creator') === 'coach') {
-                          return opp.status === 'won' || opp.status === 'paid';
-                        }
-                        return opp.status === 'won';
-                      }).length || 1) / 1000).toFixed(0) + 'K' : '0'}</span>
+                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / (analyticsData?.opportunities?.total || 1) / 1000).toFixed(0) + 'K' : '0'}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${Math.min(calculatedGrowthRate, 100)}%` }}></div>
