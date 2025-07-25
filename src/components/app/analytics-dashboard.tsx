@@ -1211,6 +1211,13 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const { currentNiche } = useNiche();
   const [activeSection, setActiveSection] = useState('overview');
   const [showNetRevenue, setShowNetRevenue] = useState(false);
+  
+  // Period filter state
+  const [clientGrowthPeriod, setClientGrowthPeriod] = useState('this-quarter');
+  const [revenueGrowthPeriod, setRevenueGrowthPeriod] = useState('this-quarter');
+  const [freelancerOpportunitiesPeriod, setFreelancerOpportunitiesPeriod] = useState('this-quarter');
+  const [freelancerClientsPeriod, setFreelancerClientsPeriod] = useState('this-quarter');
+  const [freelancerRevenuePeriod, setFreelancerRevenuePeriod] = useState('this-quarter');
 
   // Real-time analytics data
   const { data: analyticsData, loading: analyticsLoading, error: analyticsError, refresh: refreshAnalytics } = useAnalytics({
@@ -2900,9 +2907,22 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Client Growth</h3>
-                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                      +{analyticsData?.clients?.newThisMonth || 0}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Select value={clientGrowthPeriod} onValueChange={setClientGrowthPeriod}>
+                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[120px]">
+                          <SelectItem value="this-month">Month</SelectItem>
+                          <SelectItem value="this-quarter">Quarter</SelectItem>
+                          <SelectItem value="ytd">YTD</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                        +{analyticsData?.clients?.newThisMonth || 0}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -2919,9 +2939,22 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Revenue Growth</h3>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                      +{calculatedGrowthRate.toFixed(1)}%
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Select value={revenueGrowthPeriod} onValueChange={setRevenueGrowthPeriod}>
+                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[120px]">
+                          <SelectItem value="this-month">Month</SelectItem>
+                          <SelectItem value="this-quarter">Quarter</SelectItem>
+                          <SelectItem value="ytd">YTD</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                        +{calculatedGrowthRate.toFixed(1)}%
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -3373,9 +3406,22 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <Card className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 border-0 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Opportunities</h3>
-                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-800">
-                      {analyticsData?.opportunities?.total || 0} Total
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Select value={freelancerOpportunitiesPeriod} onValueChange={setFreelancerOpportunitiesPeriod}>
+                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[120px]">
+                          <SelectItem value="this-month">Month</SelectItem>
+                          <SelectItem value="this-quarter">Quarter</SelectItem>
+                          <SelectItem value="ytd">YTD</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="secondary" className="bg-indigo-100 text-indigo-800">
+                        {analyticsData?.opportunities?.total || 0} Total
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -3399,9 +3445,22 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Clients</h3>
-                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                      {analyticsData?.clients?.total || 0} Total
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Select value={freelancerClientsPeriod} onValueChange={setFreelancerClientsPeriod}>
+                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[120px]">
+                          <SelectItem value="this-month">Month</SelectItem>
+                          <SelectItem value="this-quarter">Quarter</SelectItem>
+                          <SelectItem value="ytd">YTD</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                        {analyticsData?.clients?.total || 0} Total
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -3425,9 +3484,22 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-0 shadow-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Revenue</h3>
-                    <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                      +{analyticsData?.revenue?.growthRate || 0}%
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Select value={freelancerRevenuePeriod} onValueChange={setFreelancerRevenuePeriod}>
+                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[120px]">
+                          <SelectItem value="this-month">Month</SelectItem>
+                          <SelectItem value="this-quarter">Quarter</SelectItem>
+                          <SelectItem value="ytd">YTD</SelectItem>
+                          <SelectItem value="custom">Custom</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                        +{analyticsData?.revenue?.growthRate || 0}%
+                      </Badge>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
