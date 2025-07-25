@@ -1435,7 +1435,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       const clientGrowthRate = previousClientCount > 0 
         ? ((currentClientCount - previousClientCount) / previousClientCount) * 100 
         : currentClientCount > 0 ? 100 : 0; // If you had 0 before and now have clients, it's 100% growth
-      console.log('Client growth calculation:', { currentClientCount, previousClientCount, clientGrowthRate });
+      console.log('Client growth calculation - currentClientCount:', currentClientCount);
+      console.log('Client growth calculation - previousClientCount:', previousClientCount);
+      console.log('Client growth calculation - clientGrowthRate:', clientGrowthRate);
       console.log('Setting calculatedClientGrowthRate to:', clientGrowthRate);
       setCalculatedClientGrowthRate(clientGrowthRate);
     } catch (error) {
@@ -1935,6 +1937,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       color="purple"
                       gradient="bg-gradient-to-br from-purple-50 to-purple-100"
                     />
+                    {console.log('MetricCard Clients - calculatedClientGrowthRate:', calculatedClientGrowthRate)}
                     <MetricCard
                       title="Revenue"
                       value={`$${calculatedRevenue.toLocaleString()}`}
