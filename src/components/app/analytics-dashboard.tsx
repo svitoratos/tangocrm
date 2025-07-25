@@ -1378,9 +1378,11 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const loadClients = async () => {
     try {
       setLoading(true);
+      console.log('🔧 Loading clients for niche:', activeNiche);
       // Use the same fetchClients function as the clients page
       const { fetchClients } = await import('@/lib/client-service');
       const data = await fetchClients(activeNiche);
+      console.log('🔧 Loaded clients data:', data);
       setContacts(data);
       setFilteredContacts(data);
     } catch (error) {
@@ -1392,13 +1394,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   };
 
-  // Load clients when coach or podcaster section is active
+  // Load clients from localStorage (same logic as Clients page)
   useEffect(() => {
-    if ((activeNiche === 'coach') || 
-        (activeNiche === 'podcaster' && activeSection === 'growth')) {
+    if (activeNiche === 'coach' || activeNiche === 'podcaster') {
       loadClients();
     }
-  }, [activeNiche, activeSection]);
+  }, [activeNiche]);
 
   // Load brands data for creator niche (using same data source as clients page)
   useEffect(() => {
@@ -1751,8 +1752,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Clients"
-                      value={analyticsData?.clients?.total?.toString() || "0"}
-                      change={analyticsData?.clients?.newThisMonth || 0}
+                      value={contacts.length.toString()}
+                      change={contacts.filter((client: any) => {
+                        const thisMonth = new Date();
+                        thisMonth.setDate(1);
+                        return new Date(client.created_at) >= thisMonth;
+                      }).length}
                       icon={Users}
                       trend="up"
                       color="emerald"
