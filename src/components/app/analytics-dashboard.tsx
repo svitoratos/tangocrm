@@ -220,7 +220,7 @@ const MetricCard: React.FC<{
 
 // Revenue Growth Chart
 const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
-  const [timeframe, setTimeframe] = useState<'monthly' | 'quarterly'>('monthly');
+  const [timeframe, setTimeframe] = useState<'monthly' | 'quarterly' | 'ytd' | 'custom'>('monthly');
   
   // Create complete year data with all months
   const allMonths = [
@@ -235,7 +235,21 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
   });
   
   // Filter data based on timeframe
-  const filteredData = timeframe === 'monthly' ? completeData : completeData.filter((_, index) => index % 3 === 0);
+  let filteredData;
+  if (timeframe === 'monthly') {
+    filteredData = completeData;
+  } else if (timeframe === 'quarterly') {
+    filteredData = completeData.filter((_, index) => index % 3 === 0);
+  } else if (timeframe === 'ytd') {
+    // Show year-to-date data (all months up to current month)
+    const currentMonth = new Date().getMonth();
+    filteredData = completeData.slice(0, currentMonth + 1);
+  } else if (timeframe === 'custom') {
+    // For custom, show all data (same as monthly for now)
+    filteredData = completeData;
+  } else {
+    filteredData = completeData;
+  }
   
   const maxValue = Math.max(...filteredData.map(d => d.value), 1); // Ensure maxValue is at least 1
   const minValue = 0; // Always start from 0 for bar charts
@@ -271,6 +285,22 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
             className={timeframe === 'quarterly' ? 'bg-emerald-600 text-white' : ''}
           >
             Quarterly
+          </Button>
+          <Button
+            variant={timeframe === 'ytd' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTimeframe('ytd')}
+            className={timeframe === 'ytd' ? 'bg-emerald-600 text-white' : ''}
+          >
+            YTD
+          </Button>
+          <Button
+            variant={timeframe === 'custom' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setTimeframe('custom')}
+            className={timeframe === 'custom' ? 'bg-emerald-600 text-white' : ''}
+          >
+            Custom
           </Button>
         </div>
       </div>
