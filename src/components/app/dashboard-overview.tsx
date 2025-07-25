@@ -165,13 +165,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
         )}
         
         <div className="relative z-10 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-0">
+          <div className={`flex items-center justify-between ${title === 'Growth Rate' ? 'mb-0' : 'mb-3'}`}>
             <motion.div 
-              className={`p-1 rounded bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white shadow-sm`}
+              className={`${title === 'Growth Rate' ? 'p-1 rounded' : 'p-2 rounded-lg'} bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white ${title === 'Growth Rate' ? 'shadow-sm' : 'shadow-lg'}`}
               whileHover={{ rotate: 5, scale: 1.1 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className={title === 'Growth Rate' ? 'w-4 h-4' : 'w-5 h-5'} />
             </motion.div>
             {change !== undefined && (
               <motion.div 
@@ -181,9 +181,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
                 transition={{ delay: 0.2 }}
               >
                 {trend === 'up' ? (
-                  <TrendingUp className="w-2 h-2 text-emerald-600" />
+                  <TrendingUp className={title === 'Growth Rate' ? 'w-2 h-2' : 'w-3 h-3'} />
                 ) : (
-                  <TrendingDown className="w-2 h-2 text-red-600" />
+                  <TrendingDown className={title === 'Growth Rate' ? 'w-2 h-2' : 'w-3 h-3'} />
                 )}
                 <span className={`text-xs font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
                   {change > 0 ? '+' : ''}{change}%
@@ -192,12 +192,12 @@ const MetricCard: React.FC<MetricCardProps> = ({
             )}
           </div>
           
-          <div className="flex items-center justify-between mb-0">
-            <h3 className="text-xs font-medium text-gray-600">{title}</h3>
-            <div className="flex flex-col gap-0">
+          <div className={`flex items-center justify-between ${title === 'Growth Rate' ? 'mb-0' : 'mb-2'}`}>
+            <h3 className={`font-medium text-gray-600 ${title === 'Growth Rate' ? 'text-xs' : 'text-sm'}`}>{title}</h3>
+            <div className={`flex flex-col ${title === 'Growth Rate' ? 'gap-0' : 'gap-0.5'}`}>
               {showGrowthTypeFilter && onGrowthTypeChange && (
                 <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                  <SelectTrigger className="h-4 w-14 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
+                  <SelectTrigger className={`${title === 'Growth Rate' ? 'h-4 w-14' : 'h-5 w-16'} text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm ${title === 'Growth Rate' ? 'rounded px-1' : 'rounded-md px-2'}`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[100px]">
@@ -208,7 +208,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               )}
               {showPeriodFilter && onPeriodChange && (
                 <Select value={period} onValueChange={onPeriodChange}>
-                  <SelectTrigger className="h-4 w-16 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
+                  <SelectTrigger className={`${title === 'Growth Rate' ? 'h-4 w-16' : 'h-5 w-18'} text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm ${title === 'Growth Rate' ? 'rounded px-1' : 'rounded-md px-2'}`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[120px]">
