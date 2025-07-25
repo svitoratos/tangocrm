@@ -164,8 +164,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         )}
         
-        <div className="relative z-10 h-full flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="flex items-center justify-between mb-3">
             <motion.div 
               className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white shadow-lg`}
               whileHover={{ rotate: 5, scale: 1.1 }}
@@ -191,36 +191,38 @@ const MetricCard: React.FC<MetricCardProps> = ({
               </motion.div>
             )}
           </div>
-          <div className="flex-1 flex flex-col justify-end">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-              <div className="flex flex-col gap-1">
-                {showGrowthTypeFilter && onGrowthTypeChange && (
-                  <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                    <SelectTrigger className="h-7 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="min-w-[100px]">
-                      <SelectItem value="revenue">Revenue</SelectItem>
-                      <SelectItem value="clients">Clients</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-                {showPeriodFilter && onPeriodChange && (
-                  <Select value={period} onValueChange={onPeriodChange}>
-                    <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="min-w-[120px]">
-                      <SelectItem value="this-month">Month</SelectItem>
-                      <SelectItem value="this-quarter">Quarter</SelectItem>
-                      <SelectItem value="ytd">YTD</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
+          
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+            <div className="flex flex-col gap-1">
+              {showGrowthTypeFilter && onGrowthTypeChange && (
+                <Select value={growthType} onValueChange={onGrowthTypeChange}>
+                  <SelectTrigger className="h-7 w-20 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="min-w-[100px]">
+                    <SelectItem value="revenue">Revenue</SelectItem>
+                    <SelectItem value="clients">Clients</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              {showPeriodFilter && onPeriodChange && (
+                <Select value={period} onValueChange={onPeriodChange}>
+                  <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="min-w-[120px]">
+                    <SelectItem value="this-month">Month</SelectItem>
+                    <SelectItem value="this-quarter">Quarter</SelectItem>
+                    <SelectItem value="ytd">YTD</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
+          </div>
+          
+          <div className="flex-1 flex flex-col justify-end">
             <motion.p 
               className="text-2xl font-bold text-gray-900 mb-1"
               initial={{ opacity: 0, y: 10 }}

@@ -141,14 +141,14 @@ const MetricCard: React.FC<{
       onClick={onClick}
       className="cursor-pointer group"
     >
-      <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative ${
+      <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-48 ${
         gradient || 'bg-gradient-to-br from-white via-gray-50 to-gray-100'
       }`}>
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        <div className="relative z-10">
-        <div className="flex items-center justify-between mb-4">
+        <div className="relative z-10 h-full flex flex-col">
+          <div className="flex items-center justify-between mb-3">
             <motion.div 
               className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses[color]} text-white shadow-lg`}
               whileHover={{ rotate: 5, scale: 1.1 }}
@@ -173,9 +173,9 @@ const MetricCard: React.FC<{
               </span>
               </motion.div>
             )}
-        </div>
-        <div>
-          <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
+          </div>
+          <div className="flex-1 flex flex-col justify-end">
+            <h3 className="text-sm font-medium text-gray-600 mb-2">{title}</h3>
             <motion.p 
               className="text-2xl font-bold text-gray-900 mb-1"
               initial={{ opacity: 0, y: 10 }}
@@ -184,9 +184,9 @@ const MetricCard: React.FC<{
             >
               {value}
             </motion.p>
-          {subtitle && (
-            <p className="text-xs text-gray-500">{subtitle}</p>
-          )}
+            {subtitle && (
+              <p className="text-xs text-gray-500">{subtitle}</p>
+            )}
           </div>
         </div>
       </Card>

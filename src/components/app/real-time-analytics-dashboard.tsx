@@ -115,8 +115,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
     <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-48 w-full ${
       gradient || gradientClasses[color as keyof typeof gradientClasses] || gradientClasses.blue
     }`}>
-      <div className="relative z-10 h-full flex flex-col justify-between">
-        <div className="flex items-center justify-between">
+      <div className="relative z-10 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-medium text-gray-700">{title}</h3>
           <Icon className={`w-6 h-6 ${colorClasses[color as keyof typeof colorClasses]}`} />
         </div>
