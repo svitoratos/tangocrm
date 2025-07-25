@@ -3004,16 +3004,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Monthly Revenue</span>
-                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / 12 / 1000).toFixed(0) + 'K' : '0'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Total Revenue</span>
                       <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / 1000).toFixed(0) + 'K' : '0'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Avg Deal Size</span>
-                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / (analyticsData?.opportunities?.total || 1) / 1000).toFixed(0) + 'K' : '0'}</span>
                     </div>
                   </div>
                 </Card>
