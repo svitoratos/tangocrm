@@ -1871,8 +1871,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Revenue"
-                      value={analyticsData?.revenue?.total ? `$${analyticsData.revenue.total.toLocaleString()}` : "$0"}
-                      change={analyticsData?.revenue?.growthRate || 0}
+                      value={`$${calculatedRevenue.toLocaleString()}`}
+                      change={calculatedGrowthRate}
                       icon={DollarSign}
                       trend="up"
                       color="emerald"
@@ -3640,7 +3640,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Revenue</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.revenue?.total?.toLocaleString() || 0}</span>
+                      <span className="font-bold text-gray-900">${calculatedRevenue.toLocaleString()}</span>
                     </div>
                   </div>
                 </Card>
