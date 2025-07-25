@@ -1968,8 +1968,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               </div>
               
-              {/* Brands/Clients Grid - Hidden for Freelancer */}
-              {activeNiche !== 'freelancer' && (
+              {/* Brands/Clients Grid - Hidden for Freelancer and Podcaster */}
+              {activeNiche !== 'freelancer' && activeNiche !== 'podcaster' && (
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -2939,26 +2939,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               <RevenueChart data={revenueByMonth} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MetricCard
-                  title="Average Episode Revenue"
-                  value="$2,450"
-                  change={18}
-                  icon={DollarSign}
-                  trend="up"
-                  color="emerald"
-                  subtitle="Per episode"
-                />
-                <MetricCard
-                  title="Monthly Recurring"
-                  value="$8,200"
-                  change={25}
-                  icon={Activity}
-                  trend="up"
-                  color="blue"
-                  subtitle="Steady income"
-                />
-              </div>
             </motion.div>
           )}
 
@@ -2974,140 +2954,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         </motion.div>
           )}
 
-          {/* Podcaster Episodes Section */}
-          {activeNiche === 'podcaster' && activeSection === 'brands' && (
-            <motion.div
-              key="podcaster-episodes"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              {/* Header */}
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Episodes</h1>
-                <p className="text-sm text-muted-foreground">
-                  All episodes you've created as a podcaster
-                </p>
-              </div>
 
-              {/* Episodes Grid */}
-              <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-100 border-0 shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <Radio className="w-5 h-5 text-purple-600" />
-                    Your Episodes
-                  </h3>
-                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                    {episodes.length} Total Episodes
-                  </Badge>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    {
-                      title: 'Building a Successful Podcast',
-                      guest: 'Sarah Johnson',
-                      date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-                      duration: '45 min',
-                      platform: 'Spotify',
-                      views: Math.floor((analyticsData?.podcaster?.totalViews || 0) * 0.3),
-                      status: 'Published'
-                    },
-                    {
-                      title: 'Marketing Strategies for Creators',
-                      guest: 'Mike Chen',
-                      date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-                      duration: '52 min',
-                      platform: 'Apple Podcasts',
-                      views: Math.floor((analyticsData?.podcaster?.totalViews || 0) * 0.25),
-                      status: 'Published'
-                    },
-                    {
-                      title: 'Monetization Tips for Podcasters',
-                      guest: 'Emma Rodriguez',
-                      date: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
-                      duration: '38 min',
-                      platform: 'YouTube',
-                      views: Math.floor((analyticsData?.podcaster?.totalViews || 0) * 0.2),
-                      status: 'Published'
-                    },
-                    {
-                      title: 'Interview with Industry Expert',
-                      guest: 'David Thompson',
-                      date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000),
-                      duration: '61 min',
-                      platform: 'Spotify',
-                      views: Math.floor((analyticsData?.podcaster?.totalViews || 0) * 0.15),
-                      status: 'Published'
-                    },
-                    {
-                      title: 'Behind the Scenes of Content Creation',
-                      guest: 'Lisa Park',
-                      date: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
-                      duration: '42 min',
-                      platform: 'Apple Podcasts',
-                      views: Math.floor((analyticsData?.podcaster?.totalViews || 0) * 0.1),
-                      status: 'Published'
-                    }
-                  ].map((episode, index) => (
-                    <motion.div
-                      key={episode.title}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      className="relative group"
-                    >
-                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                        <div className="text-center">
-                          <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            <Radio className="w-6 h-6" />
-                          </div>
-                          <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                            {episode.title}
-                          </h4>
-                          <div className="text-xs text-gray-500 mb-3">
-                            Guest: {episode.guest}
-                          </div>
-                          
-                          <div className="space-y-2 text-xs">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Date:</span>
-                              <span className="font-medium text-gray-900">{episode.date.toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Duration:</span>
-                              <span className="font-medium text-gray-900">{episode.duration}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Platform:</span>
-                              <span className="font-medium text-gray-900">{episode.platform}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Views:</span>
-                              <span className="font-medium text-gray-900">{episode.views.toLocaleString()}</span>
-                            </div>
-                          </div>
-                          
-                          <Badge 
-                            variant="secondary" 
-                            className={`mt-3 text-xs ${
-                              episode.status === 'Published' ? 'bg-green-100 text-green-800' :
-                              episode.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {episode.status}
-                          </Badge>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              </Card>
-            </motion.div>
-          )}
 
           {/* Growth Section - Creator */}
           {activeSection === 'growth' && activeNiche === 'creator' && (
