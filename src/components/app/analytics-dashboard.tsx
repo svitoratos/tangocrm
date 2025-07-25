@@ -309,7 +309,7 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
                     className="text-xs fill-gray-700 font-medium"
                     textAnchor="middle"
                   >
-                    ${Math.round(point.value / 1000)}k
+                    ${point.value.toLocaleString()}
                   </text>
                 )}
               </g>
