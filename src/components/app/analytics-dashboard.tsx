@@ -333,12 +333,32 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
         {/* Revenue labels */}
         <div className="absolute top-2 right-2 text-right bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
           <div className="text-2xl font-bold text-emerald-600">
-            ${filteredData[filteredData.length - 1]?.value.toLocaleString()}
-      </div>
+            ${(() => {
+              const currentDate = new Date();
+              const currentMonth = currentDate.getMonth();
+              const currentQuarter = Math.floor(currentMonth / 3);
+              
+              if (timeframe === 'monthly') {
+                // Find current month's data
+                const currentMonthData = data.find(d => {
+                  const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(d.month);
+                  return monthIndex === currentMonth;
+                });
+                return (currentMonthData?.value || 0).toLocaleString();
+              } else {
+                // Calculate current quarter's total
+                const quarterMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].slice(currentQuarter * 3, (currentQuarter + 1) * 3);
+                const quarterTotal = data
+                  .filter(d => quarterMonths.includes(d.month))
+                  .reduce((sum, d) => sum + (d.value || 0), 0);
+                return quarterTotal.toLocaleString();
+              }
+            })()}
+          </div>
           <div className="text-sm text-emerald-500">
             This {timeframe === 'monthly' ? 'month' : 'quarter'}
-    </div>
-  </div>
+          </div>
+        </div>
       </div>
     </Card>
   );
