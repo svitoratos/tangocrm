@@ -464,7 +464,12 @@ export default function DashboardOverview({
         // Load opportunities count
         const opportunitiesResponse = await fetch(`/api/opportunities?niche=${activeNiche}`);
         if (!opportunitiesResponse.ok) {
-          throw new Error('Failed to fetch opportunities');
+          console.error('Opportunities fetch failed:', opportunitiesResponse.status, opportunitiesResponse.statusText);
+          // Don't throw error, just set empty data
+          setOpportunitiesCount(0);
+          setTotalRevenue(0);
+          setGrowthRate(0);
+          return;
         }
         const opportunities = await opportunitiesResponse.json();
         const activeOpportunities = opportunities.filter((opp: any) => 
@@ -488,8 +493,13 @@ export default function DashboardOverview({
         setGrowthRate(growthRate);
 
         // Load clients count
-        const clients = await fetchClients(activeNiche);
-        setClientsCount(clients.length);
+        try {
+          const clients = await fetchClients(activeNiche);
+          setClientsCount(clients.length);
+        } catch (error) {
+          console.error('Failed to fetch clients:', error);
+          setClientsCount(0);
+        }
 
         // Load content items for podcaster niche (episodes and guests)
         if (activeNiche === 'podcaster') {
