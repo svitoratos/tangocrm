@@ -192,12 +192,11 @@ const MetricCard: React.FC<MetricCardProps> = ({
             )}
           </div>
           
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+          <div className="flex items-center justify-between mb-0.5">
             <div className="flex flex-col gap-0.5">
               {showGrowthTypeFilter && onGrowthTypeChange && (
                 <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                  <SelectTrigger className="h-5 w-16 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
+                  <SelectTrigger className="h-4 w-14 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[100px]">
@@ -208,7 +207,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               )}
               {showPeriodFilter && onPeriodChange && (
                 <Select value={period} onValueChange={onPeriodChange}>
-                  <SelectTrigger className="h-5 w-18 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
+                  <SelectTrigger className="h-4 w-16 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded px-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="min-w-[120px]">
@@ -223,16 +222,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
           </div>
           
           <motion.p 
-            className="text-2xl font-bold text-gray-900 mb-1"
+            className="text-3xl font-bold text-gray-900"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             {value}
           </motion.p>
-          {subtitle && (
-            <p className="text-xs text-gray-500">{subtitle}</p>
-          )}
         </div>
       </Card>
     </motion.div>
