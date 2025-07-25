@@ -1413,7 +1413,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
   // Load clients from localStorage (same logic as Clients page)
   useEffect(() => {
-    if (activeNiche === 'coach' || activeNiche === 'podcaster') {
+    if (activeNiche === 'coach' || activeNiche === 'podcaster' || activeNiche === 'freelancer') {
       loadClients();
     }
   }, [activeNiche]);
@@ -1852,8 +1852,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Clients"
-                      value={analyticsData?.clients?.total?.toString() || "0"}
-                      change={analyticsData?.clients?.newThisMonth || 0}
+                      value={contacts.length.toString()}
+                      change={contacts.filter((client: any) => {
+                        const thisMonth = new Date();
+                        thisMonth.setDate(1);
+                        return new Date(client.created_at) >= thisMonth;
+                      }).length}
                       icon={Users}
                       trend="up"
                       color="purple"
