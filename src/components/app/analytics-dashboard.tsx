@@ -2952,7 +2952,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Revenue Growth Analytics</span>
+                      <span className="text-sm text-gray-600">Revenue</span>
                       <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / 1000).toFixed(0) + 'K' : '0'}</span>
                     </div>
                   </div>
@@ -3493,7 +3493,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Revenue Growth Analytics</span>
+                      <span className="text-sm text-gray-600">Revenue</span>
                       <span className="font-bold text-gray-900">${analyticsData?.revenue?.total?.toLocaleString() || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
