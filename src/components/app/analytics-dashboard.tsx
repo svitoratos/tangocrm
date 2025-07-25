@@ -1249,8 +1249,13 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           throw new Error('Failed to fetch opportunities for metrics');
         }
         const opportunities = await response.json();
-        // Revenue: sum of value for won (and paid for coach)
-        const wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid');
+        // Revenue: match dashboard logic for won opportunities
+        let wonOpportunities;
+        if ((activeNiche || 'creator') === 'coach') {
+          wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid');
+        } else {
+          wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won');
+        }
         const totalRevenue = wonOpportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
         setCalculatedRevenue(totalRevenue);
         // Growth Rate: percent of won (and paid for coach) out of all
