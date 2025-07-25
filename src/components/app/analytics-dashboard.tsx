@@ -1936,7 +1936,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               </div>
               
-              {/* Brands/Clients Grid */}
+              {/* Brands/Clients Grid - Hidden for Freelancer */}
+              {activeNiche !== 'freelancer' && (
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -2014,6 +2015,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           ))}
         </div>
       </Card>
+              )}
             </motion.div>
           )}
 
