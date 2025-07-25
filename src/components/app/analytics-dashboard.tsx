@@ -1846,11 +1846,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     <MetricCard
                       title="Clients"
                       value={contacts.length.toString()}
-                      change={contacts.filter((client: any) => {
-                        const thisMonth = new Date();
-                        thisMonth.setDate(1);
-                        return new Date(client.created_at) >= thisMonth;
-                      }).length}
+                      change={calculatedClientGrowthRate}
                       icon={Users}
                       trend="up"
                       color="emerald"
