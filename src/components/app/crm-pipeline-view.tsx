@@ -981,6 +981,7 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             sponsorshipCampaign: opportunity.customFields?.sponsorshipCampaign,
             scheduledDate: scheduledDate,
             sponsorshipValue: opportunity.customFields?.sponsorshipValue,
+            dealValue: opportunity.customFields?.dealValue || opportunity.dealValue,
             type: opportunity.customFields?.type || 'Guest',
             confirmed: opportunity.customFields?.confirmed || false,
             paid: opportunity.customFields?.paid || false,
