@@ -2494,6 +2494,187 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
             </motion.div>
           )}
 
+          {/* Freelancer-Specific Sections */}
+          {activeNiche === 'freelancer' && activeSection === 'brands' && (
+            <motion.div
+              key="freelancer-clients"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your {activeNiche} contacts and clients
+                  </p>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{contacts.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium">Clients</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{contacts.filter(c => c.status === 'client').length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium">Leads</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{contacts.filter(c => c.status === 'lead').length}</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Search, Filter, and View Controls */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search contacts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                    <SelectTrigger className="w-40">
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Contacts</SelectItem>
+                      <SelectItem value="lead">Leads</SelectItem>
+                      <SelectItem value="client">Clients</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex border rounded-md">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                      className="rounded-r-none"
+                    >
+                      <Grid3X3 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="rounded-l-none"
+                    >
+                      <List className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contacts Display */}
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading contacts...</p>
+                  </div>
+                </div>
+              ) : filteredContacts.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No contacts found</h3>
+                  <p className="text-gray-600 mb-4">
+                    {searchQuery || statusFilter !== 'all' 
+                      ? 'Try adjusting your search or filter criteria.'
+                      : 'Get started by adding your first contact.'}
+                  </p>
+                </div>
+              ) : viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredContacts.map((contact, index) => (
+                    <motion.div
+                      key={contact.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      className="relative group"
+                    >
+                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div className="text-center">
+                          <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center text-white font-bold text-lg ${getStatusColor(contact.status)}`}>
+                            {contact.name.charAt(0).toUpperCase()}
+                          </div>
+                          <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                            {contact.name}
+                          </h4>
+                          <Badge className={`text-xs ${getStatusColor(contact.status)}`}>
+                            {getStatusLabel(contact.status)}
+                          </Badge>
+                          {contact.company && (
+                            <p className="text-xs text-gray-500 mt-1">{contact.company}</p>
+                          )}
+                          {contact.email && (
+                            <p className="text-xs text-gray-500 truncate">{contact.email}</p>
+                          )}
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredContacts.map((contact, index) => (
+                    <motion.div
+                      key={contact.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="relative group"
+                    >
+                      <Card className="p-4 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${getStatusColor(contact.status)}`}>
+                              {contact.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{contact.name}</h4>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <Badge className={`text-xs ${getStatusColor(contact.status)}`}>
+                                  {getStatusLabel(contact.status)}
+                                </Badge>
+                                {contact.company && <span>• {contact.company}</span>}
+                                {contact.email && <span>• {contact.email}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {activeNiche === 'coach' && activeSection === 'opportunities' && (
             <motion.div
               key="coach-opportunities"
