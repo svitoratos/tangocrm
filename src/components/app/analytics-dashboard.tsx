@@ -1880,7 +1880,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               {/* Charts Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <RevenueChart data={revenueByMonth} />
-                <GrowthRateChart data={data?.opportunities || []} activeNiche={activeNiche} />
+                <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
               </div>
               
               {/* Brands/Clients Grid */}
@@ -2455,7 +2455,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={data?.opportunities || []} activeNiche={activeNiche} />
+              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Opportunities"
@@ -2487,7 +2487,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={data?.opportunities || []} activeNiche={activeNiche} />
+              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Follower Growth"
@@ -2519,7 +2519,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={data?.opportunities || []} activeNiche={activeNiche} />
+              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Follower Growth"
@@ -3027,7 +3027,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={data?.opportunities || {}} activeNiche={activeNiche} />
+              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MetricCard
                   title="Follower Growth"
@@ -3427,7 +3427,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
-              <GrowthRateChart data={data?.opportunities || {}} activeNiche={activeNiche} />
+              <GrowthRateChart data={oppsByStage} activeNiche={activeNiche} />
             </motion.div>
           )}
 
