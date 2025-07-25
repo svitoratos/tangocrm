@@ -98,6 +98,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { useNiche } from '@/contexts/NicheContext';
 import { createClient, updateClient, deleteClient, Client } from '@/lib/client-service';
 
@@ -221,6 +224,9 @@ const MetricCard: React.FC<{
 // Revenue Growth Chart
 const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
   const [timeframe, setTimeframe] = useState<'monthly' | 'quarterly' | 'ytd' | 'custom'>('monthly');
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+  const [showCustomCalendar, setShowCustomCalendar] = useState(false);
   
   // Create complete year data with all months
   const allMonths = [
@@ -245,8 +251,24 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
     const currentMonth = new Date().getMonth();
     filteredData = completeData.slice(0, currentMonth + 1);
   } else if (timeframe === 'custom') {
-    // For custom, show all data (same as monthly for now)
-    filteredData = completeData;
+    // For custom, filter based on selected date range
+    if (customStartDate && customEndDate) {
+      const startMonth = customStartDate.getMonth();
+      const endMonth = customEndDate.getMonth();
+      const startYear = customStartDate.getFullYear();
+      const endYear = customEndDate.getFullYear();
+      
+      // Filter data based on date range
+      filteredData = completeData.filter((_, index) => {
+        const currentYear = new Date().getFullYear();
+        const monthInRange = index >= startMonth && index <= endMonth;
+        const yearInRange = startYear === endYear || (currentYear >= startYear && currentYear <= endYear);
+        return monthInRange && yearInRange;
+      });
+    } else {
+      // If no custom dates selected, show all data
+      filteredData = completeData;
+    }
   } else {
     filteredData = completeData;
   }
@@ -294,14 +316,84 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
           >
             YTD
           </Button>
-          <Button
-            variant={timeframe === 'custom' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeframe('custom')}
-            className={timeframe === 'custom' ? 'bg-emerald-600 text-white' : ''}
-          >
-            Custom
-          </Button>
+          <div className="relative">
+            <Button
+              variant={timeframe === 'custom' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setTimeframe('custom');
+                setShowCustomCalendar(!showCustomCalendar);
+              }}
+              className={timeframe === 'custom' ? 'bg-emerald-600 text-white' : ''}
+            >
+              Custom
+            </Button>
+            {showCustomCalendar && (
+              <div className="absolute top-full right-0 mt-2 z-50 bg-white rounded-lg shadow-lg border p-4">
+                <div className="flex gap-4">
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-2 block">Start Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="w-32 text-xs">
+                          <CalendarIcon className="w-3 h-3 mr-1" />
+                          {customStartDate ? format(customStartDate, "MMM dd") : "Select"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={customStartDate}
+                          onSelect={(date) => setCustomStartDate(date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-600 mb-2 block">End Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="w-32 text-xs">
+                          <CalendarIcon className="w-3 h-3 mr-1" />
+                          {customEndDate ? format(customEndDate, "MMM dd") : "Select"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={customEndDate}
+                          onSelect={(date) => setCustomEndDate(date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setCustomStartDate(undefined);
+                      setCustomEndDate(undefined);
+                      setShowCustomCalendar(false);
+                    }}
+                    variant="outline"
+                    className="text-xs"
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowCustomCalendar(false)}
+                    className="text-xs bg-emerald-600"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
