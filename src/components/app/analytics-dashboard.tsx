@@ -9,7 +9,7 @@ import {
   Users, 
   DollarSign, 
   Target,
-  Calendar as CalendarIcon,
+  Calendar,
   Clock,
   Activity,
   ArrowUpRight,
@@ -49,6 +49,7 @@ import {
   TrendingUp as TrendingUpIcon,
   DollarSign as DollarSignIcon,
   Users as UsersIcon,
+  Calendar as CalendarIcon,
   Clock as ClockIcon,
   Activity as ActivityIcon,
   ArrowUpRight as ArrowUpRightIcon,
@@ -97,9 +98,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
 import { useNiche } from '@/contexts/NicheContext';
 import { createClient, updateClient, deleteClient, Client } from '@/lib/client-service';
 
@@ -222,10 +220,7 @@ const MetricCard: React.FC<{
 
 // Revenue Growth Chart
 const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
-  const [timeframe, setTimeframe] = useState<'monthly' | 'quarterly' | 'ytd' | 'custom'>('monthly');
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
-  const [showCustomCalendar, setShowCustomCalendar] = useState(false);
+  const [timeframe, setTimeframe] = useState<'monthly' | 'quarterly'>('monthly');
   
   // Create complete year data with all months
   const allMonths = [
@@ -240,37 +235,7 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
   });
   
   // Filter data based on timeframe
-  let filteredData;
-  if (timeframe === 'monthly') {
-    filteredData = completeData;
-  } else if (timeframe === 'quarterly') {
-    filteredData = completeData.filter((_, index) => index % 3 === 0);
-  } else if (timeframe === 'ytd') {
-    // Show year-to-date data (all months up to current month)
-    const currentMonth = new Date().getMonth();
-    filteredData = completeData.slice(0, currentMonth + 1);
-  } else if (timeframe === 'custom') {
-    // For custom, filter based on selected date range
-    if (customStartDate && customEndDate) {
-      const startMonth = customStartDate.getMonth();
-      const endMonth = customEndDate.getMonth();
-      const startYear = customStartDate.getFullYear();
-      const endYear = customEndDate.getFullYear();
-      
-      // Filter data based on date range
-      filteredData = completeData.filter((_, index) => {
-        const currentYear = new Date().getFullYear();
-        const monthInRange = index >= startMonth && index <= endMonth;
-        const yearInRange = startYear === endYear || (currentYear >= startYear && currentYear <= endYear);
-        return monthInRange && yearInRange;
-      });
-    } else {
-      // If no custom dates selected, show all data
-      filteredData = completeData;
-    }
-  } else {
-    filteredData = completeData;
-  }
+  const filteredData = timeframe === 'monthly' ? completeData : completeData.filter((_, index) => index % 3 === 0);
   
   const maxValue = Math.max(...filteredData.map(d => d.value), 1); // Ensure maxValue is at least 1
   const minValue = 0; // Always start from 0 for bar charts
@@ -307,92 +272,6 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
           >
             Quarterly
           </Button>
-          <Button
-            variant={timeframe === 'ytd' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setTimeframe('ytd')}
-            className={timeframe === 'ytd' ? 'bg-emerald-600 text-white' : ''}
-          >
-            YTD
-          </Button>
-          <div className="relative">
-            <Button
-              variant={timeframe === 'custom' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setTimeframe('custom');
-                setShowCustomCalendar(!showCustomCalendar);
-              }}
-              className={timeframe === 'custom' ? 'bg-emerald-600 text-white' : ''}
-            >
-              Custom
-            </Button>
-            {showCustomCalendar && (
-              <div className="absolute top-full right-0 mt-2 z-50 bg-white rounded-lg shadow-lg border p-4">
-                <div className="flex gap-4">
-                  <div>
-                    <Label className="text-xs text-gray-600 mb-2 block">Start Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-32 text-xs">
-                          <CalendarIcon className="w-3 h-3 mr-1" />
-                          {customStartDate ? format(customStartDate, "MMM dd") : "Select"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={customStartDate}
-                          onSelect={(date) => setCustomStartDate(date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-600 mb-2 block">End Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-32 text-xs">
-                          <CalendarIcon className="w-3 h-3 mr-1" />
-                          {customEndDate ? format(customEndDate, "MMM dd") : "Select"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={customEndDate}
-                          onSelect={(date) => setCustomEndDate(date)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setCustomStartDate(undefined);
-                      setCustomEndDate(undefined);
-                      setShowCustomCalendar(false);
-                    }}
-                    variant="outline"
-                    className="text-xs"
-                  >
-                    Clear
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => setShowCustomCalendar(false)}
-                    className="text-xs bg-emerald-600"
-                  >
-                    Apply
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </div>
       
@@ -2883,26 +2762,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MetricCard
-                  title="Opportunities"
-                  value={analyticsData?.opportunities?.total?.toString() || "0"}
-                  change={analyticsData?.opportunities?.conversionRate || 0}
-                  icon={Target}
-                  trend="up"
-                  color="blue"
-                  subtitle="Total opportunities"
-                />
-                <MetricCard
-                  title="Conversion Rate"
-                  value={`${analyticsData?.opportunities?.conversionRate || 0}%`}
-                  change={analyticsData?.opportunities?.conversionRate || 0}
-                  icon={Activity}
-                  trend="up"
-                  color="purple"
-                  subtitle="Won opportunities"
-                />
-              </div>
             </motion.div>
           )}
 
