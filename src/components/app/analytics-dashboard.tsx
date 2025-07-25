@@ -1274,11 +1274,16 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           throw new Error('Failed to fetch opportunities for charts');
         }
         const opportunities = await response.json();
-        // Revenue by month: only won or paid
-        const wonPaidOpps = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid');
+        // Revenue by month: match dashboard logic for won opportunities
+        let wonOpportunities;
+        if ((activeNiche || 'creator') === 'coach') {
+          wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won' || opp.status === 'paid');
+        } else {
+          wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won');
+        }
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyData = new Array(12).fill(0);
-        wonPaidOpps.forEach((opp: any) => {
+        wonOpportunities.forEach((opp: any) => {
           // Use actual_close_date if available, otherwise use updated_at, fallback to created_at
           const date = opp.actual_close_date ? new Date(opp.actual_close_date) : 
                       opp.updated_at ? new Date(opp.updated_at) : 
