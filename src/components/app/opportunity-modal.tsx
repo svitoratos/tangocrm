@@ -2139,7 +2139,8 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                   <SelectItem value="dm-sent">DM Sent</SelectItem>
                   <SelectItem value="brand-emailed">Brand Emailed</SelectItem>
                   <SelectItem value="spoke-with-rep">Spoke with Rep</SelectItem>
-                  <SelectItem value="contacted-no-response">Contacted No Response</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="no-response">No Response</SelectItem>
                   <SelectItem value="interested">Interested</SelectItem>
                   <SelectItem value="not-interested">Not Interested</SelectItem>
                   <SelectItem value="do-not-contact">Do Not Contact</SelectItem>
