@@ -481,21 +481,59 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
 
   const stages = getNicheStages(activeNiche);
   
+  // Map database status to stage ID (same logic as CRM pipeline)
+  const mapDatabaseStatusToStageId = (dbStatus: string, niche: string): string => {
+    const statusMap: Record<string, Record<string, string>> = {
+      creator: {
+        'prospecting': 'outreach',
+        'qualification': 'awaiting',
+        'proposal': 'contract',
+        'negotiation': 'negotiation',
+        'won': 'paid',
+        'lost': 'archived'
+      },
+      coach: {
+        'prospecting': 'new-lead',
+        'qualification': 'discovery-scheduled',
+        'proposal': 'proposal',
+        'negotiation': 'negotiation',
+        'won': 'paid',
+        'lost': 'archived'
+      },
+      podcaster: {
+        'prospecting': 'outreach',
+        'qualification': 'conversation',
+        'proposal': 'agreement',
+        'negotiation': 'negotiation',
+        'won': 'published',
+        'lost': 'archived'
+      },
+      freelancer: {
+        'prospecting': 'new-inquiry',
+        'qualification': 'discovery',
+        'proposal': 'proposal',
+        'negotiation': 'contract',
+        'won': 'delivered',
+        'lost': 'archived'
+      }
+    };
+
+    return statusMap[niche]?.[dbStatus] || 'outreach';
+  };
+
   // Map stage IDs to stage names
   const mapStageIdToStageName = (stageId: string, niche: string) => {
     const stages = getNicheStages(niche);
-    console.log('Available stages for', niche, ':', stages.map(s => ({ id: s.id, name: s.name })));
-    console.log('Looking for stageId:', stageId);
     const stage = stages.find(s => s.id === stageId);
-    console.log('Found stage:', stage);
     return stage ? stage.name : 'Outreach / Pitched';
   };
 
-  // Group opportunities by stage
+  // Group opportunities by stage (using same logic as CRM pipeline)
   const stageData = (Array.isArray(data) ? data : []).reduce((acc: any, opportunity: any) => {
-    console.log('Processing opportunity:', opportunity.title, 'stage:', opportunity.stage, 'niche:', activeNiche);
-    const stageName = mapStageIdToStageName(opportunity.stage, activeNiche);
-    console.log('Mapped to stage name:', stageName);
+    // Use database status to map to stage ID (same as CRM pipeline)
+    const stageId = mapDatabaseStatusToStageId(opportunity.status, activeNiche);
+    const stageName = mapStageIdToStageName(stageId, activeNiche);
+    
     if (!acc[stageName]) {
       acc[stageName] = { count: 0, totalValue: 0, opportunities: [] };
     }
