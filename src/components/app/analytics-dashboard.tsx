@@ -2999,24 +2999,29 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Revenue Growth</h3>
                     <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                      +{analyticsData?.revenue?.growthRate || 0}%
+                      +{calculatedGrowthRate.toFixed(1)}%
                     </Badge>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Monthly Revenue</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.revenue?.monthly ? (analyticsData.revenue.monthly / 1000).toFixed(0) + 'K' : '0'}</span>
+                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / 12 / 1000).toFixed(0) + 'K' : '0'}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Total Revenue</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.revenue?.total ? (analyticsData.revenue.total / 1000).toFixed(0) + 'K' : '0'}</span>
+                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / 1000).toFixed(0) + 'K' : '0'}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Avg Deal Size</span>
-                      <span className="font-bold text-gray-900">${analyticsData?.revenue?.averageDealSize ? (analyticsData.revenue.averageDealSize / 1000).toFixed(0) + 'K' : '0'}</span>
+                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / (opportunitiesForCharts.filter((opp: any) => {
+                        if ((activeNiche || 'creator') === 'coach') {
+                          return opp.status === 'won' || opp.status === 'paid';
+                        }
+                        return opp.status === 'won';
+                      }).length || 1) / 1000).toFixed(0) + 'K' : '0'}</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${analyticsData?.revenue?.growthRate || 0}%` }}></div>
+                      <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${Math.min(calculatedGrowthRate, 100)}%` }}></div>
                     </div>
                   </div>
                 </Card>
