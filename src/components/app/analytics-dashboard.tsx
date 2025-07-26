@@ -2121,7 +2121,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     { id: 'opportunities', label: 'Opportunities', icon: Target },
     { id: 'brands', label: 'Brands/Clients', icon: Users },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
-    { id: 'growth', label: 'Growth Rate', icon: TrendingUp },
   ] : activeNiche === 'coach' ? [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'opportunities', label: 'Opportunities', icon: Target },
@@ -2139,7 +2138,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     { id: 'opportunities', label: 'Opportunities', icon: Target },
     { id: 'brands', label: 'Clients', icon: Users },
     { id: 'revenue', label: 'Revenue', icon: DollarSign },
-    { id: 'growth', label: 'Growth Rate', icon: TrendingUp },
   ] : [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'opportunities', label: 'Opportunities', icon: Rocket },
@@ -3477,120 +3475,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
 
 
-          {/* Growth Section - Creator */}
-          {activeSection === 'growth' && activeNiche === 'creator' && (
-            <motion.div
-              key="creator-growth"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              {/* Header */}
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Growth Analytics</h1>
-                <p className="text-sm text-muted-foreground">
-                  Track your brand deals, client growth, and revenue performance
-                </p>
-              </div>
-
-              {/* Growth Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Client Growth</h3>
-                    <div className="flex items-center gap-2">
-                      <Select value={clientGrowthPeriod} onValueChange={setClientGrowthPeriod}>
-                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[120px]">
-                          <SelectItem value="this-month">Month</SelectItem>
-                          <SelectItem value="this-quarter">Quarter</SelectItem>
-                          <SelectItem value="ytd">YTD</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                        +{analyticsData?.clients?.newThisMonth || 0}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Clients</span>
-                      <span className="font-bold text-gray-900">{analyticsData?.clients?.active || 0}</span>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Revenue Growth</h3>
-                    <div className="flex items-center gap-2">
-                      <Select value={revenueGrowthPeriod} onValueChange={setRevenueGrowthPeriod}>
-                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[120px]">
-                          <SelectItem value="this-month">Month</SelectItem>
-                          <SelectItem value="this-quarter">Quarter</SelectItem>
-                          <SelectItem value="ytd">YTD</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                        +{calculatedGrowthRate.toFixed(1)}%
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Revenue</span>
-                      <span className="font-bold text-gray-900">${calculatedRevenue > 0 ? (calculatedRevenue / 1000).toFixed(0) + 'K' : '0'}</span>
-                    </div>
-                  </div>
-                </Card>
-              </div>
 
 
 
-
-            </motion.div>
-          )}
-
-          {/* Growth Section - Other Niches */}
-          {activeSection === 'growth' && activeNiche !== 'creator' && activeNiche !== 'freelancer' && activeNiche !== 'podcaster' && (
-            <motion.div
-              key="growth"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MetricCard
-                  title="Follower Growth"
-                  value={analyticsData?.growth?.followers ? `+${analyticsData.growth.followers.toLocaleString()}` : "+0"}
-                  change={analyticsData?.growth?.followerGrowth || 0}
-                  icon={Users}
-                  trend="up"
-                  color="blue"
-                  subtitle="This month"
-                />
-                <MetricCard
-                  title="Engagement Rate"
-                  value={`${analyticsData?.growth?.engagementRate || 0}%`}
-                  change={analyticsData?.growth?.engagementGrowth || 0}
-                  icon={Activity}
-                  trend="up"
-                  color="purple"
-                  subtitle="Above average"
-                />
-              </div>
-            </motion.div>
-          )}
 
           {/* Podcaster Guests Section (Contacts) */}
           {activeNiche === 'podcaster' && activeSection === 'growth' && (
@@ -3972,83 +3859,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
             </motion.div>
           )}
 
-          {/* Growth Section - Freelancer/Consultant */}
-          {activeSection === 'growth' && activeNiche === 'freelancer' && (
-            <motion.div
-              key="freelancer-growth"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
-            >
-              {/* Header */}
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Growth Analytics</h1>
-                <p className="text-sm text-muted-foreground">
-                  Track your client acquisition and revenue performance
-                </p>
-              </div>
 
-              {/* Growth Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Clients</h3>
-                    <div className="flex items-center gap-2">
-                      <Select value={freelancerClientsPeriod} onValueChange={setFreelancerClientsPeriod}>
-                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[120px]">
-                          <SelectItem value="this-month">Month</SelectItem>
-                          <SelectItem value="this-quarter">Quarter</SelectItem>
-                          <SelectItem value="ytd">YTD</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
-                        +{calculatedClientGrowthRate.toFixed(1)}%
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Clients</span>
-                      <span className="font-bold text-gray-900">{analyticsData?.clients?.total || 0}</span>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-gradient-to-br from-orange-50 to-orange-100 border-0 shadow-xl">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Revenue</h3>
-                    <div className="flex items-center gap-2">
-                      <Select value={freelancerRevenuePeriod} onValueChange={setFreelancerRevenuePeriod}>
-                        <SelectTrigger className="h-7 w-24 text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm rounded-md px-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[120px]">
-                          <SelectItem value="this-month">Month</SelectItem>
-                          <SelectItem value="this-quarter">Quarter</SelectItem>
-                          <SelectItem value="ytd">YTD</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                        +{calculatedGrowthRate.toFixed(1)}%
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Revenue</span>
-                      <span className="font-bold text-gray-900">${calculatedRevenue.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </motion.div>
-          )}
 
       </AnimatePresence>
 
