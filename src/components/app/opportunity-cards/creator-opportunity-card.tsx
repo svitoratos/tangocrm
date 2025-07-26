@@ -70,14 +70,7 @@ export const CreatorOpportunityCard = ({
 }: CreatorOpportunityCardProps) => {
   const { lastActivity, loading: activityLoading } = useLastActivity(opportunity.id);
   
-  // Debug logging for revenue fields
-  console.log('Creator Opportunity Card - Revenue fields:', {
-    id: opportunity.id,
-    calculatedGrossRevenue: opportunity.calculatedGrossRevenue,
-    calculatedNetRevenue: opportunity.calculatedNetRevenue,
-    calculatedSplitAmount: opportunity.calculatedSplitAmount,
-    type: typeof opportunity.calculatedGrossRevenue
-  });
+
   
   const handleClick = () => {
     if (!disableClick) {

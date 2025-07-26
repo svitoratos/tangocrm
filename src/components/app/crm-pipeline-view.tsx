@@ -917,7 +917,11 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             priority: opportunity.priority || 'medium',
             lastContact: opportunity.customFields?.lastContact || opportunity.createdDate,
             sessionCount: opportunity.customFields?.sessionCount,
-            duration: opportunity.customFields?.duration
+            duration: opportunity.customFields?.duration,
+            revenueSplits: opportunity.customFields?.revenueSplits,
+            calculatedGrossRevenue: opportunity.customFields?.calculatedGrossRevenue,
+            calculatedNetRevenue: opportunity.customFields?.calculatedNetRevenue,
+            calculatedSplitAmount: opportunity.customFields?.calculatedSplitAmount
           };
           const coachStage = {
             name: stage.name,
