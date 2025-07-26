@@ -10,7 +10,6 @@ import {
   Users, 
   DollarSign, 
   Target,
-  Calendar,
   Clock,
   Activity,
   ArrowUpRight,
@@ -98,6 +97,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -250,6 +252,8 @@ const MetricCard: React.FC<{
 // Revenue Growth Chart
 const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
   const [timeframe, setTimeframe] = useState<'monthly' | 'quarterly' | 'ytd' | 'custom'>('monthly');
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
   
   // Create complete year data with all months
   const allMonths = [
@@ -274,8 +278,17 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
     const currentMonth = new Date().getMonth();
     filteredData = completeData.slice(0, currentMonth + 1);
   } else if (timeframe === 'custom') {
-    // For custom, show all data (same as monthly for now)
-    filteredData = completeData;
+    // For custom, filter data based on selected date range
+    if (fromDate && toDate) {
+      const fromMonth = fromDate.getMonth();
+      const toMonth = toDate.getMonth();
+      const startMonth = Math.min(fromMonth, toMonth);
+      const endMonth = Math.max(fromMonth, toMonth);
+      filteredData = completeData.slice(startMonth, endMonth + 1);
+    } else {
+      // If no dates selected, show all data
+      filteredData = completeData;
+    }
   } else {
     filteredData = completeData;
   }
@@ -333,6 +346,61 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
           </Button>
         </div>
       </div>
+      
+      {/* Custom Date Range Selector */}
+      {timeframe === 'custom' && (
+        <div className="mb-4 p-4 bg-white rounded-lg border border-gray-200">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="from-date" className="text-sm font-medium text-gray-700">
+                From:
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[140px] justify-start text-left font-normal"
+                  >
+                    {fromDate ? format(fromDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fromDate}
+                    onSelect={setFromDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Label htmlFor="to-date" className="text-sm font-medium text-gray-700">
+                To:
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[140px] justify-start text-left font-normal"
+                  >
+                    {toDate ? format(toDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={toDate}
+                    onSelect={setToDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="h-72 relative">
         <svg className="w-full h-full" viewBox="0 0 450 240" preserveAspectRatio="xMidYMid meet">
