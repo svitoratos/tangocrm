@@ -1666,7 +1666,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="proposedValue">Proposed Value</Label>
+                <Label htmlFor="proposedValue">Deal Value</Label>
                 <Input
                   id="proposedValue"
                   type="number"
