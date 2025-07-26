@@ -113,7 +113,7 @@ const getPlatformPlaceholder = (platform: string): string => {
 };
 
 // Revenue calculation engine
-const calculateRevenueSplit = (dealValue: number, revenueSplits: Array<{ amount: number; type: '%' | '$'; with: string }> = []) => {
+const calculateRevenueSplit = (dealValue: number, revenueSplits: Array<{ amount: number | undefined; type: '%' | '$'; with: string }> = []) => {
   const grossRevenue = dealValue || 0;
   let totalDeductions = 0;
   const splitBreakdown: Array<{ with: string; amount: number; type: '%' | '$'; deduction: number }> = [];
@@ -122,18 +122,20 @@ const calculateRevenueSplit = (dealValue: number, revenueSplits: Array<{ amount:
   revenueSplits.forEach(split => {
     let deduction = 0;
     
-    if (split.type === '%') {
-      // Percentage-based split
-      deduction = (grossRevenue * split.amount / 100);
-    } else if (split.type === '$') {
-      // Dollar amount split
-      deduction = split.amount;
+    if (split.amount !== undefined) {
+      if (split.type === '%') {
+        // Percentage-based split
+        deduction = (grossRevenue * split.amount / 100);
+      } else if (split.type === '$') {
+        // Dollar amount split
+        deduction = split.amount;
+      }
     }
     
     totalDeductions += deduction;
     splitBreakdown.push({
       with: split.with,
-      amount: split.amount,
+      amount: split.amount || 0,
       type: split.type,
       deduction: deduction
     });
@@ -151,7 +153,7 @@ const calculateRevenueSplit = (dealValue: number, revenueSplits: Array<{ amount:
 };
 
 // Validation functions for revenue splits
-const validateRevenueSplits = (revenueSplits: Array<{ amount: number; type: '%' | '$'; with: string }> = [], dealValue: number = 0) => {
+const validateRevenueSplits = (revenueSplits: Array<{ amount: number | undefined; type: '%' | '$'; with: string }> = [], dealValue: number = 0) => {
   const errors: string[] = [];
   
   if (!revenueSplits || revenueSplits.length === 0) {
@@ -167,15 +169,17 @@ const validateRevenueSplits = (revenueSplits: Array<{ amount: number; type: '%' 
       errors.push(`Split ${index + 1}: "Split with" is required`);
     }
     
-    if (split.amount <= 0) {
+    if (split.amount === undefined || split.amount <= 0) {
       errors.push(`Split ${index + 1}: Amount must be greater than 0`);
     }
     
     // Track totals for validation
-    if (split.type === '%') {
-      totalPercentage += split.amount;
-    } else if (split.type === '$') {
-      totalDollarAmount += split.amount;
+    if (split.amount !== undefined) {
+      if (split.type === '%') {
+        totalPercentage += split.amount;
+      } else if (split.type === '$') {
+        totalDollarAmount += split.amount;
+      }
     }
   });
 
@@ -227,7 +231,7 @@ interface FormData {
   customPlatformCreator?: string;
   postType?: string;
   customPostType?: string;
-  revenueSplits?: Array<{ amount: number; type: '%' | '$'; with: string }>;
+  revenueSplits?: Array<{ amount: number | undefined; type: '%' | '$'; with: string }>;
   script?: string;
   
   // Calculated revenue fields (auto-generated)
@@ -1453,11 +1457,12 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                     <Input
                       type="number"
                       className="w-24"
-                      value={split.amount}
+                      value={split.amount || ""}
                       min={0}
                       onChange={e => {
                         const updated = [...formData.revenueSplits!];
-                        updated[idx] = { ...updated[idx], amount: Number(e.target.value) };
+                        const value = e.target.value === "" ? undefined : Number(e.target.value);
+                        updated[idx] = { ...updated[idx], amount: value };
                         handleInputChange("revenueSplits", updated);
                       }}
                       placeholder="Amount"
@@ -1510,7 +1515,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                   onClick={() => {
                     handleInputChange("revenueSplits", [
                       ...formData.revenueSplits!,
-                      { amount: 0, type: "%", with: "" }
+                      { amount: undefined, type: "%", with: "" }
                     ]);
                   }}
                 >
