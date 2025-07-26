@@ -2260,7 +2260,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       onRevenueTypeChange={setRevenueDisplayType}
                     />
                     <MetricCard
-                      title="Growth Rate"
+                      title="Rev Growth Rate"
                       value={`${calculatedGrowthRate.toFixed(1)}%`}
                       change={calculatedGrowthRate}
                       icon={Target}
@@ -2435,7 +2435,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       gradient="bg-gradient-to-br from-purple-50 to-purple-100"
                     />
                     <MetricCard
-                      title="Growth Rate"
+                      title="Rev Growth Rate"
                       value={`${calculatedGrowthRate.toFixed(1)}%`}
                       change={calculatedGrowthRate}
                       icon={Target}
