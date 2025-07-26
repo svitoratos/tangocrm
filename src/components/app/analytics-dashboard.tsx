@@ -117,6 +117,9 @@ const MetricCard: React.FC<{
   showPeriodFilter?: boolean;
   period?: string;
   onPeriodChange?: (period: string) => void;
+  showRevenueTypeFilter?: boolean;
+  revenueType?: 'gross' | 'net';
+  onRevenueTypeChange?: (type: 'gross' | 'net') => void;
 }> = ({ 
   title, 
   value, 
@@ -129,7 +132,10 @@ const MetricCard: React.FC<{
   gradient,
   showPeriodFilter = false,
   period = 'this-quarter',
-  onPeriodChange
+  onPeriodChange,
+  showRevenueTypeFilter = false,
+  revenueType = 'net',
+  onRevenueTypeChange
 }) => {
   const colorClasses = {
     emerald: 'from-emerald-500 to-emerald-600',
@@ -208,6 +214,21 @@ const MetricCard: React.FC<{
                   <SelectItem value="this-quarter">This Quarter</SelectItem>
                   <SelectItem value="ytd">YTD</SelectItem>
                   <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Revenue Type Filter Dropdown */}
+          {showRevenueTypeFilter && onRevenueTypeChange && (
+            <div className="mt-auto pt-2">
+              <Select value={revenueType} onValueChange={onRevenueTypeChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gross">Gross Revenue</SelectItem>
+                  <SelectItem value="net">Net Revenue</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1427,6 +1448,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
   // Add state for calculated revenue and growth rate
   const [calculatedRevenue, setCalculatedRevenue] = useState<number>(0);
+  const [calculatedGrossRevenue, setCalculatedGrossRevenue] = useState<number>(0);
+  const [calculatedNetRevenue, setCalculatedNetRevenue] = useState<number>(0);
+  const [revenueDisplayType, setRevenueDisplayType] = useState<'gross' | 'net'>('net');
   const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
   const [calculatedClientGrowthRate, setCalculatedClientGrowthRate] = useState<number>(0);
 
@@ -1481,8 +1505,37 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         } else {
           wonOpportunities = opportunities.filter((opp: any) => opp.status === 'won');
         }
-        const totalRevenue = wonOpportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
-        setCalculatedRevenue(totalRevenue);
+        
+        // Calculate gross and net revenue
+        let grossRevenue = 0;
+        let netRevenue = 0;
+        
+        wonOpportunities.forEach((opp: any) => {
+          const dealValue = opp.value || 0;
+          const customFields = opp.customFields || {};
+          const revenueSplits = customFields.revenueSplits || [];
+          
+          // Calculate gross revenue (total deal value)
+          grossRevenue += dealValue;
+          
+          // Calculate net revenue (after revenue splits)
+          let totalDeductions = 0;
+          revenueSplits.forEach((split: any) => {
+            if (split.amount && split.amount > 0) {
+              if (split.type === '%') {
+                totalDeductions += (dealValue * split.amount / 100);
+              } else if (split.type === '$') {
+                totalDeductions += split.amount;
+              }
+            }
+          });
+          
+          netRevenue += Math.max(0, dealValue - totalDeductions);
+        });
+        
+        setCalculatedGrossRevenue(grossRevenue);
+        setCalculatedNetRevenue(netRevenue);
+        setCalculatedRevenue(revenueDisplayType === 'gross' ? grossRevenue : netRevenue);
         // Growth Rate: percent of won (and paid for coach) out of all
         const totalOpportunities = opportunities.length;
         const growthRate = totalOpportunities > 0 ? (wonOpportunities.length / totalOpportunities) * 100 : 0;
@@ -1494,6 +1547,11 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     };
     fetchAndCalculateMetrics();
   }, [activeNiche, lastRefreshTime]);
+
+  // Update displayed revenue when display type changes
+  useEffect(() => {
+    setCalculatedRevenue(revenueDisplayType === 'gross' ? calculatedGrossRevenue : calculatedNetRevenue);
+  }, [revenueDisplayType, calculatedGrossRevenue, calculatedNetRevenue]);
 
   // Calculate revenue by month and opportunities by stage from opportunities (dashboard logic)
   useEffect(() => {
@@ -2167,6 +2225,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="emerald"
                       gradient="bg-gradient-to-br from-emerald-50 to-emerald-100"
+                      showRevenueTypeFilter={true}
+                      revenueType={revenueDisplayType}
+                      onRevenueTypeChange={setRevenueDisplayType}
                     />
                     <MetricCard
                       title="Growth Rate"
@@ -2208,13 +2269,16 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
                     />
                     <MetricCard
-                      title="Total Revenue"
-                      value={analyticsData?.revenue?.total ? `$${analyticsData.revenue.total.toLocaleString()}` : "$0"}
+                      title="Revenue"
+                      value={`$${calculatedRevenue.toLocaleString()}`}
                       change={analyticsData?.revenue?.growthRate || 0}
                       icon={DollarSign}
                       trend="up"
                       color="blue"
                       gradient="bg-gradient-to-br from-blue-50 to-blue-100"
+                      showRevenueTypeFilter={true}
+                      revenueType={revenueDisplayType}
+                      onRevenueTypeChange={setRevenueDisplayType}
                     />
                   </>
                 ) : activeNiche === 'podcaster' ? (
@@ -2248,7 +2312,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Revenue"
-                      value={analyticsData?.revenue?.total ? `$${analyticsData.revenue.total.toLocaleString()}` : "$0"}
+                      value={`$${calculatedRevenue.toLocaleString()}`}
                       change={analyticsData?.revenue?.growthRate || 0}
                       icon={DollarSign}
                       trend="up"
@@ -2257,6 +2321,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       showPeriodFilter={true}
                       period={revenueGrowthPeriod}
                       onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
+                      showRevenueTypeFilter={true}
+                      revenueType={revenueDisplayType}
+                      onRevenueTypeChange={setRevenueDisplayType}
                     />
                   </>
                 ) : activeNiche === 'freelancer' ? (
@@ -2291,6 +2358,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       showPeriodFilter={true}
                       period={freelancerRevenuePeriod}
                       onPeriodChange={(period) => setFreelancerRevenuePeriod(period)}
+                      showRevenueTypeFilter={true}
+                      revenueType={revenueDisplayType}
+                      onRevenueTypeChange={setRevenueDisplayType}
                     />
                     <MetricCard
                       title="Growth Rate"
