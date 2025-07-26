@@ -2265,6 +2265,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showPeriodFilter={true}
+                      period={revenueGrowthPeriod}
+                      onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
                     />
                   </>
                 ) : activeNiche === 'coach' ? (
