@@ -121,6 +121,9 @@ const MetricCard: React.FC<{
   showRevenueTypeFilter?: boolean;
   revenueType?: 'gross' | 'net';
   onRevenueTypeChange?: (type: 'gross' | 'net') => void;
+  showGrowthTypeFilter?: boolean;
+  growthType?: 'revenue' | 'client';
+  onGrowthTypeChange?: (type: 'revenue' | 'client') => void;
 }> = ({ 
   title, 
   value, 
@@ -136,7 +139,10 @@ const MetricCard: React.FC<{
   onPeriodChange,
   showRevenueTypeFilter = false,
   revenueType = 'net',
-  onRevenueTypeChange
+  onRevenueTypeChange,
+  showGrowthTypeFilter = false,
+  growthType = 'revenue',
+  onGrowthTypeChange
 }) => {
   const colorClasses = {
     emerald: 'from-emerald-500 to-emerald-600',
@@ -230,6 +236,21 @@ const MetricCard: React.FC<{
                 <SelectContent>
                   <SelectItem value="gross">Gross Revenue</SelectItem>
                   <SelectItem value="net">Net Revenue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Growth Type Filter Dropdown */}
+          {showGrowthTypeFilter && onGrowthTypeChange && (
+            <div className="mt-auto pt-2">
+              <Select value={growthType} onValueChange={onGrowthTypeChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="revenue">Revenue Growth</SelectItem>
+                  <SelectItem value="client">Client Growth</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1454,6 +1475,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const { revenueType: revenueDisplayType, setRevenueType: setRevenueDisplayType } = useRevenueType();
   const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
   const [calculatedClientGrowthRate, setCalculatedClientGrowthRate] = useState<number>(0);
+  const [growthType, setGrowthType] = useState<'revenue' | 'client'>('revenue');
 
   // Add state for chart and stage breakdown
   const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; value: number }[]>([]);
@@ -1552,6 +1574,11 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const calculatedRevenue = useMemo(() => {
     return revenueDisplayType === 'gross' ? calculatedGrossRevenue : calculatedNetRevenue;
   }, [revenueDisplayType, calculatedGrossRevenue, calculatedNetRevenue]);
+
+  // Calculate displayed growth rate using useMemo for immediate updates
+  const displayedGrowthRate = useMemo(() => {
+    return growthType === 'revenue' ? calculatedGrowthRate : calculatedClientGrowthRate;
+  }, [growthType, calculatedGrowthRate, calculatedClientGrowthRate]);
 
   // Calculate revenue by month and opportunities by stage from opportunities (dashboard logic)
   useEffect(() => {
@@ -2231,12 +2258,15 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Growth Rate"
-                      value={`${calculatedGrowthRate.toFixed(1)}%`}
-                      change={calculatedGrowthRate}
+                      value={`${displayedGrowthRate.toFixed(1)}%`}
+                      change={displayedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showGrowthTypeFilter={true}
+                      growthType={growthType}
+                      onGrowthTypeChange={setGrowthType}
                     />
                   </>
                 ) : activeNiche === 'coach' ? (
@@ -2406,12 +2436,15 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Growth Rate"
-                      value={`${calculatedGrowthRate.toFixed(1)}%`}
-                      change={calculatedGrowthRate}
+                      value={`${displayedGrowthRate.toFixed(1)}%`}
+                      change={displayedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showGrowthTypeFilter={true}
+                      growthType={growthType}
+                      onGrowthTypeChange={setGrowthType}
                     />
                   </>
                 )}
