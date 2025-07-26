@@ -1448,7 +1448,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const data = analyticsData;
 
   // Add state for calculated revenue and growth rate
-  const [calculatedRevenue, setCalculatedRevenue] = useState<number>(0);
+
   const [calculatedGrossRevenue, setCalculatedGrossRevenue] = useState<number>(0);
   const [calculatedNetRevenue, setCalculatedNetRevenue] = useState<number>(0);
   const { revenueType: revenueDisplayType, setRevenueType: setRevenueDisplayType } = useRevenueType();
@@ -1536,22 +1536,21 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         
         setCalculatedGrossRevenue(grossRevenue);
         setCalculatedNetRevenue(netRevenue);
-        setCalculatedRevenue(revenueDisplayType === 'gross' ? grossRevenue : netRevenue);
+
         // Growth Rate: percent of won (and paid for coach) out of all
         const totalOpportunities = opportunities.length;
         const growthRate = totalOpportunities > 0 ? (wonOpportunities.length / totalOpportunities) * 100 : 0;
         setCalculatedGrowthRate(growthRate);
       } catch (error) {
-        setCalculatedRevenue(0);
         setCalculatedGrowthRate(0);
       }
     };
     fetchAndCalculateMetrics();
   }, [activeNiche, lastRefreshTime]);
 
-  // Update displayed revenue when display type changes
-  useEffect(() => {
-    setCalculatedRevenue(revenueDisplayType === 'gross' ? calculatedGrossRevenue : calculatedNetRevenue);
+  // Calculate displayed revenue using useMemo for immediate updates
+  const calculatedRevenue = useMemo(() => {
+    return revenueDisplayType === 'gross' ? calculatedGrossRevenue : calculatedNetRevenue;
   }, [revenueDisplayType, calculatedGrossRevenue, calculatedNetRevenue]);
 
   // Calculate revenue by month and opportunities by stage from opportunities (dashboard logic)

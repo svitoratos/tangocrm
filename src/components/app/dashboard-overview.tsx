@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   TrendingUp, 
@@ -392,7 +392,7 @@ export default function DashboardOverview({
   const [todaysMeetings, setTodaysMeetings] = useState<TaskItem[]>([]);
   const [opportunitiesCount, setOpportunitiesCount] = useState(0);
   const [clientsCount, setClientsCount] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+
   const [totalGrossRevenue, setTotalGrossRevenue] = useState(0);
   const [totalNetRevenue, setTotalNetRevenue] = useState(0);
   const { revenueType: revenueDisplayType, setRevenueType: setRevenueDisplayType } = useRevenueType();
@@ -433,7 +433,6 @@ export default function DashboardOverview({
           console.error('Opportunities fetch failed:', opportunitiesResponse.status, opportunitiesResponse.statusText);
           // Don't throw error, just set empty data
           setOpportunitiesCount(0);
-          setTotalRevenue(0);
           setGrowthRate(0);
           return;
         }
@@ -480,7 +479,7 @@ export default function DashboardOverview({
         
         setTotalGrossRevenue(grossRevenue);
         setTotalNetRevenue(netRevenue);
-        setTotalRevenue(revenueDisplayType === 'gross' ? grossRevenue : netRevenue);
+
 
         // Calculate growth rate (percentage of won opportunities)
         const totalOpportunities = opportunities.length;
@@ -678,9 +677,9 @@ export default function DashboardOverview({
     loadMetricsData();
   }, [activeNiche]);
 
-  // Update displayed revenue when display type changes
-  useEffect(() => {
-    setTotalRevenue(revenueDisplayType === 'gross' ? totalGrossRevenue : totalNetRevenue);
+  // Calculate displayed revenue using useMemo for immediate updates
+  const totalRevenue = useMemo(() => {
+    return revenueDisplayType === 'gross' ? totalGrossRevenue : totalNetRevenue;
   }, [revenueDisplayType, totalGrossRevenue, totalNetRevenue]);
 
   // Refresh data when component becomes visible (e.g., when navigating back to dashboard)
