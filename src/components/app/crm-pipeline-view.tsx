@@ -985,7 +985,11 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             type: opportunity.customFields?.type || 'Guest',
             confirmed: opportunity.customFields?.confirmed || false,
             paid: opportunity.customFields?.paid || false,
-            notes: opportunity.customFields?.notes
+            notes: opportunity.customFields?.notes,
+            revenueSplits: opportunity.customFields?.revenueSplits,
+            calculatedGrossRevenue: opportunity.customFields?.calculatedGrossRevenue,
+            calculatedNetRevenue: opportunity.customFields?.calculatedNetRevenue,
+            calculatedSplitAmount: opportunity.customFields?.calculatedSplitAmount
           };
           return (
             <PodcasterOpportunityCard 
@@ -1060,7 +1064,11 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             dueDate: dueDate,
             hasAttachments: opportunity.customFields?.hasAttachments || false,
             status: opportunity.customFields?.status || 'New',
-            description: opportunity.customFields?.description
+            description: opportunity.customFields?.description,
+            revenueSplits: opportunity.customFields?.revenueSplits,
+            calculatedGrossRevenue: opportunity.customFields?.calculatedGrossRevenue,
+            calculatedNetRevenue: opportunity.customFields?.calculatedNetRevenue,
+            calculatedSplitAmount: opportunity.customFields?.calculatedSplitAmount
           };
           
           console.log('CRM Pipeline - Created freelancer opportunity for card:', {
@@ -1137,7 +1145,11 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             hasContract: opportunity.customFields?.contractUploaded || false,
             contractLink: opportunity.customFields?.contractLink,
             priority: opportunity.priority || 'medium',
-            notes: opportunity.customFields?.notes
+            notes: opportunity.customFields?.notes,
+            revenueSplits: opportunity.customFields?.revenueSplits,
+            calculatedGrossRevenue: opportunity.customFields?.calculatedGrossRevenue,
+            calculatedNetRevenue: opportunity.customFields?.calculatedNetRevenue,
+            calculatedSplitAmount: opportunity.customFields?.calculatedSplitAmount
           };
           return (
             <CreatorOpportunityCard 
