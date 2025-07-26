@@ -76,6 +76,9 @@ interface MetricCardProps {
   showGrowthTypeFilter?: boolean
   growthType?: string
   onGrowthTypeChange?: (type: string) => void
+  showRevenueTypeFilter?: boolean
+  revenueType?: 'gross' | 'net'
+  onRevenueTypeChange?: (type: 'gross' | 'net') => void
 }
 
 interface ActivityItem {
@@ -137,7 +140,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
   onPeriodChange,
   showGrowthTypeFilter = false,
   growthType = 'revenue',
-  onGrowthTypeChange
+  onGrowthTypeChange,
+  showRevenueTypeFilter = false,
+  revenueType = 'net',
+  onRevenueTypeChange
 }) => {
   
   return (
@@ -216,6 +222,17 @@ const MetricCard: React.FC<MetricCardProps> = ({
                     <SelectItem value="this-quarter">Quarter</SelectItem>
                     <SelectItem value="ytd">YTD</SelectItem>
                     <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              {showRevenueTypeFilter && onRevenueTypeChange && (
+                <Select value={revenueType} onValueChange={onRevenueTypeChange}>
+                  <SelectTrigger className={`${title === 'Growth Rate' ? 'h-4 w-16' : 'h-5 w-18'} text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm ${title === 'Growth Rate' ? 'rounded px-1' : 'rounded-md px-2'}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="min-w-[120px]">
+                    <SelectItem value="gross">Gross Revenue</SelectItem>
+                    <SelectItem value="net">Net Revenue</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -430,6 +447,9 @@ export default function DashboardOverview({
   const [opportunitiesCount, setOpportunitiesCount] = useState(0);
   const [clientsCount, setClientsCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalGrossRevenue, setTotalGrossRevenue] = useState(0);
+  const [totalNetRevenue, setTotalNetRevenue] = useState(0);
+  const [revenueDisplayType, setRevenueDisplayType] = useState<'gross' | 'net'>('net');
   const [growthRate, setGrowthRate] = useState(0);
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
   const [episodesCount, setEpisodesCount] = useState(0);
@@ -484,8 +504,37 @@ export default function DashboardOverview({
           }
           return opp.status === 'won';
         });
-        const totalRevenue = wonOpportunities.reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
-        setTotalRevenue(totalRevenue);
+        
+        // Calculate gross and net revenue
+        let grossRevenue = 0;
+        let netRevenue = 0;
+        
+        wonOpportunities.forEach((opp: any) => {
+          const dealValue = opp.value || 0;
+          const customFields = opp.customFields || {};
+          const revenueSplits = customFields.revenueSplits || [];
+          
+          // Calculate gross revenue (total deal value)
+          grossRevenue += dealValue;
+          
+          // Calculate net revenue (after revenue splits)
+          let totalDeductions = 0;
+          revenueSplits.forEach((split: any) => {
+            if (split.amount && split.amount > 0) {
+              if (split.type === '%') {
+                totalDeductions += (dealValue * split.amount / 100);
+              } else if (split.type === '$') {
+                totalDeductions += split.amount;
+              }
+            }
+          });
+          
+          netRevenue += Math.max(0, dealValue - totalDeductions);
+        });
+        
+        setTotalGrossRevenue(grossRevenue);
+        setTotalNetRevenue(netRevenue);
+        setTotalRevenue(revenueDisplayType === 'gross' ? grossRevenue : netRevenue);
 
         // Calculate growth rate (percentage of won opportunities)
         const totalOpportunities = opportunities.length;
@@ -682,6 +731,11 @@ export default function DashboardOverview({
   useEffect(() => {
     loadMetricsData();
   }, [activeNiche]);
+
+  // Update displayed revenue when display type changes
+  useEffect(() => {
+    setTotalRevenue(revenueDisplayType === 'gross' ? totalGrossRevenue : totalNetRevenue);
+  }, [revenueDisplayType, totalGrossRevenue, totalNetRevenue]);
 
   // Refresh data when component becomes visible (e.g., when navigating back to dashboard)
   useEffect(() => {
@@ -934,7 +988,10 @@ export default function DashboardOverview({
         onClick: () => onNavigate('analytics'),
         showPeriodFilter: true,
         period: revenuePeriod,
-        onPeriodChange: handleRevenuePeriodChange
+        onPeriodChange: handleRevenuePeriodChange,
+        showRevenueTypeFilter: true,
+        revenueType: revenueDisplayType,
+        onRevenueTypeChange: setRevenueDisplayType
       },
       { 
         title: 'Growth Rate', 
@@ -1001,7 +1058,10 @@ export default function DashboardOverview({
             onClick: () => onNavigate('analytics'),
             showPeriodFilter: true,
             period: revenuePeriod,
-            onPeriodChange: handleRevenuePeriodChange
+            onPeriodChange: handleRevenuePeriodChange,
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
           }
         ]
 
@@ -1045,7 +1105,10 @@ export default function DashboardOverview({
             onClick: () => onNavigate('analytics'),
             showPeriodFilter: true,
             period: revenuePeriod,
-            onPeriodChange: handleRevenuePeriodChange
+            onPeriodChange: handleRevenuePeriodChange,
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
           }
         ]
 
@@ -1080,7 +1143,10 @@ export default function DashboardOverview({
             onClick: () => onNavigate('analytics'),
             showPeriodFilter: true,
             period: revenuePeriod,
-            onPeriodChange: handleRevenuePeriodChange
+            onPeriodChange: handleRevenuePeriodChange,
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
           },
           { 
             title: 'Growth Rate', 
