@@ -87,7 +87,9 @@ import {
   Grid3X3,
   List,
   MoreVertical,
-  Play
+  Play,
+  ExternalLink,
+  User
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -97,7 +99,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useNiche } from '@/contexts/NicheContext';
 import { createClient, updateClient, deleteClient, Client } from '@/lib/client-service';
 
@@ -386,10 +388,63 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
 };
 
 // Brand Portfolio Grid
-const BrandPortfolio: React.FC<{ brands: any[] }> = ({ brands }) => {
+const BrandPortfolio: React.FC<{ 
+  brands: any[];
+  onEditBrand?: (brand: any) => void;
+  onDeleteBrand?: (id: string) => void;
+  onArchiveBrand?: (brand: any) => void;
+}> = ({ brands, onEditBrand, onDeleteBrand, onArchiveBrand }) => {
+  // Helper functions for status colors and labels
+  const getStatusColor = (status: string) => {
+    const colors = {
+      lead: 'bg-blue-100 text-blue-800',
+      client: 'bg-green-100 text-green-800',
+      guest: 'bg-purple-100 text-purple-800',
+      inactive: 'bg-gray-100 text-gray-800',
+      archived: 'bg-gray-100 text-gray-800'
+    };
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels = {
+      lead: 'Lead',
+      client: 'Client',
+      guest: 'Guest',
+      inactive: 'Archived',
+      archived: 'Archived'
+    };
+    return labels[status as keyof typeof labels] || status;
+  };
+
+  const getContactColor = (status: string) => {
+    switch (status) {
+      case 'lead': return 'blue'
+      case 'client': return 'emerald'
+      case 'inactive': return 'orange'
+      default: return 'blue'
+    }
+  };
+
+  const colorClasses = {
+    emerald: 'from-emerald-500 to-emerald-600',
+    orange: 'from-orange-500 to-orange-600',
+    blue: 'from-blue-500 to-blue-600',
+    purple: 'from-purple-500 to-purple-600',
+    cyan: 'from-cyan-500 to-cyan-600'
+  } as const;
+
+  const gradientClasses = {
+    emerald: 'bg-gradient-to-br from-emerald-50 to-emerald-100',
+    orange: 'bg-gradient-to-br from-orange-50 to-orange-100',
+    blue: 'bg-gradient-to-br from-blue-50 to-blue-100',
+    purple: 'bg-gradient-to-br from-purple-50 to-purple-100',
+    cyan: 'bg-gradient-to-br from-cyan-50 to-cyan-100'
+  } as const;
+
   return (
-    <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
           <Crown className="w-5 h-5 text-purple-600" />
           Brands/Clients Portfolio
@@ -397,54 +452,110 @@ const BrandPortfolio: React.FC<{ brands: any[] }> = ({ brands }) => {
         <Badge variant="secondary" className="bg-purple-100 text-purple-800">
           {brands.length} Partners
         </Badge>
-    </div>
-      
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {brands.map((brand, index) => (
-      <motion.div
-            key={brand.id}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="relative group"
-          >
-            <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                  {brand.name.charAt(0)}
-    </div>
-                <h4 className="font-semibold text-gray-900 text-sm">{brand.name}</h4>
-                <div className="text-xs text-gray-500 mt-1">{brand.industry}</div>
-                
-                <div className="mt-3">
-                  <div className="flex items-center justify-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`w-3 h-3 ${i < brand.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                      />
-                    ))}
-    </div>
-                  <div className="text-xs text-gray-500 mt-1">${brand.totalRevenue.toLocaleString()}</div>
-  </div>
-                
-                <Badge 
-                  variant="secondary" 
-                  className={`mt-2 text-xs ${
-                    brand.status === 'Active' ? 'bg-green-100 text-green-800' :
-                    brand.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}
-                >
-                  {brand.status}
-                </Badge>
-            </div>
-            </Card>
-          </motion.div>
-          ))}
       </div>
-    </Card>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {brands.map((brand, index) => {
+          const contactColor = getContactColor(brand.status);
+          return (
+            <motion.div
+              key={brand.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              whileHover={{ 
+                scale: 1.02, 
+                y: -5,
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.98 }}
+              className="group"
+            >
+              <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-full w-full ${gradientClasses[contactColor as keyof typeof gradientClasses] || gradientClasses.blue}`}>
+                {/* Animated background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <motion.div 
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-r ${colorClasses[contactColor as keyof typeof colorClasses] || colorClasses.blue} shadow-lg`}
+                        whileHover={{ rotate: 5, scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        {brand.name.charAt(0).toUpperCase()}
+                      </motion.div>
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900">{brand.name}</h3>
+                        <Badge className={`${getStatusColor(brand.status)} text-xs`}>
+                          {getStatusLabel(brand.status)}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    {/* Dropdown menu */}
+                    {onEditBrand && onDeleteBrand && onArchiveBrand && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEditBrand(brand)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          {brand.status !== 'inactive' && (
+                            <DropdownMenuItem onClick={() => onArchiveBrand(brand)}>
+                              <Archive className="mr-2 h-4 w-4" />
+                              Archive
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => onDeleteBrand(brand.id)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 text-sm text-gray-600">
+                    {brand.company && (
+                      <div className="flex items-center gap-2">
+                        <Building className="w-4 h-4" />
+                        <span>{brand.company}</span>
+                      </div>
+                    )}
+                    {brand.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        <span className="truncate">{brand.email}</span>
+                      </div>
+                    )}
+                    {brand.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        <span>{brand.phone}</span>
+                      </div>
+                    )}
+                  </div>
+
+                                                {brand.notes && (
+                                <p className="text-sm text-gray-500 mt-3 line-clamp-2">{brand.notes}</p>
+                              )}
+                </div>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 
@@ -481,7 +592,7 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
         ];
       case 'podcaster':
         return [
-          { id: 'outreach', name: 'Guest/Sponsor Outreach', color: '#10b981' },
+          { id: 'outreach', name: 'Guest Outreach', color: '#10b981' },
           { id: 'awaiting', name: 'Awaiting Response', color: '#f97316' },
           { id: 'conversation', name: 'In Conversation', color: '#3b82f6' },
           { id: 'negotiation', name: 'Negotiation', color: '#8b5cf6' },
@@ -614,7 +725,7 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
       'Signed Client': CheckCircle,
       'Active Program': Activity,
       'Completed': CheckCircle,
-      'Guest/Sponsor Outreach': Target,
+              'Guest Outreach': Target,
       'Agreement in Place': FileText,
       'Scheduled': Calendar,
       'Recorded': Activity,
@@ -1266,7 +1377,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'lead' | 'client' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'lead' | 'client' | 'guest' | 'inactive'>('all');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -1274,9 +1385,10 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     email: '',
     phone: '',
     company: '',
-    status: 'lead' as 'lead' | 'client' | 'inactive',
-    notes: '',
-    tags: [] as string[]
+    address: '',
+    value: '',
+    status: 'lead' as 'lead' | 'client' | 'guest' | 'inactive',
+    notes: ''
   });
 
   // Episodes state
@@ -1288,6 +1400,27 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
   // Brands state
   const [brands, setBrands] = useState<any[]>([]);
+
+  // Programs state for coach
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [filteredPrograms, setFilteredPrograms] = useState<any[]>([]);
+  const [programSearchQuery, setProgramSearchQuery] = useState('');
+  const [programSortBy, setProgramSortBy] = useState<'revenue' | 'enrolled' | 'name'>('revenue');
+  const [programSortOrder, setProgramSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Brand/Client modal state for editing
+  const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState<any>(null);
+  const [brandFormData, setBrandFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    address: '',
+    value: '',
+    status: 'lead' as 'lead' | 'client' | 'guest' | 'inactive',
+    notes: ''
+  });
 
   // Use real data only - no fallback to mock data
   const data = analyticsData;
@@ -1493,6 +1626,65 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   }, [activeNiche]);
 
+    // Load programs data for coach niche
+  const loadPrograms = async () => {
+    try {
+      if (activeNiche === 'coach') {
+        const response = await fetch('/api/content-items?niche=coach');
+        if (response.ok) {
+          const contentItems = await response.json();
+          
+          // For coach niche, all content items are programs (no filtering by type needed)
+          const programItems = contentItems;
+          
+          // Get client data to sync with programs
+          let clientCount = 0;
+          try {
+            const { fetchClients } = await import('@/lib/client-service');
+            const clientsData = await fetchClients('coach');
+            clientCount = clientsData.length;
+          } catch (clientError) {
+            console.error('Error fetching clients for program sync:', clientError);
+          }
+          
+          // Transform the data to match the expected format
+          const transformedPrograms = programItems.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            price: item.price || 0,
+            enrolled: item.enrolled || clientCount, // Use actual client count if enrolled is not set
+            revenue: item.revenue || 0,
+            programType: item.program_type || item.custom_program_type || 'Program',
+            startDate: item.start_date,
+            endDate: item.end_date,
+            enrollmentDeadline: item.enrollment_deadline,
+            hostingPlatform: item.hosting_platform,
+            clientProgress: item.client_progress,
+            stage: item.stage,
+            created_at: item.created_at,
+            updated_at: item.updated_at
+          }));
+          
+          setPrograms(transformedPrograms);
+          setFilteredPrograms(transformedPrograms);
+        } else {
+          console.error('Failed to fetch content items:', response.status, response.statusText);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading programs:', error);
+      setPrograms([]);
+      setFilteredPrograms([]);
+    }
+  };
+
+  // Load programs when coach niche is active or when programs section is active
+  useEffect(() => {
+    if (activeNiche === 'coach' && (activeSection === 'programs' || activeSection === 'overview')) {
+      loadPrograms();
+    }
+  }, [activeNiche, activeSection]);
+
   // Load brands data for creator niche (using same data source as clients page)
   useEffect(() => {
     const loadBrands = async () => {
@@ -1501,15 +1693,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           // Use the same fetchClients function as the clients page
           const { fetchClients } = await import('@/lib/client-service');
           const clientsData = await fetchClients(activeNiche);
-          const brandsData = clientsData.map((client: any) => ({
-            id: client.id,
-            name: client.name,
-            industry: client.company || 'Unknown',
-            rating: client.status === 'client' ? 5 : client.status === 'lead' ? 3 : 1, // Realistic rating based on status
-            totalRevenue: client.value ? parseFloat(client.value.replace(/[^0-9.]/g, '')) : 0, // Use actual value if available
-            status: client.status === 'client' ? 'Active' : client.status === 'lead' ? 'Pending' : 'Inactive'
-          }));
-          setBrands(brandsData);
+          // Use the actual client data directly instead of transforming it
+          setBrands(clientsData);
         }
       } catch (error) {
         console.error('Error loading brands:', error);
@@ -1544,9 +1729,10 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       email: '',
       phone: '',
       company: '',
+      address: '',
+      value: '',
       status: 'lead',
-      notes: '',
-      tags: []
+      notes: ''
     });
     setIsModalOpen(true);
   };
@@ -1558,9 +1744,10 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       email: contact.email || '',
       phone: contact.phone || '',
       company: contact.company || '',
+      address: contact.address || '',
+      value: contact.value || '',
       status: contact.status,
-      notes: contact.notes || '',
-      tags: contact.tags || []
+      notes: contact.notes || ''
     });
     setIsModalOpen(true);
   };
@@ -1606,10 +1793,100 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   };
 
+  // Brand/Client editing handlers
+  const handleEditBrand = (brand: any) => {
+    setSelectedBrand(brand);
+    setBrandFormData({
+      name: brand.name,
+      email: brand.email || '',
+      phone: brand.phone || '',
+      company: brand.company || '',
+      address: brand.address || '',
+      value: brand.value || '',
+      status: brand.status,
+      notes: brand.notes || ''
+    });
+    setIsBrandModalOpen(true);
+  };
+
+  const handleDeleteBrand = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this contact?')) {
+      try {
+        await deleteClient(id);
+        // Reload brands by calling loadBrands function
+        if (activeNiche === 'creator' && activeSection === 'brands') {
+          const { fetchClients } = await import('@/lib/client-service');
+          const clientsData = await fetchClients(activeNiche);
+          setBrands(clientsData);
+        }
+      } catch (error) {
+        console.error('Error deleting contact:', error);
+      }
+    }
+  };
+
+  const handleArchiveBrand = async (brand: any) => {
+    try {
+      await updateClient(brand.id, { status: 'inactive' });
+      // Reload brands by calling loadBrands function
+      if (activeNiche === 'creator' && activeSection === 'brands') {
+        const { fetchClients } = await import('@/lib/client-service');
+        const clientsData = await fetchClients(activeNiche);
+        setBrands(clientsData);
+      }
+    } catch (error) {
+      console.error('Error archiving contact:', error);
+    }
+  };
+
+  const handleSaveBrand = async () => {
+    try {
+      const saveData = {
+        name: brandFormData.name,
+        email: brandFormData.email,
+        phone: brandFormData.phone,
+        company: brandFormData.company,
+        address: brandFormData.address,
+        value: brandFormData.value,
+        status: brandFormData.status as 'lead' | 'client' | 'guest' | 'inactive',
+        notes: brandFormData.notes
+      };
+      console.log('🔧 Updating brand/client with niche:', activeNiche || 'creator');
+
+      if (selectedBrand) {
+        // Update existing brand/client
+        await updateClient(selectedBrand.id, saveData);
+      }
+
+      // Reload brands by calling loadBrands function
+      if (activeNiche === 'creator' && activeSection === 'brands') {
+        const { fetchClients } = await import('@/lib/client-service');
+        const clientsData = await fetchClients(activeNiche);
+        setBrands(clientsData);
+      }
+      
+      setIsBrandModalOpen(false);
+      setSelectedBrand(null);
+      setBrandFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        address: '',
+        value: '',
+        status: 'lead',
+        notes: ''
+      });
+    } catch (error) {
+      console.error('Error saving brand/client:', error);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     const colors = {
       lead: 'bg-blue-100 text-blue-800',
       client: 'bg-green-100 text-green-800',
+      guest: 'bg-purple-100 text-purple-800',
       inactive: 'bg-gray-100 text-gray-800',
       archived: 'bg-gray-100 text-gray-800'
     };
@@ -1620,11 +1897,50 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     const labels = {
       lead: 'Lead',
       client: 'Client',
+      guest: 'Guest',
       inactive: 'Archived',
       archived: 'Archived'
     };
     return labels[status as keyof typeof labels] || status;
   };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'lead': return <User className="w-4 h-4" />
+      case 'client': return <Users className="w-4 h-4" />
+      case 'guest': return <UserPlus className="w-4 h-4" />
+      case 'inactive': return <Archive className="w-4 h-4" />
+      default: return <User className="w-4 h-4" />
+    }
+  }
+
+  // Get contact color based on status (matching dashboard color scheme)
+  const getContactColor = (status: string) => {
+    switch (status) {
+      case 'lead': return 'blue'
+      case 'client': return 'emerald'
+      case 'guest': return 'purple'
+      case 'inactive': return 'orange'
+      default: return 'blue'
+    }
+  }
+
+  // Color scheme matching dashboard cards
+  const colorClasses = {
+    emerald: 'from-emerald-500 to-emerald-600',
+    orange: 'from-orange-500 to-orange-600',
+    blue: 'from-blue-500 to-blue-600',
+    purple: 'from-purple-500 to-purple-600',
+    cyan: 'from-cyan-500 to-cyan-600'
+  } as const
+
+  const gradientClasses = {
+    emerald: 'bg-gradient-to-br from-emerald-50 to-emerald-100',
+    orange: 'bg-gradient-to-br from-orange-50 to-orange-100',
+    blue: 'bg-gradient-to-br from-blue-50 to-blue-100',
+    purple: 'bg-gradient-to-br from-purple-50 to-purple-100',
+    cyan: 'bg-gradient-to-br from-cyan-50 to-cyan-100'
+  } as const
 
   // Episodes filtering and sorting
   useEffect(() => {
@@ -1672,6 +1988,45 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       setFilteredEpisodes(data.podcaster.topEpisodes);
     }
   }, [data?.podcaster?.topEpisodes]);
+
+  // Programs filtering and sorting
+  useEffect(() => {
+    let filtered = programs.filter(program =>
+      program.title.toLowerCase().includes(programSearchQuery.toLowerCase()) ||
+      program.programType.toLowerCase().includes(programSearchQuery.toLowerCase())
+    );
+
+    // Sort programs
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (programSortBy) {
+        case 'revenue':
+          aValue = a.revenue || 0;
+          bValue = b.revenue || 0;
+          break;
+        case 'enrolled':
+          aValue = a.enrolled || 0;
+          bValue = b.enrolled || 0;
+          break;
+        case 'name':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        default:
+          aValue = a.revenue || 0;
+          bValue = b.revenue || 0;
+      }
+
+      if (programSortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    setFilteredPrograms(filtered);
+  }, [programs, programSearchQuery, programSortBy, programSortOrder]);
 
   const sections = activeNiche === 'creator' ? [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -1744,16 +2099,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           >
             Your media empire metrics at a glance
           </motion.p>
-          {lastRefreshTime && (
-            <motion.p 
-              className="text-sm text-gray-500 mt-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              Last updated: {lastRefreshTime.toLocaleTimeString()}
-            </motion.p>
-          )}
+
         </div>
 
                 {/* Navigation Tabs */}
@@ -2007,85 +2353,128 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               </div>
               
-              {/* Brands/Clients Grid - Hidden for Freelancer and Podcaster */}
-              {activeNiche !== 'freelancer' && activeNiche !== 'podcaster' && (
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    {activeNiche === 'podcaster' ? (
-                      <>
-                        <Radio className="w-5 h-5 text-blue-600" />
-                        Top Episodes
-                      </>
-                    ) : activeNiche === 'coach' ? (
-                      <>
-                        <BookOpen className="w-5 h-5 text-blue-600" />
-                        Top Programs
-                      </>
-                    ) : (
-                      <>
-                        <Crown className="w-5 h-5 text-blue-600" />
-                        Top Revenue Clients
-                      </>
-                    )}
-        </h3>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    {activeNiche === 'podcaster' ? `${episodes.length} Episodes` : activeNiche === 'coach' ? '0 Programs' : `${brands.length} Partners`}
-                  </Badge>
+              {/* Brands/Clients Grid - Hidden for Freelancer, Podcaster, and Coach */}
+              {activeNiche !== 'freelancer' && activeNiche !== 'podcaster' && activeNiche !== 'coach' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                      {activeNiche === 'podcaster' ? (
+                        <>
+                          <Radio className="w-5 h-5 text-blue-600" />
+                          Top Episodes
+                        </>
+                      ) : (
+                        <>
+                          <Crown className="w-5 h-5 text-blue-600" />
+                          Top Revenue Clients
+                        </>
+                      )}
+                    </h3>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      {activeNiche === 'podcaster' ? `${episodes.length} Episodes` : `${brands.length} Partners`}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {brands.slice(0, 8).map((brand, index) => {
+                      const contactColor = getContactColor(brand.status);
+                      return (
+                        <motion.div
+                          key={brand.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          whileHover={{ 
+                            scale: 1.02, 
+                            y: -5,
+                            transition: { duration: 0.2 }
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                          className="group"
+                        >
+                          <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-full w-full ${gradientClasses[contactColor as keyof typeof gradientClasses] || gradientClasses.blue}`}>
+                            {/* Animated background gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            
+                            <div className="relative z-10">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <motion.div 
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-r ${colorClasses[contactColor as keyof typeof colorClasses] || colorClasses.blue} shadow-lg`}
+                                    whileHover={{ rotate: 5, scale: 1.1 }}
+                                    transition={{ type: "spring", stiffness: 300 }}
+                                  >
+                                    {brand.name.charAt(0).toUpperCase()}
+                                  </motion.div>
+                                  <div>
+                                    <h3 className="font-semibold text-lg text-gray-900">{brand.name}</h3>
+                                    <Badge className={`${getStatusColor(brand.status)} text-xs`}>
+                                      {getStatusLabel(brand.status)}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                
+                                {/* Dropdown menu */}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditBrand(brand)}>
+                                      <Edit className="mr-2 h-4 w-4" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    {brand.status !== 'inactive' && (
+                                      <DropdownMenuItem onClick={() => handleArchiveBrand(brand)}>
+                                        <Archive className="mr-2 h-4 w-4" />
+                                        Archive
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem 
+                                      onClick={() => handleDeleteBrand(brand.id)}
+                                      className="text-red-600 focus:text-red-600"
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+
+                              <div className="space-y-2 text-sm text-gray-600">
+                                {brand.company && (
+                                  <div className="flex items-center gap-2">
+                                    <Building className="w-4 h-4" />
+                                    <span>{brand.company}</span>
+                                  </div>
+                                )}
+                                {brand.email && (
+                                  <div className="flex items-center gap-2">
+                                    <Mail className="w-4 h-4" />
+                                    <span className="truncate">{brand.email}</span>
+                                  </div>
+                                )}
+                                {brand.phone && (
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="w-4 h-4" />
+                                    <span>{brand.phone}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {brand.notes && (
+                                <p className="text-sm text-gray-500 mt-3 line-clamp-2">{brand.notes}</p>
+                              )}
+                            </div>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {brands.slice(0, 8).map((brand, index) => (
-            <motion.div
-                      key={brand.id}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      className="relative group"
-                    >
-                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto mb-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {brand.name.charAt(0)}
-                          </div>
-                          <h4 className="font-semibold text-gray-900 text-xs">
-                            {brand.name}
-                          </h4>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {brand.industry}
-                          </div>
-                          
-                          <div className="mt-2">
-                            <div className="flex items-center justify-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`w-2 h-2 ${i < brand.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                />
-                              ))}
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1 font-medium">
-                              {brand.totalRevenue / 1000}k views
-                            </div>
-                          </div>
-                          
-                          <Badge 
-                            variant="secondary" 
-                            className={`mt-2 text-xs ${
-                              brand.status === 'Active' ? 'bg-green-100 text-green-800' :
-                              brand.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {brand.status}
-                          </Badge>
-                        </div>
-                      </Card>
-            </motion.div>
-          ))}
-        </div>
-      </Card>
               )}
             </motion.div>
           )}
@@ -2205,17 +2594,17 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                   </CardContent>
                 </Card>
               ) : viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {filteredContacts.map((contact) => (
                     <Card key={contact.id} className="hover:shadow-lg transition-all duration-200 group">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                               {contact.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <h3 className="font-semibold text-lg">{contact.name}</h3>
+                              <h3 className="font-semibold text-base">{contact.name}</h3>
                               <Badge className={`${getStatusColor(contact.status)} text-xs`}>
                                 {getStatusLabel(contact.status)}
                               </Badge>
@@ -2223,7 +2612,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100">
+                              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0">
                                 <MoreVertical className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -2249,110 +2638,86 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                           </DropdownMenu>
                         </div>
 
-                        <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="space-y-1.5 text-sm text-muted-foreground">
                           {contact.company && (
                             <div className="flex items-center gap-2">
-                              <Building className="w-4 h-4" />
-                              <span>{contact.company}</span>
+                              <Building className="w-3.5 h-3.5" />
+                              <span className="truncate">{contact.company}</span>
                             </div>
                           )}
                           {contact.email && (
                             <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4" />
+                              <Mail className="w-3.5 h-3.5" />
                               <span className="truncate">{contact.email}</span>
                             </div>
                           )}
                           {contact.phone && (
                             <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4" />
-                              <span>{contact.phone}</span>
+                              <Phone className="w-3.5 h-3.5" />
+                              <span className="truncate">{contact.phone}</span>
                             </div>
                           )}
                         </div>
 
                         {contact.notes && (
-                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{contact.notes}</p>
-                        )}
-
-                        {contact.tags && contact.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {contact.tags.slice(0, 3).map((tag, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                            {contact.tags.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{contact.tags.length - 3}
-                              </Badge>
-                            )}
-                          </div>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{contact.notes}</p>
                         )}
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {filteredContacts.map((contact) => (
                     <Card key={contact.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
+                      <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                               {contact.name.charAt(0).toUpperCase()}
                             </div>
                             
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="font-semibold text-lg">{contact.name}</h3>
+                              <div className="flex items-center gap-3 mb-1.5">
+                                <h3 className="font-semibold text-base">{contact.name}</h3>
                                 <Badge className={getStatusColor(contact.status)}>
                                   {getStatusLabel(contact.status)}
                                 </Badge>
                               </div>
                               
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-muted-foreground">
                                 {contact.company && (
                                   <div className="flex items-center gap-2">
-                                    <Building className="w-4 h-4" />
-                                    <span>{contact.company}</span>
+                                    <Building className="w-3.5 h-3.5" />
+                                    <span className="truncate">{contact.company}</span>
                                   </div>
                                 )}
                                 {contact.email && (
                                   <div className="flex items-center gap-2">
-                                    <Mail className="w-4 h-4" />
-                                    <span>{contact.email}</span>
+                                    <Mail className="w-3.5 h-3.5" />
+                                    <span className="truncate">{contact.email}</span>
                                   </div>
                                 )}
                                 {contact.phone && (
                                   <div className="flex items-center gap-2">
-                                    <Phone className="w-4 h-4" />
-                                    <span>{contact.phone}</span>
+                                    <Phone className="w-3.5 h-3.5" />
+                                    <span className="truncate">{contact.phone}</span>
                                   </div>
                                 )}
                               </div>
 
                               {contact.notes && (
-                                <p className="text-sm text-muted-foreground mt-2">{contact.notes}</p>
-                              )}
-
-                              {contact.tags && contact.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {contact.tags.map((tag, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
+                                <p className="text-sm text-muted-foreground mt-1.5">{contact.notes}</p>
                               )}
                             </div>
                           </div>
 
-                          <div className="flex gap-2 ml-4">
+                          <div className="flex gap-1 ml-3">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEditContact(contact)}
+                              className="h-8 w-8 p-0"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -2361,6 +2726,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleArchiveContact(contact)}
+                                className="h-8 w-8 p-0"
                               >
                                 <Archive className="w-4 h-4" />
                               </Button>
@@ -2369,7 +2735,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteContact(contact.id)}
-                              className="text-red-600 hover:text-red-700"
+                              className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -2383,59 +2749,89 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
               {/* Contact Modal */}
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>
+                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                  <DialogHeader className="pb-3">
+                    <DialogTitle className="text-lg">
                       {selectedContact ? 'Edit Contact' : 'Add New Contact'}
                     </DialogTitle>
                   </DialogHeader>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Name *</Label>
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Enter contact name"
-                      />
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Name *</Label>
+                        <Input
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Enter contact name"
+                          className="h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Email</Label>
+                        <Input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="Enter email address"
+                          className="h-9"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="Enter email address"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Phone</Label>
+                        <Input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="Enter phone number"
+                          className="h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Company</Label>
+                        <Input
+                          value={formData.company}
+                          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                          placeholder="Enter company name"
+                          className="h-9"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <Label>Phone</Label>
-                      <Input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="Enter phone number"
-                      />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Address</Label>
+                        <Input
+                          value={formData.address}
+                          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                          placeholder="102 Woodmont Drive"
+                          className="h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Value</Label>
+                        <Input
+                          value={formData.value}
+                          onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                          placeholder="e.g., $5000"
+                          className="h-9"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <Label>Company</Label>
-                      <Input
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        placeholder="Enter company name"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Status</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm">Status</Label>
                       <Select
                         value={formData.status}
                         onValueChange={(value) => setFormData({ ...formData, status: value as any })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -2446,23 +2842,25 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       </Select>
                     </div>
 
-                    <div>
-                      <Label>Notes</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-sm">Notes</Label>
                       <Textarea
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         placeholder="Add any notes about this contact"
-                        rows={3}
+                        rows={2}
+                        className="resize-none"
                       />
                     </div>
 
-                    <div className="flex gap-2 pt-4">
-                      <Button onClick={handleSaveContact} className="flex-1">
+                    <div className="flex gap-2 pt-2">
+                      <Button onClick={handleSaveContact} className="flex-1 h-9">
                         {selectedContact ? 'Update' : 'Create'} Contact
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => setIsModalOpen(false)}
+                        className="h-9"
                       >
                         Cancel
                       </Button>
@@ -2483,93 +2881,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
             >
               {/* Revenue Growth Chart */}
               <RevenueChart data={revenueByMonth} />
-              
-              {/* Top Programs */}
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-blue-600" />
-                    Top Programs
-                  </h3>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    {analyticsData?.coach?.programs?.total || 0} Programs
-                  </Badge>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    {
-                      name: 'Life Transformation',
-                      completion: analyticsData?.coach?.completionRate || 0,
-                      satisfaction: 4.8,
-                      revenue: analyticsData?.coach?.averageProgramValue || 0,
-                      students: analyticsData?.coach?.studentsEnrolled || 0
-                    },
-                    {
-                      name: 'Career Breakthrough',
-                      completion: Math.max(0, (analyticsData?.coach?.completionRate || 0) - 7),
-                      satisfaction: 4.6,
-                      revenue: Math.max(0, (analyticsData?.coach?.averageProgramValue || 0) - 7000),
-                      students: Math.max(0, Math.floor((analyticsData?.coach?.studentsEnrolled || 0) * 0.8))
-                    },
-                    {
-                      name: 'Mindset Mastery',
-                      completion: Math.min(100, (analyticsData?.coach?.completionRate || 0) + 7),
-                      satisfaction: 4.9,
-                      revenue: Math.max(0, (analyticsData?.coach?.averageProgramValue || 0) + 7000),
-                      students: Math.max(0, Math.floor((analyticsData?.coach?.studentsEnrolled || 0) * 0.6))
-                    }
-                  ].map((program, index) => (
-                    <motion.div
-                      key={program.name}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      className="relative group"
-                    >
-                      <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto mb-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {program.name.charAt(0)}
-                          </div>
-                          <h4 className="font-semibold text-gray-900 text-xs">
-                            {program.name}
-                          </h4>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {program.students} Students
-                          </div>
-                          
-                          <div className="mt-2">
-                            <div className="flex items-center justify-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`w-2 h-2 ${i < Math.floor(program.satisfaction) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                />
-                              ))}
-                            </div>
-                            <div className="text-xs text-gray-600 mt-1 font-medium">
-                              ${(program.revenue / 1000).toFixed(0)}k revenue
-                            </div>
-                          </div>
-                          
-                          <Badge 
-                            variant="secondary" 
-                            className={`mt-2 text-xs ${
-                              program.completion >= 80 ? 'bg-green-100 text-green-800' :
-                              program.completion >= 60 ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {program.completion}% Complete
-                          </Badge>
-                        </div>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              </Card>
             </motion.div>
           )}
 
@@ -2806,6 +3117,37 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 </p>
               </div>
 
+              {/* Search and Filter Controls */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Search programs..."
+                    value={programSearchQuery}
+                    onChange={(e) => setProgramSearchQuery(e.target.value)}
+                    className="max-w-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Select value={programSortBy} onValueChange={(value: any) => setProgramSortBy(value)}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                                          <SelectItem value="revenue">Revenue</SelectItem>
+                    <SelectItem value="enrolled">Clients</SelectItem>
+                    <SelectItem value="name">Name</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setProgramSortOrder(programSortOrder === 'asc' ? 'desc' : 'asc')}
+                  >
+                    {programSortOrder === 'asc' ? '↑' : '↓'}
+                  </Button>
+                </div>
+              </div>
+
               {/* Programs Grid */}
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 border-0 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
@@ -2814,22 +3156,86 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     Your Programs
                   </h3>
                   <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    {analyticsData?.coach?.programs?.total || 0} Total Programs
+                    {filteredPrograms.length} Total Programs
                   </Badge>
                 </div>
                 
-                <div className="text-center py-8">
-                  <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Programs Yet</h3>
-                  <p className="text-gray-600 mb-4">Start creating your first coaching program to see it here</p>
-                  <Button
-                    onClick={() => window.location.href = '/dashboard?section=programs&niche=coach'}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Program
-                  </Button>
-                </div>
+
+                
+                {filteredPrograms.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredPrograms.map((program, index) => (
+                      <motion.div
+                        key={program.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        className="relative group"
+                      >
+                        <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                                {program.title}
+                              </h4>
+                              <p className="text-xs text-gray-600 mb-2">
+                                {program.programType}
+                              </p>
+                            </div>
+                            <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs">
+                              ${program.revenue?.toLocaleString() || 0}
+                            </Badge>
+                          </div>
+                          
+                          <div className="space-y-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-3 h-3" />
+                              <span>{program.enrolled || 0} Clients</span>
+                            </div>
+                            {program.price && (
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="w-3 h-3" />
+                                <span>${program.price.toLocaleString()}</span>
+                              </div>
+                            )}
+                            {program.hostingPlatform && (
+                              <div className="flex items-center gap-2">
+                                <ExternalLink className="w-3 h-3" />
+                                <span>{program.hostingPlatform}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="text-xs text-gray-600">{program.stage || 'Active'}</span>
+                            </div>
+                            {program.startDate && (
+                              <span className="text-xs text-gray-500">
+                                {new Date(program.startDate).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Programs Yet</h3>
+                    <p className="text-gray-600 mb-4">Start creating your first coaching program to see it here</p>
+                    <Button
+                      onClick={() => window.location.href = '/dashboard?section=programs&niche=coach'}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Program
+                    </Button>
+                  </div>
+                )}
               </Card>
             </motion.div>
           )}
@@ -2868,7 +3274,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
         >
-              <BrandPortfolio brands={brands} />
+                              <BrandPortfolio 
+                  brands={brands} 
+                  onEditBrand={handleEditBrand}
+                  onDeleteBrand={handleDeleteBrand}
+                  onArchiveBrand={handleArchiveBrand}
+                />
         </motion.div>
           )}
 
@@ -3540,6 +3951,128 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
           )}
 
       </AnimatePresence>
+
+      {/* Brand/Client Edit Modal */}
+      <Dialog open={isBrandModalOpen} onOpenChange={setIsBrandModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedBrand ? 'Edit Contact' : 'Add New Contact'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="brand-name">Name</Label>
+                <Input
+                  id="brand-name"
+                  value={brandFormData.name}
+                  onChange={(e) => setBrandFormData({ ...brandFormData, name: e.target.value })}
+                  placeholder="Contact name"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="brand-email">Email</Label>
+                <Input
+                  id="brand-email"
+                  type="email"
+                  value={brandFormData.email}
+                  onChange={(e) => setBrandFormData({ ...brandFormData, email: e.target.value })}
+                  placeholder="email@example.com"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="brand-phone">Phone</Label>
+                <Input
+                  id="brand-phone"
+                  value={brandFormData.phone}
+                  onChange={(e) => setBrandFormData({ ...brandFormData, phone: e.target.value })}
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="brand-company">Company</Label>
+                <Input
+                  id="brand-company"
+                  value={brandFormData.company}
+                  onChange={(e) => setBrandFormData({ ...brandFormData, company: e.target.value })}
+                  placeholder="Company name"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="brand-address">Address</Label>
+                <Input
+                  id="brand-address"
+                  value={brandFormData.address}
+                  onChange={(e) => setBrandFormData({ ...brandFormData, address: e.target.value })}
+                  placeholder="102 Woodmont Drive"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="brand-value">Value</Label>
+                <Input
+                  id="brand-value"
+                  value={brandFormData.value}
+                  onChange={(e) => setBrandFormData({ ...brandFormData, value: e.target.value })}
+                  placeholder="e.g., $5000"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="brand-status">Status</Label>
+              <Select 
+                value={brandFormData.status} 
+                onValueChange={(value) => setBrandFormData({ ...brandFormData, status: value as 'lead' | 'client' | 'guest' | 'inactive' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lead">Lead</SelectItem>
+                  <SelectItem value="client">Client</SelectItem>
+                  {activeNiche === 'podcaster' && <SelectItem value="guest">Guest</SelectItem>}
+                  <SelectItem value="inactive">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="brand-notes">Notes</Label>
+              <Textarea
+                id="brand-notes"
+                value={brandFormData.notes}
+                onChange={(e) => setBrandFormData({ ...brandFormData, notes: e.target.value })}
+                placeholder="Add notes about this contact..."
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-3 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsBrandModalOpen(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveBrand} className="flex-1">
+              {selectedBrand ? 'Update' : 'Create'} Contact
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
         
         {/* Floating Action Button */}
         <motion.div

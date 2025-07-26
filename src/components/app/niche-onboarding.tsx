@@ -77,7 +77,7 @@ const NICHE_OPTIONS: NicheOption[] = [
     icon: <Mic className="w-8 h-8" />,
     color: "from-orange-500 to-red-500",
     examples: ["Sponsorship deals", "Premium content", "Live events", "Merchandise"],
-    defaultStages: ["Guest/Sponsor Outreach", "Awaiting Response", "In Conversation", "Negotiation", "Agreement in Place", "Scheduled", "Recorded", "Published", "Paid", "Archived / Lost"]
+            defaultStages: ["Guest Outreach", "Awaiting Response", "In Conversation", "Negotiation", "Agreement in Place", "Scheduled", "Recorded", "Published", "Paid", "Archived / Lost"]
   },
   {
     id: "freelancer",

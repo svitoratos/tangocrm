@@ -98,7 +98,7 @@ function getNicheStages(niche?: string): PipelineStage[] {
       ];
     case 'podcaster':
       return [
-        { id: 'outreach', name: 'Guest/Sponsor Outreach', color: STAGE_COLORS[0], opportunities: [], order: 1 },
+        { id: 'outreach', name: 'Guest Outreach', color: STAGE_COLORS[0], opportunities: [], order: 1 },
         { id: 'awaiting', name: 'Awaiting Response', color: STAGE_COLORS[1], opportunities: [], order: 2 },
         { id: 'conversation', name: 'In Conversation', color: STAGE_COLORS[2], opportunities: [], order: 3 },
         { id: 'negotiation', name: 'Negotiation', color: STAGE_COLORS[3], opportunities: [], order: 4 },

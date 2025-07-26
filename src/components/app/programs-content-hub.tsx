@@ -1204,7 +1204,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
-                  {item.enrolled || 0} students enrolled
+                  {item.enrolled || 0} clients
                 </span>
                 <span className="flex items-center gap-1 font-medium">
                   <Target className="h-3 w-3" />
@@ -3049,7 +3049,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-slate-600">Students Enrolled</p>
+                      <p className="text-sm text-slate-600">Clients</p>
                       <p className="text-2xl font-bold text-slate-900">47</p>
                     </div>
                     <Users className="h-8 w-8 text-cyan-600" />
@@ -3296,7 +3296,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                       <p className="text-sm">{selectedItem.customProgramType}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-slate-600">Students Enrolled</Label>
+                      <Label className="text-sm font-medium text-slate-600">Clients</Label>
                       <p className="text-sm">{selectedItem.enrolled || 0}</p>
                     </div>
                     <div>
@@ -3860,7 +3860,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="editCurrentEnrollments">Students Enrolled</Label>
+                        <Label htmlFor="editCurrentEnrollments">Clients</Label>
                         <Input
                           id="editCurrentEnrollments"
                           type="number"

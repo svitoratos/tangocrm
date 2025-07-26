@@ -48,13 +48,12 @@ interface ContactFormData {
   company: string;
   address: string;
   value: string;
-  status: 'lead' | 'client' | 'inactive';
+  status: 'lead' | 'client' | 'guest' | 'inactive';
   notes: string;
-  tags: string[];
 }
 
 type ViewMode = 'grid' | 'list';
-type StatusFilter = 'all' | 'lead' | 'client' | 'inactive';
+type StatusFilter = 'all' | 'lead' | 'client' | 'guest' | 'inactive';
 
 // Color scheme matching dashboard cards
 const colorClasses = {
@@ -94,8 +93,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
     address: '',
     value: '',
     status: 'client',
-    notes: '',
-    tags: []
+    notes: ''
   });
 
   // Load clients from localStorage
@@ -137,8 +135,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
     let filtered = contacts.filter(contact =>
       contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.company?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      contact.company?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     // Apply status filter
@@ -159,8 +156,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
       address: '',
       value: '',
       status: 'client',
-      notes: '',
-      tags: []
+      notes: ''
     });
     setIsModalOpen(true);
   };
@@ -175,8 +171,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
       address: contact.address || '',
       value: contact.value || '',
       status: contact.status,
-      notes: contact.notes || '',
-      tags: contact.tags || []
+      notes: contact.notes || ''
     });
     setIsModalOpen(true);
   };
@@ -228,6 +223,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
     const colors = {
       lead: 'bg-blue-100 text-blue-800',
       client: 'bg-green-100 text-green-800',
+      guest: 'bg-purple-100 text-purple-800',
       inactive: 'bg-gray-100 text-gray-800',
       archived: 'bg-gray-100 text-gray-800'
     };
@@ -238,6 +234,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
     const labels = {
       lead: 'Lead',
       client: 'Client',
+      guest: 'Guest',
       inactive: 'Archived',
       archived: 'Archived'
     };
@@ -248,6 +245,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
     switch (status) {
       case 'lead': return <User className="w-4 h-4" />
       case 'client': return <Users className="w-4 h-4" />
+      case 'guest': return <UserPlus className="w-4 h-4" />
       case 'inactive': return <Archive className="w-4 h-4" />
       default: return <User className="w-4 h-4" />
     }
@@ -258,6 +256,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
     switch (status) {
       case 'lead': return 'blue'
       case 'client': return 'emerald'
+      case 'guest': return 'purple'
       case 'inactive': return 'orange'
       default: return 'blue'
     }
@@ -353,21 +352,6 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
 
                 {contact.notes && (
                   <p className="text-sm text-gray-500 mt-3 line-clamp-2">{contact.notes}</p>
-                )}
-
-                {contact.tags && contact.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {contact.tags.slice(0, 3).map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {contact.tags.length > 3 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{contact.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
                 )}
               </div>
             </Card>
@@ -473,21 +457,6 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
                 {contact.notes && (
                   <p className="text-sm text-gray-500 mt-3">{contact.notes}</p>
                 )}
-
-                {contact.tags && contact.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {contact.tags.slice(0, 5).map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {contact.tags.length > 5 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{contact.tags.length - 5}
-                      </Badge>
-                    )}
-                  </div>
-                )}
               </div>
             </Card>
           </motion.div>
@@ -524,7 +493,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -607,10 +576,53 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
           </Card>
         </motion.div>
 
+        {activeNiche === 'podcaster' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            whileHover={{ 
+              scale: 1.02, 
+              y: -5,
+              transition: { duration: 0.2 }
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="group"
+          >
+            <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-48 w-full ${gradientClasses.purple}`}>
+              {/* Animated background gradient */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-4">
+                  <motion.div 
+                    className={`p-3 rounded-xl bg-gradient-to-r ${colorClasses.purple} text-white shadow-lg`}
+                    whileHover={{ rotate: 5, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <UserPlus className="w-6 h-6" />
+                  </motion.div>
+                </div>
+                <div className="flex-1 flex flex-col justify-end">
+                  <h3 className="text-sm font-medium text-gray-600 mb-1">Guests</h3>
+                  <motion.p 
+                    className="text-2xl font-bold text-gray-900 mb-1"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    {contacts.filter(c => c.status === 'guest').length}
+                  </motion.p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
           whileHover={{ 
             scale: 1.02, 
             y: -5,
@@ -671,6 +683,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
               <SelectItem value="all">All Contacts</SelectItem>
               <SelectItem value="lead">Leads</SelectItem>
               <SelectItem value="client">Clients</SelectItem>
+              {activeNiche === 'podcaster' && <SelectItem value="guest">Guests</SelectItem>}
               <SelectItem value="inactive">Archived</SelectItem>
             </SelectContent>
           </Select>
@@ -794,6 +807,7 @@ function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?
                   <SelectContent>
                     <SelectItem value="lead">Lead</SelectItem>
                     <SelectItem value="client">Client</SelectItem>
+                    {activeNiche === 'podcaster' && <SelectItem value="guest">Guest</SelectItem>}
                     <SelectItem value="inactive">Archived</SelectItem>
                   </SelectContent>
                 </Select>

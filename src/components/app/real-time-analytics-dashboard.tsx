@@ -445,13 +445,7 @@ export const RealTimeAnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({
               )}
             </Button>
             
-            {/* Last Updated */}
-            {lastUpdated && (
-              <div className="text-xs text-gray-500 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                Updated {lastUpdated.toLocaleTimeString()}
-              </div>
-            )}
+
           </div>
         </div>
 

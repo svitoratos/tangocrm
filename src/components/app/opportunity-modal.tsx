@@ -2077,7 +2077,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                       </>
                     ) : userNiche === 'podcaster' ? (
                       <>
-                        <SelectItem value="outreach">Guest/Sponsor Outreach</SelectItem>
+                        <SelectItem value="outreach">Guest Outreach</SelectItem>
                         <SelectItem value="awaiting">Awaiting Response</SelectItem>
                         <SelectItem value="conversation">In Conversation</SelectItem>
                         <SelectItem value="negotiation">Negotiation</SelectItem>

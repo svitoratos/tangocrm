@@ -65,7 +65,7 @@ export const PodcasterOpportunityCard = ({
   
   const getStageColor = (stageName: string) => {
     const colorMap: { [key: string]: string } = {
-      'Guest/Sponsor Outreach': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+              'Guest Outreach': 'bg-emerald-100 text-emerald-800 border-emerald-200',
       'Awaiting Response': 'bg-orange-100 text-orange-800 border-orange-200',
       'In Conversation': 'bg-blue-100 text-blue-800 border-blue-200',
       'Negotiation': 'bg-purple-100 text-purple-800 border-purple-200',

@@ -229,7 +229,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     const baseItems = [
       { id: 'dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
       { id: 'crm', icon: <Users size={20} />, label: 'CRM' },
-      { id: 'clients', icon: <User size={20} />, label: 'Clients & Contacts' },
+      { id: 'clients', icon: <User size={20} />, label: niche === 'podcaster' ? 'Contact Management' : 'Clients & Contacts' },
       { id: 'calendar', icon: <Calendar size={20} />, label: 'Calendar' },
       { id: 'analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
       { id: 'journal', icon: <BookOpen size={20} />, label: 'Journal/Goals' }

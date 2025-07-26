@@ -7,7 +7,7 @@ export interface Client {
   company?: string;
   address?: string;
   value?: string;
-  status: 'lead' | 'client' | 'inactive';
+  status: 'lead' | 'client' | 'guest' | 'inactive';
   notes?: string;
   tags?: string[];
   created_at: string;
@@ -22,7 +22,7 @@ export interface CreateClientData {
   company?: string;
   address?: string;
   value?: string;
-  status?: 'lead' | 'client' | 'inactive';
+  status?: 'lead' | 'client' | 'guest' | 'inactive';
   notes?: string;
   tags?: string[];
 }
