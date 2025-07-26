@@ -231,8 +231,10 @@ interface FormData {
   customPlatformCreator?: string;
   postType?: string;
   customPostType?: string;
-  revenueSplits?: Array<{ amount: number | undefined; type: '%' | '$'; with: string }>;
   script?: string;
+  
+  // Revenue splits (available for all niches)
+  revenueSplits?: Array<{ amount: number | undefined; type: '%' | '$'; with: string }>;
   
   // Calculated revenue fields (auto-generated)
   calculatedGrossRevenue?: number;
@@ -868,9 +870,28 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
       
-              // Auto-calculate revenue splits when deal value, revenue splits, or status changes
-        if (field === 'dealValue' || field === 'revenueSplits' || field === 'status') {
-          const dealValue = field === 'dealValue' ? value : newData.dealValue || 0;
+              // Auto-calculate revenue splits when deal value, proposed value, project value, revenue splits, or status changes
+        if (field === 'dealValue' || field === 'proposedValue' || field === 'projectValue' || field === 'revenueSplits' || field === 'status') {
+          // Get the appropriate value field based on niche
+          let dealValue = 0;
+          if (field === 'dealValue') {
+            dealValue = value;
+          } else if (field === 'proposedValue') {
+            dealValue = value;
+          } else if (field === 'projectValue') {
+            dealValue = value;
+          } else {
+            // Use the appropriate value field for the current niche
+            if (userNiche === 'creator') {
+              dealValue = newData.dealValue || 0;
+            } else if (userNiche === 'coach') {
+              dealValue = newData.proposedValue || 0;
+            } else if (userNiche === 'freelancer') {
+              dealValue = newData.projectValue || 0;
+            } else {
+              dealValue = newData.dealValue || 0;
+            }
+          }
           const revenueSplits = field === 'revenueSplits' ? value : newData.revenueSplits || [];
           
           // Always calculate revenue when deal value or revenue splits change
@@ -1654,6 +1675,80 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label>Revenue Split</Label>
+              <div className="flex flex-col gap-2">
+                {formData.revenueSplits && formData.revenueSplits.length > 0 && formData.revenueSplits.map((split, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      className="w-24"
+                      value={split.amount || ""}
+                      min={0}
+                      onChange={e => {
+                        const updated = [...formData.revenueSplits!];
+                        const value = e.target.value === "" ? undefined : Number(e.target.value);
+                        updated[idx] = { ...updated[idx], amount: value };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      placeholder="Amount"
+                    />
+                    <Select
+                      value={split.type}
+                      onValueChange={type => {
+                        const updated = [...formData.revenueSplits!];
+                        updated[idx] = { ...updated[idx], type: type as '%' | '$' };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                    >
+                      <SelectTrigger className="w-16">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="%">%</SelectItem>
+                        <SelectItem value="$">$</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      className="w-48"
+                      value={split.with}
+                      onChange={e => {
+                        const updated = [...formData.revenueSplits!];
+                        updated[idx] = { ...updated[idx], with: e.target.value };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      placeholder="Split with (e.g. Manager, Agency)"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const updated = formData.revenueSplits!.filter((_, i) => i !== idx);
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      aria-label="Remove split"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    handleInputChange("revenueSplits", [
+                      ...formData.revenueSplits!,
+                      { amount: undefined, type: "%", with: "" }
+                    ]);
+                  }}
+                >
+                  + Add Revenue Split
+                </Button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clientBudget">Client Budget</Label>
@@ -1890,6 +1985,80 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
               </div>
             </div>
             <div className="space-y-2">
+              <Label>Revenue Split</Label>
+              <div className="flex flex-col gap-2">
+                {formData.revenueSplits && formData.revenueSplits.length > 0 && formData.revenueSplits.map((split, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      className="w-24"
+                      value={split.amount || ""}
+                      min={0}
+                      onChange={e => {
+                        const updated = [...formData.revenueSplits!];
+                        const value = e.target.value === "" ? undefined : Number(e.target.value);
+                        updated[idx] = { ...updated[idx], amount: value };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      placeholder="Amount"
+                    />
+                    <Select
+                      value={split.type}
+                      onValueChange={type => {
+                        const updated = [...formData.revenueSplits!];
+                        updated[idx] = { ...updated[idx], type: type as '%' | '$' };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                    >
+                      <SelectTrigger className="w-16">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="%">%</SelectItem>
+                        <SelectItem value="$">$</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      className="w-48"
+                      value={split.with}
+                      onChange={e => {
+                        const updated = [...formData.revenueSplits!];
+                        updated[idx] = { ...updated[idx], with: e.target.value };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      placeholder="Split with (e.g. Manager, Agency)"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const updated = formData.revenueSplits!.filter((_, i) => i !== idx);
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      aria-label="Remove split"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    handleInputChange("revenueSplits", [
+                      ...formData.revenueSplits!,
+                      { amount: undefined, type: "%", with: "" }
+                    ]);
+                  }}
+                >
+                  + Add Revenue Split
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="episodeTitle">Episode Title</Label>
               <Input
                 id="episodeTitle"
@@ -2010,6 +2179,80 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                   onChange={(e) => handleInputChange("clientBudget", parseFloat(e.target.value))}
                   placeholder="Enter budget amount"
                 />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Revenue Split</Label>
+              <div className="flex flex-col gap-2">
+                {formData.revenueSplits && formData.revenueSplits.length > 0 && formData.revenueSplits.map((split, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      className="w-24"
+                      value={split.amount || ""}
+                      min={0}
+                      onChange={e => {
+                        const updated = [...formData.revenueSplits!];
+                        const value = e.target.value === "" ? undefined : Number(e.target.value);
+                        updated[idx] = { ...updated[idx], amount: value };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      placeholder="Amount"
+                    />
+                    <Select
+                      value={split.type}
+                      onValueChange={type => {
+                        const updated = [...formData.revenueSplits!];
+                        updated[idx] = { ...updated[idx], type: type as '%' | '$' };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                    >
+                      <SelectTrigger className="w-16">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="%">%</SelectItem>
+                        <SelectItem value="$">$</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      className="w-48"
+                      value={split.with}
+                      onChange={e => {
+                        const updated = [...formData.revenueSplits!];
+                        updated[idx] = { ...updated[idx], with: e.target.value };
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      placeholder="Split with (e.g. Manager, Agency)"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const updated = formData.revenueSplits!.filter((_, i) => i !== idx);
+                        handleInputChange("revenueSplits", updated);
+                      }}
+                      aria-label="Remove split"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    handleInputChange("revenueSplits", [
+                      ...formData.revenueSplits!,
+                      { amount: undefined, type: "%", with: "" }
+                    ]);
+                  }}
+                >
+                  + Add Revenue Split
+                </Button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
