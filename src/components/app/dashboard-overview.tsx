@@ -198,46 +198,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
             )}
           </div>
           
-          <div className={`flex items-center justify-between ${title === 'Growth Rate' ? 'mb-0' : 'mb-2'}`}>
-            <h3 className={`font-medium text-gray-600 ${title === 'Growth Rate' ? 'text-xs' : 'text-sm'}`}>{title}</h3>
-            <div className={`flex flex-col ${title === 'Growth Rate' ? 'gap-0' : 'gap-0.5'}`}>
-              {showGrowthTypeFilter && onGrowthTypeChange && (
-                <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                  <SelectTrigger className={`${title === 'Growth Rate' ? 'h-4 w-14' : 'h-5 w-16'} text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm ${title === 'Growth Rate' ? 'rounded px-1' : 'rounded-md px-2'}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="min-w-[100px]">
-                    <SelectItem value="revenue">Revenue</SelectItem>
-                    <SelectItem value="clients">Clients</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-              {showPeriodFilter && onPeriodChange && (
-                <Select value={period} onValueChange={onPeriodChange}>
-                  <SelectTrigger className={`${title === 'Growth Rate' ? 'h-4 w-16' : 'h-5 w-18'} text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm ${title === 'Growth Rate' ? 'rounded px-1' : 'rounded-md px-2'}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="min-w-[120px]">
-                    <SelectItem value="this-month">Month</SelectItem>
-                    <SelectItem value="this-quarter">Quarter</SelectItem>
-                    <SelectItem value="ytd">YTD</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-              {showRevenueTypeFilter && onRevenueTypeChange && (
-                <Select value={revenueType} onValueChange={onRevenueTypeChange}>
-                  <SelectTrigger className={`${title === 'Growth Rate' ? 'h-4 w-16' : 'h-5 w-18'} text-xs border border-gray-200 bg-white/80 hover:bg-white shadow-sm ${title === 'Growth Rate' ? 'rounded px-1' : 'rounded-md px-2'}`}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="min-w-[120px]">
-                    <SelectItem value="gross">Gross Revenue</SelectItem>
-                    <SelectItem value="net">Net Revenue</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-          </div>
+          <h3 className="text-sm font-medium text-gray-600 mb-2">{title}</h3>
           
           <motion.p 
             className="text-2xl font-bold text-gray-900 mb-1"
@@ -249,6 +210,53 @@ const MetricCard: React.FC<MetricCardProps> = ({
           </motion.p>
           {subtitle && (
             <p className="text-xs text-gray-500">{subtitle}</p>
+          )}
+          
+          {/* Growth Type Filter Dropdown */}
+          {showGrowthTypeFilter && onGrowthTypeChange && (
+            <div className="mt-auto pt-2">
+              <Select value={growthType} onValueChange={onGrowthTypeChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="revenue">Revenue</SelectItem>
+                  <SelectItem value="clients">Clients</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Period Filter Dropdown */}
+          {showPeriodFilter && onPeriodChange && (
+            <div className="mt-auto pt-2">
+              <Select value={period} onValueChange={onPeriodChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="this-month">This Month</SelectItem>
+                  <SelectItem value="this-quarter">This Quarter</SelectItem>
+                  <SelectItem value="ytd">YTD</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
+          {/* Revenue Type Filter Dropdown */}
+          {showRevenueTypeFilter && onRevenueTypeChange && (
+            <div className="mt-auto pt-2">
+              <Select value={revenueType} onValueChange={onRevenueTypeChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gross">Gross Revenue</SelectItem>
+                  <SelectItem value="net">Net Revenue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
         </div>
       </Card>
