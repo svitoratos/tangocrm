@@ -59,6 +59,7 @@ import OpportunityModal from './opportunity-modal'
 import { EventCreationModal } from './event-creation-modal'
 import { DateUtils } from '@/lib/date-utils'
 import { fetchClients } from '@/lib/client-service'
+import { useRevenueType } from '@/contexts/RevenueTypeContext'
 
 interface MetricCardProps {
   title: string
@@ -394,7 +395,7 @@ export default function DashboardOverview({
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalGrossRevenue, setTotalGrossRevenue] = useState(0);
   const [totalNetRevenue, setTotalNetRevenue] = useState(0);
-  const [revenueDisplayType, setRevenueDisplayType] = useState<'gross' | 'net'>('net');
+  const { revenueType: revenueDisplayType, setRevenueType: setRevenueDisplayType } = useRevenueType();
   const [growthRate, setGrowthRate] = useState(0);
   const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
   const [episodesCount, setEpisodesCount] = useState(0);

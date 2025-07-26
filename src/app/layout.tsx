@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TimezoneProvider } from "@/contexts/TimezoneContext";
 import { NicheProvider } from "@/contexts/NicheContext";
+import { RevenueTypeProvider } from "@/contexts/RevenueTypeContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -52,7 +53,9 @@ export default function RootLayout({
           >
             <TimezoneProvider>
               <NicheProvider>
-                {children}
+                <RevenueTypeProvider>
+                  {children}
+                </RevenueTypeProvider>
               </NicheProvider>
             </TimezoneProvider>
           </ThemeProvider>

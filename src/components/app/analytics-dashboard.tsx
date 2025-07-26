@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnalytics } from '@/hooks/use-analytics';
+import { useRevenueType } from '@/contexts/RevenueTypeContext';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -1450,7 +1451,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [calculatedRevenue, setCalculatedRevenue] = useState<number>(0);
   const [calculatedGrossRevenue, setCalculatedGrossRevenue] = useState<number>(0);
   const [calculatedNetRevenue, setCalculatedNetRevenue] = useState<number>(0);
-  const [revenueDisplayType, setRevenueDisplayType] = useState<'gross' | 'net'>('net');
+  const { revenueType: revenueDisplayType, setRevenueType: setRevenueDisplayType } = useRevenueType();
   const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
   const [calculatedClientGrowthRate, setCalculatedClientGrowthRate] = useState<number>(0);
 
