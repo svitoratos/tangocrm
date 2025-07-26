@@ -939,7 +939,6 @@ export default function DashboardOverview({
         icon: Target, 
         trend: 'up' as const, 
         color: 'cyan' as const,
-        subtitle: growthType === 'revenue' ? 'Revenue growth' : 'Client growth',
         onClick: () => onNavigate('analytics')
       }
     ]
@@ -1070,7 +1069,6 @@ export default function DashboardOverview({
             icon: Target, 
             trend: 'up' as const, 
             color: 'cyan' as const,
-            subtitle: growthType === 'revenue' ? 'Revenue growth' : 'Client growth',
             onClick: () => onNavigate('analytics')
           }
         ]
