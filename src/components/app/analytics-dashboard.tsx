@@ -178,23 +178,7 @@ const MetricCard: React.FC<{
             >
             <Icon className="w-6 h-6" />
             </motion.div>
-            {change !== undefined && (
-              <motion.div 
-                className="flex items-center space-x-1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-              {trend === 'up' ? (
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-red-600" />
-              )}
-                <span className={`text-sm font-bold ${trend === 'up' ? 'text-emerald-600' : 'text-red-600'}`}>
-                {change}%
-              </span>
-              </motion.div>
-            )}
+
           </div>
           <h3 className="text-sm font-medium text-gray-600 mb-2">{title}</h3>
           <motion.p 
