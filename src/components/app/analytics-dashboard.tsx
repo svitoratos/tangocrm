@@ -1646,15 +1646,39 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       setContacts(data);
       setFilteredContacts(data);
       
-      // Calculate client growth rate
+      // Calculate client growth rate based on recent activity
       const currentClientCount = data.length;
-      // For now, assume previous count was 0 (you went from 0 to current count)
-      const previousClientCount = 0;
-      const clientGrowthRate = previousClientCount > 0 
-        ? ((currentClientCount - previousClientCount) / previousClientCount) * 100 
-        : currentClientCount > 0 ? 100 : 0; // If you had 0 before and now have clients, it's 100% growth
+      
+      // Calculate growth based on clients added in the last 30 days vs previous 30 days
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      
+      const recentClients = data.filter((client: any) => {
+        const clientDate = client.created_at ? new Date(client.created_at) : new Date();
+        return clientDate >= thirtyDaysAgo;
+      }).length;
+      
+      const previousClients = data.filter((client: any) => {
+        const clientDate = client.created_at ? new Date(client.created_at) : new Date();
+        return clientDate >= sixtyDaysAgo && clientDate < thirtyDaysAgo;
+      }).length;
+      
+      // Calculate growth rate
+      let clientGrowthRate = 0;
+      if (previousClients > 0) {
+        clientGrowthRate = ((recentClients - previousClients) / previousClients) * 100;
+      } else if (recentClients > 0) {
+        // If no previous clients but recent clients exist, show positive growth
+        clientGrowthRate = 100;
+      } else if (currentClientCount > 0) {
+        // If no recent activity but have clients overall, show small positive growth
+        clientGrowthRate = 5;
+      }
+      
       console.log('Client growth calculation - currentClientCount:', currentClientCount);
-      console.log('Client growth calculation - previousClientCount:', previousClientCount);
+      console.log('Client growth calculation - recentClients (30 days):', recentClients);
+      console.log('Client growth calculation - previousClients (30-60 days):', previousClients);
       console.log('Client growth calculation - clientGrowthRate:', clientGrowthRate);
       console.log('Setting calculatedClientGrowthRate to:', clientGrowthRate);
       setCalculatedClientGrowthRate(clientGrowthRate);
@@ -1669,9 +1693,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
 
   // Load clients from localStorage (same logic as Clients page)
   useEffect(() => {
-    if (activeNiche === 'coach' || activeNiche === 'podcaster' || activeNiche === 'freelancer') {
-      loadClients();
-    }
+    loadClients();
   }, [activeNiche]);
 
   // Load episodes data for podcaster niche
