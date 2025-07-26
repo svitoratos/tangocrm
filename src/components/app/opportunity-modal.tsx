@@ -815,6 +815,20 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
     }
   }, [formData, errors]);
 
+  // Calculate revenue when form data is loaded or deal value/revenue splits change
+  useEffect(() => {
+    if (formData.dealValue !== undefined && formData.revenueSplits) {
+      const calculation = calculateRevenueSplit(formData.dealValue, formData.revenueSplits);
+      setFormData(prev => ({
+        ...prev,
+        calculatedGrossRevenue: calculation.grossRevenue,
+        calculatedSplitAmount: calculation.totalDeductions,
+        calculatedNetRevenue: calculation.netRevenue,
+        lastCalculatedAt: new Date().toISOString()
+      }));
+    }
+  }, [formData.dealValue, formData.revenueSplits]);
+
 
 
   // Debug form completion status
@@ -859,16 +873,17 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
           const dealValue = field === 'dealValue' ? value : newData.dealValue || 0;
           const revenueSplits = field === 'revenueSplits' ? value : newData.revenueSplits || [];
           
+          // Always calculate revenue when deal value or revenue splits change
           const calculation = calculateRevenueSplit(dealValue, revenueSplits);
           const validation = validateRevenueSplits(revenueSplits, dealValue);
         
-        // Update calculated fields
-        newData.calculatedGrossRevenue = calculation.grossRevenue;
-        newData.calculatedSplitAmount = calculation.totalDeductions;
-        newData.calculatedNetRevenue = calculation.netRevenue;
-        newData.lastCalculatedAt = new Date().toISOString();
+          // Update calculated fields
+          newData.calculatedGrossRevenue = calculation.grossRevenue;
+          newData.calculatedSplitAmount = calculation.totalDeductions;
+          newData.calculatedNetRevenue = calculation.netRevenue;
+          newData.lastCalculatedAt = new Date().toISOString();
         
-                  // Log validation errors if any
+          // Log validation errors if any
           if (!validation.isValid) {
             console.warn('Revenue split validation errors:', validation.errors);
           }
@@ -878,7 +893,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
             // Store completion timestamp
             newData.lastCalculatedAt = new Date().toISOString();
           }
-      }
+        }
       
       return newData;
     });
@@ -1523,6 +1538,39 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                 </Button>
               </div>
             </div>
+            
+            {/* Revenue Calculation Display */}
+            {(formData.calculatedGrossRevenue !== undefined || formData.calculatedNetRevenue !== undefined) && (
+              <div className="space-y-3 p-4 bg-gray-50 rounded-lg border">
+                <h4 className="font-medium text-gray-900">Revenue Calculation</h4>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="text-center">
+                    <p className="text-gray-600">Gross Revenue</p>
+                    <p className="font-semibold text-green-600">
+                      ${formData.calculatedGrossRevenue?.toLocaleString() || '0'}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-600">Revenue Splits</p>
+                    <p className="font-semibold text-red-600">
+                      -${formData.calculatedSplitAmount?.toLocaleString() || '0'}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-600">Net Revenue</p>
+                    <p className="font-semibold text-blue-600">
+                      ${formData.calculatedNetRevenue?.toLocaleString() || '0'}
+                    </p>
+                  </div>
+                </div>
+                {formData.lastCalculatedAt && (
+                  <p className="text-xs text-gray-500 text-center">
+                    Last calculated: {new Date(formData.lastCalculatedAt).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clientBudget">Client Budget</Label>
