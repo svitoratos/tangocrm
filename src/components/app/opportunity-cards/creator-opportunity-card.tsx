@@ -34,6 +34,10 @@ interface CreatorOpportunity {
   priority?: 'high' | 'medium' | 'low';
   notes?: string;
   outreachTouchpoint?: string;
+  revenueSplits?: Array<{ amount: number | undefined; type: '%' | '$'; with: string }>;
+  calculatedGrossRevenue?: number;
+  calculatedNetRevenue?: number;
+  calculatedSplitAmount?: number;
 }
 
 interface Stage {
@@ -304,6 +308,36 @@ export const CreatorOpportunityCard = ({
                 </span>
               </div>
             </div>
+
+            {/* Revenue Calculation Display */}
+            {(opportunity.calculatedGrossRevenue !== undefined || opportunity.calculatedNetRevenue !== undefined) && (
+              <div className="mt-3 space-y-2">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-100/50">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">Gross Revenue</span>
+                      <span className="text-xs font-semibold text-blue-600">
+                        ${opportunity.calculatedGrossRevenue?.toLocaleString() || '0'}
+                      </span>
+                    </div>
+                    {opportunity.calculatedSplitAmount && opportunity.calculatedSplitAmount > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-700">Revenue Split</span>
+                        <span className="text-xs font-semibold text-orange-600">
+                          -${opportunity.calculatedSplitAmount?.toLocaleString() || '0'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-1 border-t border-blue-100/50">
+                      <span className="text-xs font-medium text-gray-700">Net Revenue</span>
+                      <span className="text-xs font-semibold text-purple-600">
+                        ${opportunity.calculatedNetRevenue?.toLocaleString() || '0'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Last Activity Display */}
             <div className="mt-3 pt-3 border-t border-gray-100">
