@@ -70,15 +70,6 @@ interface MetricCardProps {
   subtitle?: string
   onClick?: () => void
   activeNiche?: string
-  showPeriodFilter?: boolean
-  period?: string
-  onPeriodChange?: (period: string) => void
-  showGrowthTypeFilter?: boolean
-  growthType?: string
-  onGrowthTypeChange?: (type: string) => void
-  showRevenueTypeFilter?: boolean
-  revenueType?: 'gross' | 'net'
-  onRevenueTypeChange?: (type: 'gross' | 'net') => void
 }
 
 interface ActivityItem {
@@ -134,16 +125,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   color,
   subtitle,
   onClick,
-  activeNiche = 'creator',
-  showPeriodFilter = false,
-  period = 'this-quarter',
-  onPeriodChange,
-  showGrowthTypeFilter = false,
-  growthType = 'revenue',
-  onGrowthTypeChange,
-  showRevenueTypeFilter = false,
-  revenueType = 'net',
-  onRevenueTypeChange
+  activeNiche = 'creator'
 }) => {
   
   return (
@@ -212,52 +194,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
             <p className="text-xs text-gray-500">{subtitle}</p>
           )}
           
-          {/* Growth Type Filter Dropdown */}
-          {showGrowthTypeFilter && onGrowthTypeChange && (
-            <div className="mt-auto pt-3">
-              <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                <SelectTrigger className="h-9 text-xs bg-white/90 border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 rounded-lg font-medium">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 shadow-lg rounded-lg">
-                  <SelectItem value="revenue" className="hover:bg-gray-50/80 cursor-pointer">Revenue</SelectItem>
-                  <SelectItem value="clients" className="hover:bg-gray-50/80 cursor-pointer">Clients</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          {/* Period Filter Dropdown */}
-          {showPeriodFilter && onPeriodChange && (
-            <div className="mt-auto pt-3">
-              <Select value={period} onValueChange={onPeriodChange}>
-                <SelectTrigger className="h-9 text-xs bg-white/90 border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 rounded-lg font-medium">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 shadow-lg rounded-lg">
-                  <SelectItem value="this-month" className="hover:bg-gray-50/80 cursor-pointer">This Month</SelectItem>
-                  <SelectItem value="this-quarter" className="hover:bg-gray-50/80 cursor-pointer">This Quarter</SelectItem>
-                  <SelectItem value="ytd" className="hover:bg-gray-50/80 cursor-pointer">YTD</SelectItem>
-                  <SelectItem value="custom" className="hover:bg-gray-50/80 cursor-pointer">Custom</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          {/* Revenue Type Filter Dropdown */}
-          {showRevenueTypeFilter && onRevenueTypeChange && (
-            <div className="mt-auto pt-3">
-              <Select value={revenueType} onValueChange={onRevenueTypeChange}>
-                <SelectTrigger className="h-9 text-xs bg-white/90 border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 rounded-lg font-medium">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 shadow-lg rounded-lg">
-                  <SelectItem value="gross" className="hover:bg-gray-50/80 cursor-pointer">Gross Revenue</SelectItem>
-                  <SelectItem value="net" className="hover:bg-gray-50/80 cursor-pointer">Net Revenue</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+
         </div>
       </Card>
     </motion.div>
@@ -993,13 +930,7 @@ export default function DashboardOverview({
         trend: 'up' as const, 
         color: 'emerald' as const,
         subtitle: getPeriodSubtitle(revenuePeriod),
-        onClick: () => onNavigate('analytics'),
-        showPeriodFilter: true,
-        period: revenuePeriod,
-        onPeriodChange: handleRevenuePeriodChange,
-        showRevenueTypeFilter: true,
-        revenueType: revenueDisplayType,
-        onRevenueTypeChange: setRevenueDisplayType
+        onClick: () => onNavigate('analytics')
       },
       { 
         title: 'Growth Rate', 
@@ -1009,13 +940,7 @@ export default function DashboardOverview({
         trend: 'up' as const, 
         color: 'cyan' as const,
         subtitle: growthType === 'revenue' ? 'Revenue growth' : 'Client growth',
-        onClick: () => onNavigate('analytics'),
-        showPeriodFilter: true,
-        period: growthPeriod,
-        onPeriodChange: handleGrowthPeriodChange,
-        showGrowthTypeFilter: true,
-        growthType: growthType,
-        onGrowthTypeChange: handleGrowthTypeChange
+        onClick: () => onNavigate('analytics')
       }
     ]
   }
@@ -1063,13 +988,7 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'orange' as const,
             subtitle: getPeriodSubtitle(revenuePeriod),
-            onClick: () => onNavigate('analytics'),
-            showPeriodFilter: true,
-            period: revenuePeriod,
-            onPeriodChange: handleRevenuePeriodChange,
-            showRevenueTypeFilter: true,
-            revenueType: revenueDisplayType,
-            onRevenueTypeChange: setRevenueDisplayType
+            onClick: () => onNavigate('analytics')
           }
         ]
 
@@ -1110,13 +1029,7 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'orange' as const,
             subtitle: getPeriodSubtitle(revenuePeriod),
-            onClick: () => onNavigate('analytics'),
-            showPeriodFilter: true,
-            period: revenuePeriod,
-            onPeriodChange: handleRevenuePeriodChange,
-            showRevenueTypeFilter: true,
-            revenueType: revenueDisplayType,
-            onRevenueTypeChange: setRevenueDisplayType
+            onClick: () => onNavigate('analytics')
           }
         ]
 
@@ -1148,13 +1061,7 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'orange' as const,
             subtitle: getPeriodSubtitle(revenuePeriod),
-            onClick: () => onNavigate('analytics'),
-            showPeriodFilter: true,
-            period: revenuePeriod,
-            onPeriodChange: handleRevenuePeriodChange,
-            showRevenueTypeFilter: true,
-            revenueType: revenueDisplayType,
-            onRevenueTypeChange: setRevenueDisplayType
+            onClick: () => onNavigate('analytics')
           },
           { 
             title: 'Growth Rate', 
@@ -1164,13 +1071,7 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'cyan' as const,
             subtitle: growthType === 'revenue' ? 'Revenue growth' : 'Client growth',
-            onClick: () => onNavigate('analytics'),
-            showPeriodFilter: true,
-            period: growthPeriod,
-            onPeriodChange: handleGrowthPeriodChange,
-            showGrowthTypeFilter: true,
-            growthType: growthType,
-            onGrowthTypeChange: handleGrowthTypeChange
+            onClick: () => onNavigate('analytics')
           }
         ]
 
