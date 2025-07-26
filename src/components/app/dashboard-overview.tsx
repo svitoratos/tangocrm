@@ -933,7 +933,7 @@ export default function DashboardOverview({
         onClick: () => onNavigate('analytics')
       },
       { 
-        title: 'Growth Rate', 
+        title: 'Rev Growth Rate', 
         value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${clientsCount > 0 ? 100 : 0}%`, 
         change: undefined, 
         icon: Target, 
@@ -1063,7 +1063,7 @@ export default function DashboardOverview({
             onClick: () => onNavigate('analytics')
           },
           { 
-            title: 'Growth Rate', 
+            title: 'Rev Growth Rate', 
             value: growthType === 'revenue' ? `${growthRate.toFixed(1)}%` : `${clientsCount > 0 ? 100 : 0}%`, 
             change: undefined, 
             icon: Target, 
