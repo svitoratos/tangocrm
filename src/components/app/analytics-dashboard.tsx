@@ -146,6 +146,8 @@ const MetricCard: React.FC<{
   growthType = 'revenue',
   onGrowthTypeChange
 }) => {
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const colorClasses = {
     emerald: 'from-emerald-500 to-emerald-600',
     orange: 'from-orange-500 to-orange-600',
@@ -209,6 +211,57 @@ const MetricCard: React.FC<{
                   <SelectItem value="custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {/* Custom Date Range Selector */}
+              {period === 'custom' && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs text-gray-600">From:</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-[80px] justify-start text-left font-normal text-xs"
+                        >
+                          {fromDate ? format(fromDate, "MM/dd") : "Date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={fromDate}
+                          onSelect={setFromDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs text-gray-600">To:</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-[80px] justify-start text-left font-normal text-xs"
+                        >
+                          {toDate ? format(toDate, "MM/dd") : "Date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={toDate}
+                          onSelect={setToDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
