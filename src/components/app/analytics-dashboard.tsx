@@ -2391,7 +2391,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       onRevenueTypeChange={setRevenueDisplayType}
                     />
                     <MetricCard
-                      title="Growth Rate"
+                      title="Rev Growth Rate"
                       value={`${calculatedGrowthRate.toFixed(1)}%`}
                       change={calculatedGrowthRate}
                       icon={Target}
