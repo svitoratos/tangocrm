@@ -214,14 +214,14 @@ const MetricCard: React.FC<MetricCardProps> = ({
           
           {/* Growth Type Filter Dropdown */}
           {showGrowthTypeFilter && onGrowthTypeChange && (
-            <div className="mt-auto pt-2">
+            <div className="mt-auto pt-3">
               <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                <SelectTrigger className="h-9 text-xs bg-white/90 border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 rounded-lg font-medium">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="revenue">Revenue</SelectItem>
-                  <SelectItem value="clients">Clients</SelectItem>
+                <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 shadow-lg rounded-lg">
+                  <SelectItem value="revenue" className="hover:bg-gray-50/80 cursor-pointer">Revenue</SelectItem>
+                  <SelectItem value="clients" className="hover:bg-gray-50/80 cursor-pointer">Clients</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -229,16 +229,16 @@ const MetricCard: React.FC<MetricCardProps> = ({
           
           {/* Period Filter Dropdown */}
           {showPeriodFilter && onPeriodChange && (
-            <div className="mt-auto pt-2">
+            <div className="mt-auto pt-3">
               <Select value={period} onValueChange={onPeriodChange}>
-                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                <SelectTrigger className="h-9 text-xs bg-white/90 border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 rounded-lg font-medium">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="this-month">This Month</SelectItem>
-                  <SelectItem value="this-quarter">This Quarter</SelectItem>
-                  <SelectItem value="ytd">YTD</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 shadow-lg rounded-lg">
+                  <SelectItem value="this-month" className="hover:bg-gray-50/80 cursor-pointer">This Month</SelectItem>
+                  <SelectItem value="this-quarter" className="hover:bg-gray-50/80 cursor-pointer">This Quarter</SelectItem>
+                  <SelectItem value="ytd" className="hover:bg-gray-50/80 cursor-pointer">YTD</SelectItem>
+                  <SelectItem value="custom" className="hover:bg-gray-50/80 cursor-pointer">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -246,14 +246,14 @@ const MetricCard: React.FC<MetricCardProps> = ({
           
           {/* Revenue Type Filter Dropdown */}
           {showRevenueTypeFilter && onRevenueTypeChange && (
-            <div className="mt-auto pt-2">
+            <div className="mt-auto pt-3">
               <Select value={revenueType} onValueChange={onRevenueTypeChange}>
-                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                <SelectTrigger className="h-9 text-xs bg-white/90 border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-200 rounded-lg font-medium">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gross">Gross Revenue</SelectItem>
-                  <SelectItem value="net">Net Revenue</SelectItem>
+                <SelectContent className="bg-white/95 backdrop-blur-sm border-gray-200/60 shadow-lg rounded-lg">
+                  <SelectItem value="gross" className="hover:bg-gray-50/80 cursor-pointer">Gross Revenue</SelectItem>
+                  <SelectItem value="net" className="hover:bg-gray-50/80 cursor-pointer">Net Revenue</SelectItem>
                 </SelectContent>
               </Select>
             </div>
