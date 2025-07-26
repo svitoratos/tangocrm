@@ -72,8 +72,9 @@ const gradientClasses = {
   cyan: 'bg-gradient-to-br from-cyan-50 to-cyan-100'
 } as const
 
-function ClientsPageWithSearchParams({ activeNiche = 'creator' }: { activeNiche?: string }) {
+function ClientsPageWithSearchParams() {
   const searchParams = useSearchParams();
+  const activeNiche = searchParams.get('niche') || 'creator';
   const [contacts, setContacts] = useState<Client[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Client[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -853,10 +854,10 @@ function LoadingFallback() {
   );
 }
 
-export default function ClientsPage({ activeNiche }: { activeNiche?: string }) {
+export default function ClientsPage() {
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <ClientsPageWithSearchParams activeNiche={activeNiche} />
+      <ClientsPageWithSearchParams />
     </Suspense>
   );
 }
