@@ -153,7 +153,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         )}
         
         <div className="relative z-10 h-full flex flex-col">
-          <div className={`flex items-center justify-between ${title === 'Growth Rate' ? 'mb-0' : 'mb-3'}`}>
+          <div className="flex items-center justify-between mb-3">
             <motion.div 
               className={`${title === 'Growth Rate' ? 'p-1 rounded' : 'p-2 rounded-lg'} bg-gradient-to-r ${colorClasses[color as keyof typeof colorClasses] || colorClasses.emerald} text-white ${title === 'Growth Rate' ? 'shadow-sm' : 'shadow-lg'}`}
               whileHover={{ rotate: 5, scale: 1.1 }}
