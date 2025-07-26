@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useAdmin } from '@/hooks/use-admin';
 import { useRouter } from 'next/navigation';
@@ -23,6 +23,8 @@ export const PaymentVerification: React.FC<PaymentVerificationProps> = ({
   requireActiveSubscription = true,
   requireOnboarding = true,
 }) => {
+  const [isClient, setIsClient] = useState(false);
+  
   const {
     hasCompletedOnboarding,
     hasActiveSubscription,
@@ -34,6 +36,23 @@ export const PaymentVerification: React.FC<PaymentVerificationProps> = ({
   
   const { isAdmin, isLoaded: isAdminLoaded } = useAdmin();
   const router = useRouter();
+
+  // Ensure we only render on client side to prevent hydration mismatches
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Show loading state during SSR and initial client render
+  if (!isClient) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-600" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading state
   if (isLoading || !isAdminLoaded) {
