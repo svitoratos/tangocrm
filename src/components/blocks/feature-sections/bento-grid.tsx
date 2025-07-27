@@ -222,7 +222,7 @@ export const SkeletonPodcaster = () => {
               <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">Recording</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
-              <span className="text-sm font-medium text-slate-700">Guest: Jane Doe</span>
+                                      <span className="text-sm font-medium text-slate-700">Guest: Dr. Christy R.</span>
               <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs">Scheduled</span>
             </div>
           </div>
