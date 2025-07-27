@@ -118,7 +118,7 @@ export function FooterWithGrid() {
             <Link href="https://www.instagram.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Instagram className="h-5 w-5" />
             </Link>
-            <Link href="https://facebook.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
+            <Link href="https://www.facebook.com/people/Tango-CRM/61578758103854/" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Facebook className="h-5 w-5" />
             </Link>
           </div>
