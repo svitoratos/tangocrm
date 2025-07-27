@@ -109,7 +109,7 @@ export function FooterWithGrid() {
             © {new Date().getFullYear()} Tango. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <Link href="https://twitter.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
+            <Link href="https://x.com/gotangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Twitter className="h-5 w-5" />
             </Link>
             <Link href="https://linkedin.com/company/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
