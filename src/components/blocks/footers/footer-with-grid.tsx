@@ -109,16 +109,16 @@ export function FooterWithGrid() {
             © {new Date().getFullYear()} Tango. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <Link href="#" className="text-slate-400 hover:text-emerald-600 transition-colors">
+            <Link href="https://twitter.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Twitter className="h-5 w-5" />
             </Link>
-            <Link href="#" className="text-slate-400 hover:text-emerald-600 transition-colors">
+            <Link href="https://linkedin.com/company/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Linkedin className="h-5 w-5" />
             </Link>
-            <Link href="#" className="text-slate-400 hover:text-emerald-600 transition-colors">
+            <Link href="https://www.instagram.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Instagram className="h-5 w-5" />
             </Link>
-            <Link href="#" className="text-slate-400 hover:text-emerald-600 transition-colors">
+            <Link href="https://facebook.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Facebook className="h-5 w-5" />
             </Link>
           </div>
