@@ -170,13 +170,13 @@ export const SkeletonCoach = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-700">Sarah Johnson</span>
+                                        <span className="text-sm font-medium text-slate-700">Sarah J.</span>
               </div>
               <span className="text-sm text-emerald-600 font-medium">Week 3</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-white rounded-lg">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-700">Mike Chen</span>
+                                        <span className="text-sm font-medium text-slate-700">Mike C.</span>
               </div>
               <span className="text-sm text-emerald-600 font-medium">Week 8</span>
             </div>
