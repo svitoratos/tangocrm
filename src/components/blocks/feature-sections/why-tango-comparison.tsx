@@ -77,7 +77,7 @@ export function WhyTangoComparison() {
   };
 
   return (
-    <section className="pt-2 pb-12 bg-gradient-to-br from-slate-50 to-slate-100">
+    <section className="pt-16 pb-12 bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
