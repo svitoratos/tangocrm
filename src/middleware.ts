@@ -35,6 +35,11 @@ const publicRoutes = createRouteMatcher([
   '/contact',
   '/privacy',
   '/terms',
+  '/blog(.*)',
+  '/creator-crm',
+  '/coach-crm',
+  '/podcaster-crm',
+  '/freelancer-crm',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
