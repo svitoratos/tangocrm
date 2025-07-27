@@ -8,6 +8,7 @@ import { NicheProvider } from "@/contexts/NicheContext";
 import { RevenueTypeProvider } from "@/contexts/RevenueTypeContext";
 import { defaultMetadata, structuredData } from "@/lib/metadata";
 import GoogleAnalytics from "@/components/analytics/google-analytics";
+import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -82,7 +83,9 @@ export default function RootLayout({
        />
         </head>
         <body className="antialiased bg-white">
-          <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID!} />
+          <Suspense fallback={null}>
+            <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID!} />
+          </Suspense>
           <ThemeProvider
             defaultTheme="light"
             storageKey="tango-theme"
