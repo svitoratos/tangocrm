@@ -8,7 +8,7 @@ import {
   Users, 
   DollarSign, 
   Target, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   Plus, 
   Activity,
   Clock,
@@ -43,7 +43,9 @@ import {
   AlertCircle,
   BarChart,
   Settings,
-  Radio
+  Radio,
+  Rocket,
+  Crown
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -55,6 +57,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { format } from 'date-fns'
 import OpportunityModal from './opportunity-modal'
 import { EventCreationModal } from './event-creation-modal'
 import { DateUtils } from '@/lib/date-utils'
@@ -71,6 +76,12 @@ interface MetricCardProps {
   subtitle?: string
   onClick?: () => void
   activeNiche?: string
+  showPeriodFilter?: boolean
+  period?: string
+  onPeriodChange?: (period: string) => void
+  showRevenueTypeFilter?: boolean
+  revenueType?: 'gross' | 'net'
+  onRevenueTypeChange?: (type: 'gross' | 'net') => void
 }
 
 interface ActivityItem {
@@ -126,8 +137,16 @@ const MetricCard: React.FC<MetricCardProps> = ({
   color,
   subtitle,
   onClick,
-  activeNiche = 'creator'
+  activeNiche = 'creator',
+  showPeriodFilter = false,
+  period,
+  onPeriodChange,
+  showRevenueTypeFilter = false,
+  revenueType,
+  onRevenueTypeChange
 }) => {
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
   
   return (
     <motion.div
@@ -195,6 +214,89 @@ const MetricCard: React.FC<MetricCardProps> = ({
             <p className="text-xs text-gray-500">{subtitle}</p>
           )}
           
+          {/* Period Filter Dropdown */}
+          {showPeriodFilter && onPeriodChange && (
+            <div className="mt-auto pt-2">
+              <Select value={period} onValueChange={onPeriodChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="this-month">This Month</SelectItem>
+                  <SelectItem value="this-quarter">This Quarter</SelectItem>
+                  <SelectItem value="ytd">YTD</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {/* Custom Date Range Selector */}
+              {period === 'custom' && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs text-gray-600">From:</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-[80px] justify-start text-left font-normal text-xs"
+                        >
+                          {fromDate ? format(fromDate, "MM/dd") : "Date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={fromDate}
+                          onSelect={setFromDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <Label className="text-xs text-gray-600">To:</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 w-[80px] justify-start text-left font-normal text-xs"
+                        >
+                          {toDate ? format(toDate, "MM/dd") : "Date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={toDate}
+                          onSelect={setToDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Revenue Type Filter Dropdown */}
+          {showRevenueTypeFilter && onRevenueTypeChange && (
+            <div className="mt-auto pt-2">
+              <Select value={revenueType} onValueChange={onRevenueTypeChange}>
+                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gross">Gross Revenue</SelectItem>
+                  <SelectItem value="net">Net Revenue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
 
         </div>
       </Card>
@@ -240,8 +342,8 @@ const TodayTaskItem: React.FC<{ task: TaskItem, onComplete: (id: string) => void
       case 'follow-up': return <ArrowUpRight className="h-4 w-4 text-blue-600" />
       case 'content': return <Camera className="h-4 w-4 text-purple-600" />
       case 'proposal': return <FileText className="h-4 w-4 text-indigo-600" />
-      case 'planning': return <Calendar className="h-4 w-4 text-cyan-600" />
-      case 'meeting': return <Calendar className="h-4 w-4 text-orange-600" />
+      case 'planning': return <CalendarIcon className="h-4 w-4 text-cyan-600" />
+      case 'meeting': return <CalendarIcon className="h-4 w-4 text-orange-600" />
       default: return <CheckSquare className="h-4 w-4 text-muted-foreground" />
     }
   }
@@ -298,7 +400,7 @@ const ActivityItem: React.FC<{ activity: ActivityItem, onNavigate?: (section: st
   const getActivityIcon = () => {
     switch (activity.type) {
       case 'opportunity': return <Target className="h-4 w-4 text-emerald-600" />
-      case 'meeting': return <Calendar className="h-4 w-4 text-orange-600" />
+      case 'meeting': return <CalendarIcon className="h-4 w-4 text-orange-600" />
       case 'task': return <CheckSquare className="h-4 w-4 text-blue-600" />
       case 'client': return <UserPlus className="h-4 w-4 text-purple-600" />
       case 'content': return <Camera className="h-4 w-4 text-pink-600" />
@@ -930,7 +1032,10 @@ export default function DashboardOverview({
         trend: 'up' as const, 
         color: 'emerald' as const,
         subtitle: getPeriodSubtitle(revenuePeriod),
-        onClick: () => onNavigate('analytics')
+        onClick: () => onNavigate('analytics'),
+        showRevenueTypeFilter: true,
+        revenueType: revenueDisplayType,
+        onRevenueTypeChange: setRevenueDisplayType
       },
       { 
         title: 'Rev Growth Rate', 
@@ -939,7 +1044,10 @@ export default function DashboardOverview({
         icon: Target, 
         trend: 'up' as const, 
         color: 'cyan' as const,
-        onClick: () => onNavigate('analytics')
+        onClick: () => onNavigate('analytics'),
+        showPeriodFilter: true,
+        period: growthPeriod,
+        onPeriodChange: handleGrowthPeriodChange
       }
     ]
   }
@@ -987,7 +1095,10 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'orange' as const,
             subtitle: getPeriodSubtitle(revenuePeriod),
-            onClick: () => onNavigate('analytics')
+            onClick: () => onNavigate('analytics'),
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
           }
         ]
 
@@ -1028,7 +1139,10 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'orange' as const,
             subtitle: getPeriodSubtitle(revenuePeriod),
-            onClick: () => onNavigate('analytics')
+            onClick: () => onNavigate('analytics'),
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
           }
         ]
 
@@ -1060,7 +1174,10 @@ export default function DashboardOverview({
             trend: 'up' as const, 
             color: 'orange' as const,
             subtitle: getPeriodSubtitle(revenuePeriod),
-            onClick: () => onNavigate('analytics')
+            onClick: () => onNavigate('analytics'),
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
           },
           { 
             title: 'Rev Growth Rate', 
@@ -1069,12 +1186,54 @@ export default function DashboardOverview({
             icon: Target, 
             trend: 'up' as const, 
             color: 'cyan' as const,
-            onClick: () => onNavigate('analytics')
+            onClick: () => onNavigate('analytics'),
+            showPeriodFilter: true,
+            period: growthPeriod,
+            onPeriodChange: handleGrowthPeriodChange
           }
         ]
 
       default:
-        return []
+        return [
+          { 
+            title: 'Total Revenue', 
+            value: `$${totalRevenue.toLocaleString()}`, 
+            change: undefined, 
+            icon: DollarSign, 
+            trend: 'up' as const, 
+            color: 'emerald' as const,
+            showRevenueTypeFilter: true,
+            revenueType: revenueDisplayType,
+            onRevenueTypeChange: setRevenueDisplayType
+          },
+          { 
+            title: 'Opportunities', 
+            value: opportunitiesCount.toString(), 
+            change: undefined, 
+            icon: Target, 
+            trend: 'up' as const, 
+            color: 'blue' as const
+          },
+          { 
+            title: 'Brands/Clients', 
+            value: clientsCount.toString(), 
+            change: undefined, 
+            icon: Users, 
+            trend: 'up' as const, 
+            color: 'purple' as const
+          },
+          { 
+            title: 'Rev Growth Rate', 
+            value: `${growthRate.toFixed(1)}%`, 
+            change: undefined, 
+            icon: Target, 
+            trend: 'up' as const, 
+            color: 'cyan' as const,
+            showPeriodFilter: true,
+            period: growthPeriod,
+            onPeriodChange: handleGrowthPeriodChange
+          }
+        ]
     }
   }
 
@@ -1100,20 +1259,20 @@ export default function DashboardOverview({
         return [
           { icon: Target, label: 'Add Opportunity', action: () => setIsOpportunityModalOpen(true) },
           { icon: CheckSquare, label: 'Create Task', action: () => setIsCreateTaskModalOpen(true) },
-          { icon: Calendar, label: 'Add Event', action: () => setIsAddEventModalOpen(true) }
+          { icon: CalendarIcon, label: 'Add Event', action: () => setIsAddEventModalOpen(true) }
         ]
       
       case 'freelancer':
         return [
           { icon: Target, label: 'Add Opportunity', action: () => setIsOpportunityModalOpen(true) },
-          { icon: Calendar, label: 'Add Event', action: () => setIsAddEventModalOpen(true) },
+          { icon: CalendarIcon, label: 'Add Event', action: () => setIsAddEventModalOpen(true) },
           { icon: CheckSquare, label: 'Create Task', action: () => setIsCreateTaskModalOpen(true) }
         ]
       
       default:
         return [
           { icon: Target, label: 'Add Opportunity', action: () => onNavigate('crm') },
-          { icon: Calendar, label: 'Schedule Meeting', action: () => onNavigate('calendar') },
+          { icon: CalendarIcon, label: 'Schedule Meeting', action: () => onNavigate('calendar') },
           { icon: CheckSquare, label: 'Create Task', action: () => onNavigate('calendar') }
         ]
     }
@@ -1303,7 +1462,7 @@ export default function DashboardOverview({
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
                     <div className="p-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg mr-3">
-                      <Calendar className="h-6 w-6" />
+                      <CalendarIcon className="h-6 w-6" />
                     </div>
                     <h3 className={`text-xl font-semibold ${
                       activeNiche === 'creator' || activeNiche === 'coach' || activeNiche === 'podcaster' || activeNiche === 'freelancer' ? 'text-gray-900' : 'text-foreground'
@@ -1334,7 +1493,7 @@ export default function DashboardOverview({
                     ))
                   ) : (
                     <div className="text-center py-8 text-gray-500">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                      <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-20" />
                       <p>No meetings scheduled for today</p>
                       <Button
                         variant="outline"
@@ -1438,16 +1597,6 @@ export default function DashboardOverview({
                   {recentActivities.map((activity) => (
                     <ActivityItem key={activity.id} activity={activity} onNavigate={onNavigate} />
                   ))}
-                </div>
-                <div className="p-4 border-t border-gray-200">
-                  <Button 
-                    variant="ghost" 
-                    className="text-sm text-gray-500 hover:text-gray-700"
-                    onClick={() => onNavigate('analytics')}
-                  >
-                    View all activity
-                    <ArrowUpRight className="h-4 w-4 ml-1" />
-                  </Button>
                 </div>
               </div>
             </Card>
@@ -1642,7 +1791,7 @@ export default function DashboardOverview({
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
+                <CalendarIcon className="h-5 w-5 mr-2" />
                 Schedule & Workflow
               </h3>
               

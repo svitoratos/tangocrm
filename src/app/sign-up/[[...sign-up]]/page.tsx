@@ -33,7 +33,7 @@ function SignUpWithSearchParams() {
               Join Tango
             </h1>
             <p className="text-white/80">
-              Start your free trial and transform your creator business
+              Join Tango and transform your creator business
             </p>
           </div>
           

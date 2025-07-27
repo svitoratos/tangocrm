@@ -1,6 +1,7 @@
 "use client"
 
 import { Check } from 'lucide-react'
+import Link from 'next/link'
 
 const tiers = [
   {
@@ -17,7 +18,7 @@ const tiers = [
       'Niche templates'
     ],
     featured: false,
-    cta: 'Start free trial',
+    cta: 'Join Tango',
   },
   {
     id: 'professional',
@@ -35,7 +36,7 @@ const tiers = [
       'Client portal access'
     ],
     featured: true,
-    cta: 'Start free trial',
+    cta: 'Join Tango',
   },
   {
     id: 'enterprise',
@@ -54,13 +55,13 @@ const tiers = [
       'Client portal access'
     ],
     featured: false,
-    cta: 'Start free trial',
+    cta: 'Join Tango',
   },
 ]
 
 export default function ThreeTiersWithEmphasizedTier() {
   return (
-    <form className="group/tiers bg-white py-16 sm:py-20">
+    <div className="group/tiers bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base/7 font-semibold text-emerald-600">Pricing</h2>
@@ -69,7 +70,7 @@ export default function ThreeTiersWithEmphasizedTier() {
           </p>
         </div>
         <p className="mx-auto mt-4 max-w-2xl text-center text-lg font-medium text-pretty text-slate-600 sm:text-xl/8">
-          Start your 14-day free trial today. Choose a plan that scales with your creator business and helps you manage your audience like a pro.
+          Choose a plan that scales with your creator business and helps you manage your audience like a pro.
         </p>
         <div className="mt-12 flex justify-center">
           <fieldset aria-label="Payment frequency">
@@ -135,15 +136,12 @@ export default function ThreeTiersWithEmphasizedTier() {
                 </>
               )}
 
-              <button
-                value={tier.id}
-                name="tier"
-                type="submit"
-                aria-describedby={`tier-${tier.id}`}
+              <Link
+                href="/sign-up"
                 className="mt-6 block w-full rounded-md bg-emerald-600 px-3 py-2 text-center text-sm/6 font-semibold text-white shadow-xs group-data-featured/tier:bg-white/10 group-data-featured/tier:text-white hover:bg-emerald-500 group-data-featured/tier:hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 group-data-featured/tier:focus-visible:outline-white"
               >
                 {tier.cta}
-              </button>
+              </Link>
               <ul
                 role="list"
                 className="mt-8 space-y-3 text-sm/6 text-slate-600 group-data-featured/tier:text-emerald-50 xl:mt-10"
@@ -162,6 +160,6 @@ export default function ThreeTiersWithEmphasizedTier() {
           ))}
         </div>
       </div>
-    </form>
+    </div>
   )
 }

@@ -7,7 +7,7 @@ export default function SimpleCenteredWithGradient() {
   const router = useRouter();
   const { isSignedIn } = useAuth();
 
-  const handleStartFreeTrial = () => {
+  const handleJoinTango = () => {
     if (isSignedIn) {
       // User is already signed in, go to app
       router.push('/?go_to_app=true');
@@ -31,7 +31,7 @@ export default function SimpleCenteredWithGradient() {
           </p>
           <div className="mt-8 flex items-center justify-center gap-x-6">
             <button
-              onClick={handleStartFreeTrial}
+              onClick={handleJoinTango}
               className="rounded-md bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 transition-colors"
             >
               Join Tango

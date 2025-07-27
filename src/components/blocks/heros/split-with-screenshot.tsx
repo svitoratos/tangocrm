@@ -114,6 +114,7 @@ const Navbar = ({ user, isLoaded, onLogout }: NavbarProps) => {
   const navItems = [
     { name: "Features", link: "#features" },
     { name: "Pricing", link: "#pricing" },
+    { name: "Blog", link: "/blog" },
     { name: "About", link: "/about" },
     { name: "Testimonials", link: "#testimonials" },
     { name: "FAQ", link: "#faq" },

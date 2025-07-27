@@ -70,6 +70,22 @@ export function FooterWithGrid() {
 
                 <ul className="text-base font-medium">
                   <li className="mb-4 text-sm font-bold text-slate-800 leading-none">
+                    Resources
+                  </li>
+                  {RESOURCE_LINKS.map((item, idx) => (
+                    <li key={"resource" + idx} className="mb-4 text-sm font-normal">
+                      <Link
+                        href={item.href}
+                        className="text-slate-500 hover:text-emerald-600 transition-colors"
+                      >
+                        {item.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                <ul className="text-base font-medium">
+                  <li className="mb-4 text-sm font-bold text-slate-800 leading-none">
                     Legal
                   </li>
                   {LEGAL_LINKS.map((item, idx) => (
@@ -127,4 +143,13 @@ const COMPANY_LINKS = [
 const LEGAL_LINKS = [
   { title: "Privacy Policy", href: "/privacy" },
   { title: "Terms of Service", href: "/terms" },
+];
+
+const RESOURCE_LINKS = [
+  { title: "Creator CRM Guide", href: "/blog/creator-crm-guide" },
+  { title: "Podcaster CRM Guide", href: "/blog/podcaster-crm-guide" },
+  { title: "Creator CRM Platform", href: "/creator-crm" },
+  { title: "Podcaster CRM Platform", href: "/podcaster-crm" },
+  { title: "Coach CRM Platform", href: "/coach-crm" },
+  { title: "Freelancer CRM Platform", href: "/freelancer-crm" },
 ];

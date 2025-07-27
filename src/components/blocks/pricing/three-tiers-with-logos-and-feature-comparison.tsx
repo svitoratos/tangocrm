@@ -7,7 +7,7 @@ const tiers = [
     name: 'Starter',
     description: 'Everything you need to get started.',
     priceMonthly: '$19',
-    href: '#',
+    href: '/sign-up',
     highlights: [
       { description: 'Custom domains' },
       { description: 'Edge content delivery' },
@@ -21,7 +21,7 @@ const tiers = [
     name: 'Growth',
     description: 'All the extras for your growing team.',
     priceMonthly: '$49',
-    href: '#',
+    href: '/sign-up',
     highlights: [
       { description: 'Custom domains' },
       { description: 'Edge content delivery' },
@@ -35,7 +35,7 @@ const tiers = [
     name: 'Scale',
     description: 'Added flexibility at scale.',
     priceMonthly: '$99',
-    href: '#',
+    href: '/sign-up',
     highlights: [
       { description: 'Custom domains' },
       { description: 'Edge content delivery' },
@@ -116,7 +116,7 @@ export default function ThreeTiersWithLogosAndFeatureComparison() {
                         aria-label={`Start a free trial on the ${tier.name} plan`}
                         className="inline-block rounded-md bg-indigo-600 px-3.5 py-2 text-center text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                       >
-                        Start a free trial
+                        Join Tango
                       </a>
                     </div>
                     <div className="mt-8">
