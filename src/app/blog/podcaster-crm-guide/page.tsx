@@ -35,8 +35,6 @@ export default function PodcasterCRMGuidePage() {
           <div className="flex items-center gap-4 text-gray-600 mb-8">
             <span>By Tango CRM Team</span>
             <span>•</span>
-            <span>Updated: {new Date().toLocaleDateString()}</span>
-            <span>•</span>
             <span>12 min read</span>
           </div>
           <p className="text-xl text-gray-600 leading-relaxed">
