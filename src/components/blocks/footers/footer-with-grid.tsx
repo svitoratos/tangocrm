@@ -112,9 +112,7 @@ export function FooterWithGrid() {
             <Link href="https://x.com/gotangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Twitter className="h-5 w-5" />
             </Link>
-            <Link href="https://linkedin.com/company/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
-              <Linkedin className="h-5 w-5" />
-            </Link>
+
             <Link href="https://www.instagram.com/tangocrm" className="text-slate-400 hover:text-emerald-600 transition-colors" target="_blank" rel="noopener noreferrer">
               <Instagram className="h-5 w-5" />
             </Link>
