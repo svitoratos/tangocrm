@@ -29,6 +29,7 @@ import { STRIPE_PAYMENT_LINKS } from '@/lib/stripe';
 
 interface OnboardingProps {
   userName?: string;
+  existingNiche?: string; // The niche the user already has
   onComplete?: (data: {
     roles: string[];
     goals: string[];
@@ -179,7 +180,7 @@ const setupTasks = [
   { id: "invite-team", label: "Invite team members", icon: Users },
 ];
 
-export const TangoOnboarding = ({ userName = "Creator", onComplete }: OnboardingProps) => {
+export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplete }: OnboardingProps) => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
@@ -202,8 +203,11 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
       if (prev.includes(roleId)) {
         return prev.filter(id => id !== roleId);
       } else {
-        // Only allow one niche selection
-        return [roleId];
+        // Allow up to 2 additional niches (excluding existing niche)
+        if (prev.length < 2) {
+          return [...prev, roleId];
+        }
+        return prev;
       }
     });
   };
@@ -279,7 +283,7 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
   const canContinue = () => {
     switch (currentStep) {
       case 1:
-        return selectedRoles.length > 0;
+        return selectedRoles.length > 0 && selectedRoles.length <= 2;
       case 2:
         return selectedGoals.length > 0;
       case 3:
@@ -368,7 +372,10 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
                       What best describes your business?
                     </h1>
                     <p className="text-slate-600 text-lg">
-                      Choose 1 niche to start — you can add more after signing up
+                      {existingNiche 
+                        ? `Add up to 2 additional niches to your existing ${roleOptions.find(r => r.id === existingNiche)?.label} plan`
+                        : 'Choose 1-2 niches to start — you can add more after signing up'
+                      }
                     </p>
                   </div>
 
@@ -377,7 +384,10 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
                       Start your Tango journey
                     </p>
                     <p className="text-sm text-emerald-700 mb-1 text-center">
-                      Choose 1 niche to start — you can upgrade and add more after signing up.
+                      {existingNiche 
+                        ? `Add up to 2 additional niches to your existing plan.`
+                        : 'Choose 1-2 niches to start — you can upgrade and add more after signing up.'
+                      }
                     </p>
                     <p className="text-sm text-emerald-700 text-center">
                       $39.99/month for your first niche $9.99/month for each additional niche
@@ -390,15 +400,24 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
                   {/* Selection Counter */}
                   <div className="text-center mb-4">
                     <p className="text-sm text-slate-600">
-                      {selectedRoles.length === 0 ? 'No niche selected' : '1 niche selected'}
+                      {selectedRoles.length === 0 
+                        ? 'No additional niche selected' 
+                        : `${selectedRoles.length} additional niche${selectedRoles.length > 1 ? 's' : ''} selected`
+                      }
                     </p>
+                    {existingNiche && (
+                      <p className="text-xs text-emerald-600 mt-1">
+                        You already have: {roleOptions.find(r => r.id === existingNiche)?.label}
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     {roleOptions.map((role) => {
                       const IconComponent = role.icon;
                       const isSelected = selectedRoles.includes(role.id);
-                      const isDisabled = !isSelected && selectedRoles.length >= 1;
+                      const isExistingNiche = existingNiche === role.id;
+                      const isDisabled = isExistingNiche || (!isSelected && selectedRoles.length >= 2);
                       
                       return (
                         <motion.div
@@ -408,12 +427,14 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
                           className="h-full"
                         >
                           <Card 
-                            className={`cursor-pointer transition-all duration-200 p-6 border-2 h-full flex flex-col ${
+                            className={`transition-all duration-200 p-6 border-2 h-full flex flex-col ${
                               isSelected
-                                ? "border-emerald-500 bg-emerald-50 shadow-lg"
+                                ? "cursor-pointer border-emerald-500 bg-emerald-50 shadow-lg"
+                                : isExistingNiche
+                                ? "border-emerald-200 bg-emerald-25 opacity-60 cursor-not-allowed"
                                 : isDisabled
-                                ? "border-stone-200 bg-stone-50 opacity-50"
-                                : "border-stone-200 hover:border-emerald-200 hover:shadow-md bg-white"
+                                ? "border-stone-200 bg-stone-50 opacity-50 cursor-not-allowed"
+                                : "cursor-pointer border-stone-200 hover:border-emerald-200 hover:shadow-md bg-white"
                             }`}
                             onClick={() => !isDisabled && handleRoleToggle(role.id)}
                           >
@@ -428,9 +449,16 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
                                   } text-white`}>
                                     <IconComponent className="w-6 h-6" />
                                   </div>
-                                  <h3 className="text-xl font-semibold text-slate-800">
-                                    {role.label}
-                                  </h3>
+                                  <div className="flex flex-col">
+                                    <h3 className="text-xl font-semibold text-slate-800">
+                                      {role.label}
+                                    </h3>
+                                    {isExistingNiche && (
+                                      <Badge className="w-fit text-xs bg-emerald-100 text-emerald-700 border-emerald-200">
+                                        Already Owned
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
                                 {isSelected && (
                                   <Check className="w-6 h-6 text-emerald-500" />
