@@ -8,6 +8,7 @@ import { NicheProvider } from "@/contexts/NicheContext";
 import { RevenueTypeProvider } from "@/contexts/RevenueTypeContext";
 import { defaultMetadata, structuredData } from "@/lib/metadata";
 import GoogleAnalytics from "@/components/analytics/google-analytics";
+import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 
 const inter = Inter({
@@ -98,6 +99,7 @@ export default function RootLayout({
               </NicheProvider>
             </TimezoneProvider>
           </ThemeProvider>
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
