@@ -9,6 +9,7 @@ import { RevenueTypeProvider } from "@/contexts/RevenueTypeContext";
 import { defaultMetadata, structuredData } from "@/lib/metadata";
 import GoogleAnalytics from "@/components/analytics/google-analytics";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Suspense } from "react";
 
 const inter = Inter({
@@ -100,6 +101,7 @@ export default function RootLayout({
             </TimezoneProvider>
           </ThemeProvider>
           <Analytics />
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>
