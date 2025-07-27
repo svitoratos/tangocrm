@@ -85,10 +85,10 @@ export default function SplitWithScreenshot({ showLoggedInState = false }: Split
                 >
                   Join Tango
                 </Link>
-                <a href="#" className="inline-flex items-center gap-x-2 text-sm/6 font-semibold text-orange-600 hover:text-orange-700">
+                <Link href="/about" className="inline-flex items-center gap-x-2 text-sm/6 font-semibold text-orange-600 hover:text-orange-700">
                   <IconPlayerPlay className="size-4" />
                   Learn More
-                </a>
+                </Link>
               </>
             )}
           </div>
