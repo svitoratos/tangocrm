@@ -166,14 +166,7 @@ export const FeaturedImages = ({
           ))}
         </div>
       </div>
-      <p
-        className={cn(
-          "relative z-40 text-left text-sm text-neutral-400",
-          textClassName
-        )}
-      >
-        Trusted by 27,000+ creators
-      </p>
+
     </div>
   );
 };

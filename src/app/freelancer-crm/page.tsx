@@ -127,10 +127,7 @@ export default function FreelancerCRMPage() {
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
                 <span>4.8/5 rating</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span>1200+ freelancers</span>
-              </div>
+
               <div className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-500" />
                 <span>No setup fees</span>
