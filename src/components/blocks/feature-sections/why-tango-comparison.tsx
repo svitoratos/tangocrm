@@ -45,7 +45,7 @@ export function WhyTangoComparison() {
     {
       feature: '💸 Transparent pricing',
               tango: { status: 'yes', text: '$39.99/month' },
-      traditional: { status: 'no', text: 'Confusing tiered pricing' }
+      traditional: { status: 'no', text: 'Confusing tiers, expensive add-ons, and not built for creators' }
     },
     {
       feature: '🧠 Easy to use, no setup needed',
