@@ -20,6 +20,7 @@ export function TangoHeader() {
     { name: "About", link: "/about" },
     { name: "Testimonials", link: "/#testimonials" },
     { name: "FAQ", link: "/#faq" },
+    { name: "Blog", link: "/blog" },
     { name: "Contact", link: "/contact" }
   ];
 
