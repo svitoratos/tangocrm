@@ -49,9 +49,6 @@ export default function SplitWithScreenshot({ showLoggedInState = false }: Split
               <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm/6 font-semibold text-emerald-600 ring-1 ring-emerald-500/10 ring-inset">
                 Trusted by Thousands of Creators Worldwide
               </span>
-              <span className="inline-flex items-center space-x-2 text-sm/6 font-medium text-slate-600">
-                <IconChevronRight aria-hidden="true" className="size-5 text-slate-400" />
-              </span>
             </div>
           </div>
 
