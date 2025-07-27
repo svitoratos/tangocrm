@@ -101,6 +101,62 @@ const NICHE_GOALS = {
   ],
 };
 
+// Niche-specific features for pricing section
+const NICHE_FEATURES = {
+  "content-creator": [
+    "Unlimited clients & opportunities",
+    "Content planning & scheduling",
+    "Goal tracking & analytics",
+    "Calendar management",
+    "Brand deal management"
+  ],
+  "coach": [
+    "Unlimited clients & opportunities",
+    "Programs/content planning & scheduling",
+    "Goal tracking & analytics",
+    "Calendar management",
+    "Journal & reflection tools"
+  ],
+  "podcaster": [
+    "Unlimited guests/clients & opportunities",
+    "Episode/content planning & scheduling",
+    "Goal tracking & analytics",
+    "Calendar management",
+    "Sponsorship tracking"
+  ],
+  "freelancer": [
+    "Unlimited clients & opportunities",
+    "Projects/content planning & scheduling",
+    "Goal tracking & analytics",
+    "Calendar management",
+    "Project management"
+  ],
+};
+
+// Niche-specific "Plus" features
+const NICHE_PLUS_FEATURES = {
+  "content-creator": [
+    "Journal & reflection tools",
+    "Email support",
+    "Mobile responsive dashboard"
+  ],
+  "coach": [
+    "Journal & reflection tools",
+    "Email support",
+    "Mobile responsive dashboard"
+  ],
+  "podcaster": [
+    "Journal & reflection tools",
+    "Email support",
+    "Mobile responsive dashboard"
+  ],
+  "freelancer": [
+    "Journal & reflection tools",
+    "Email support",
+    "Mobile responsive dashboard"
+  ],
+};
+
 // Function to get relevant goals based on selected roles
 const getRelevantGoals = (selectedRoles: string[]) => {
   const allGoals = new Map<string, { id: string; label: string }>();
@@ -237,6 +293,18 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
 
   const getSelectedRoleLabels = () => {
     return selectedRoles.map(roleId => roleOptions.find(role => role.id === roleId)?.label || "").join(", ");
+  };
+
+  const getNicheFeatures = () => {
+    // If multiple roles selected, use the first one for features
+    const primaryRole = selectedRoles[0] || "content-creator";
+    return NICHE_FEATURES[primaryRole as keyof typeof NICHE_FEATURES] || NICHE_FEATURES["content-creator"];
+  };
+
+  const getNichePlusFeatures = () => {
+    // If multiple roles selected, use the first one for features
+    const primaryRole = selectedRoles[0] || "content-creator";
+    return NICHE_PLUS_FEATURES[primaryRole as keyof typeof NICHE_PLUS_FEATURES] || NICHE_PLUS_FEATURES["content-creator"];
   };
 
   return (
@@ -611,22 +679,23 @@ export const TangoOnboarding = ({ userName = "Creator", onComplete }: Onboarding
                       <div className="space-y-3">
                         <h3 className="font-semibold text-gray-900 text-center">What's included:</h3>
                         <ul className="space-y-2 text-sm text-gray-600 flex flex-col items-center">
-                          <li className="flex items-center">
-                            <span className="mr-2">•</span> Unlimited client management
-                          </li>
-                          <li className="flex items-center">
-                            <span className="mr-2">•</span> Advanced CRM pipeline
-                          </li>
-                          <li className="flex items-center">
-                            <span className="mr-2">•</span> Revenue tracking & analytics
-                          </li>
-                          <li className="flex items-center">
-                            <span className="mr-2">•</span> Content calendar & scheduling
-                          </li>
-                          <li className="flex items-center">
-                            <span className="mr-2">•</span> Brand deal management
-                          </li>
+                          {getNicheFeatures().map((feature, index) => (
+                            <li key={index} className="flex items-center">
+                              <span className="mr-2">•</span> {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
 
+                      {/* Plus features */}
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-gray-900 text-center">Plus:</h3>
+                        <ul className="space-y-2 text-sm text-gray-600 flex flex-col items-center">
+                          {getNichePlusFeatures().map((feature, index) => (
+                            <li key={index} className="flex items-center">
+                              <span className="mr-2">•</span> {feature}
+                            </li>
+                          ))}
                         </ul>
                       </div>
 
