@@ -328,10 +328,10 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
           </Link>
         </div>
         <div className="flex items-center space-x-4">
-          {/* Back to Landing Page Button */}
+          {/* Back Button */}
           <Link href="/" className="flex items-center space-x-2 text-sm text-slate-600 hover:text-slate-800 transition-colors">
             <ChevronLeft className="w-4 h-4" />
-            <span>Back to Landing</span>
+            <span>Back</span>
           </Link>
           
           {/* Progress Dots */}
