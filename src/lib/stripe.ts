@@ -27,23 +27,23 @@ export const STRIPE_CONFIG = {
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
 };
 
-// Payment Links for different niches
+// Payment Links for different niches (Test Mode)
 export const STRIPE_PAYMENT_LINKS = {
   creator: {
-    monthly: 'https://buy.stripe.com/fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/00weVefZE5Y7cJqbCs2Nq01',
+    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
   },
   coach: {
-    monthly: 'https://buy.stripe.com/fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/00weVefZE5Y7cJqbCs2Nq01',
+    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
   },
   podcaster: {
-    monthly: 'https://buy.stripe.com/fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/00weVefZE5Y7cJqbCs2Nq01',
+    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
   },
   freelancer: {
-    monthly: 'https://buy.stripe.com/fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/00weVefZE5Y7cJqbCs2Nq01',
+    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
   },
 };
 
