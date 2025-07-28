@@ -240,28 +240,31 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       console.log('Starting trial with billing cycle:', billingCycle);
       console.log('Selected roles:', selectedRoles);
       
-      // Map role IDs to payment link keys
-      const roleToPaymentKey: Record<string, keyof typeof STRIPE_PAYMENT_LINKS> = {
-        'content-creator': 'creator',
-        'coach': 'coach',
-        'podcaster': 'podcaster',
-        'freelancer': 'freelancer'
-      };
+      // Create checkout session with proper return URL
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billingCycle,
+          selectedRoles,
+          selectedGoals,
+          selectedSetupTask,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
       
-      // Use the payment link for the selected niche and billing cycle
-      const selectedRole = selectedRoles[0] || 'content-creator';
-      const selectedNiche = roleToPaymentKey[selectedRole] || 'creator';
-      const paymentLink = STRIPE_PAYMENT_LINKS[selectedNiche]?.[billingCycle];
-      
-      console.log('Selected role:', selectedRole);
-      console.log('Mapped niche:', selectedNiche);
-      console.log('Payment link:', paymentLink);
-      
-      if (paymentLink) {
-        // Redirect to Stripe payment link
-        window.location.href = paymentLink;
+      if (url) {
+        // Redirect to Stripe checkout with proper return URL
+        window.location.href = url;
       } else {
-        throw new Error('Payment link not available. Please contact support.');
+        throw new Error('No checkout URL received');
       }
     } catch (err) {
       console.error('Payment error:', err);
@@ -271,13 +274,44 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
     }
   };
 
-  const handleComplete = (skipSetup = false) => {
-    const data = {
-      roles: selectedRoles,
-      goals: selectedGoals,
-      setupTask: skipSetup ? undefined : selectedSetupTask,
-    };
-    onComplete?.(data);
+  const handleComplete = async (skipSetup = false) => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Save onboarding data to the database
+      const response = await fetch('/api/user/onboarding-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          onboardingCompleted: true,
+          primaryNiche: selectedRoles[0] || 'creator',
+          niches: selectedRoles,
+          goals: selectedGoals,
+          setupTask: skipSetup ? undefined : selectedSetupTask,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save onboarding data');
+      }
+
+      const data = {
+        roles: selectedRoles,
+        goals: selectedGoals,
+        setupTask: skipSetup ? undefined : selectedSetupTask,
+      };
+      
+      // Call the onComplete callback to trigger redirect
+      onComplete?.(data);
+    } catch (err) {
+      console.error('Onboarding completion error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to complete onboarding');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const canContinue = () => {
@@ -373,8 +407,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     </h1>
                     <p className="text-slate-600 text-lg">
                       {existingNiche 
-                        ? `Add up to 2 additional niches to your existing ${roleOptions.find(r => r.id === existingNiche)?.label} plan`
-                        : 'Choose 1-2 niches to start — you can add more after signing up'
+                        ? `Add 1 additional niche to your existing ${roleOptions.find(r => r.id === existingNiche)?.label} plan`
+                        : 'Choose 1 niche to start — you can add more after signing up'
                       }
                     </p>
                   </div>
@@ -385,8 +419,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     </p>
                     <p className="text-sm text-emerald-700 mb-1 text-center">
                       {existingNiche 
-                        ? `Add up to 2 additional niches to your existing plan.`
-                        : 'Choose 1-2 niches to start — you can upgrade and add more after signing up.'
+                        ? `Add 1 additional niche to your existing plan.`
+                        : 'Choose 1 niche to start — you can upgrade and add more after signing up.'
                       }
                     </p>
                     <p className="text-sm text-emerald-700 text-center">
@@ -401,8 +435,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                   <div className="text-center mb-4">
                     <p className="text-sm text-slate-600">
                       {selectedRoles.length === 0 
-                        ? 'No additional niche selected' 
-                        : `${selectedRoles.length} additional niche${selectedRoles.length > 1 ? 's' : ''} selected`
+                        ? 'No niche selected' 
+                        : '1 niche selected'
                       }
                     </p>
                     {existingNiche && (
@@ -417,7 +451,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                       const IconComponent = role.icon;
                       const isSelected = selectedRoles.includes(role.id);
                       const isExistingNiche = existingNiche === role.id;
-                      const isDisabled = isExistingNiche || (!isSelected && selectedRoles.length >= 2);
+                      const isDisabled = isExistingNiche || (!isSelected && selectedRoles.length >= 1);
                       
                       return (
                         <motion.div
@@ -750,6 +784,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                             "Start Your Journey"
                           )}
                         </Button>
+                        
+
                       </div>
 
                       {/* Security notice */}

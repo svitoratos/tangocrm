@@ -28,6 +28,21 @@ interface Niche {
 
 const NICHE_DATA: Niche[] = [
   {
+    id: 'creator',
+    name: 'Creator',
+    label: 'Content Creator',
+    icon: <Video size={24} />,
+    color: '#8b5cf6',
+    price: 9.99,
+    description: 'Perfect for content creators and influencers',
+    features: [
+      'Content planning & scheduling',
+      'Brand collaboration tracking',
+      'Audience engagement metrics',
+      'Calendar and Task Management'
+    ]
+  },
+  {
     id: 'coach',
     name: 'Coach',
     label: 'Online Coach',

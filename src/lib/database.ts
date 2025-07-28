@@ -15,37 +15,130 @@ export type Deal = Opportunity
 // User operations
 export const userOperations = {
   async getProfile(userId: string): Promise<User | null> {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    console.log('🔧 getProfile called for userId:', userId);
     
-    if (error) {
-      console.error('Error getting user profile:', error)
-      return null
+    try {
+      // First try to get user by ID
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        console.error('❌ Error fetching user profile:', error);
+        return null;
+      }
+      
+      if (data) {
+        console.log('✅ getProfile successful by ID:', data);
+        return data;
+      }
+      
+      // If not found by ID, try to get by email (for cases where user exists with different ID)
+      console.log('🔧 User not found by ID, checking if we can find by email...');
+      
+      // We need to get the email from the current user context
+      // For now, we'll return null and let the calling function handle this
+      console.log('🔧 User not found by ID, returning null');
+      return null;
+      
+    } catch (err) {
+      console.error('❌ Exception in getProfile:', err);
+      return null;
     }
-    
-    return data
   },
 
   async upsertProfile(userId: string, profile: Partial<User>): Promise<User | null> {
-    const { data, error } = await supabase
-      .from('users')
-      .upsert({
-        id: userId,
-        ...profile,
-        updated_at: new Date().toISOString()
-      })
-      .select()
-      .single()
+    console.log('🔧 upsertProfile called with:', { userId, profile });
     
-    if (error) {
-      console.error('Error upserting user profile:', error)
-      return null
+    try {
+      // First, try to get the existing user by ID
+      const existingUser = await this.getProfile(userId);
+      
+      if (existingUser) {
+        // User exists, update the profile
+        console.log('🔧 User exists, updating profile...');
+        const { data, error } = await supabase
+          .from('users')
+          .update({
+            ...profile,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+          .select()
+          .single()
+        
+        if (error) {
+          console.error('❌ Error updating user profile:', error);
+          return null
+        }
+        
+        console.log('✅ updateProfile successful:', data);
+        return data
+      } else {
+        // User doesn't exist by ID, check if user exists by email
+        if (profile.email) {
+          console.log('🔧 Checking if user exists by email...');
+          const { data: existingByEmail, error: emailError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', profile.email)
+            .single()
+          
+          if (existingByEmail && !emailError) {
+            // User exists by email but with different ID, update the existing record instead of changing ID
+            console.log('🔧 User exists by email, updating existing record...');
+            const { data, error } = await supabase
+              .from('users')
+              .update({
+                ...profile,
+                updated_at: new Date().toISOString()
+              })
+              .eq('email', profile.email)
+              .select()
+              .single()
+            
+            if (error) {
+              console.error('❌ Error updating existing user by email:', error);
+              return null
+            }
+            
+            console.log('✅ Updated existing user by email:', data);
+            return data
+          }
+        }
+        
+        // User doesn't exist at all, create new profile
+        console.log('🔧 User doesn\'t exist, creating new profile...');
+        const { data, error } = await supabase
+          .from('users')
+          .insert({
+            id: userId,
+            ...profile,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+        
+        if (error) {
+          console.error('❌ Error creating user profile:', error);
+          console.error('❌ Error details:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          });
+          return null
+        }
+        
+        console.log('✅ createProfile successful:', data);
+        return data
+      }
+    } catch (err) {
+      console.error('❌ Exception in upsertProfile:', err);
+      return null;
     }
-    
-    return data
   },
 
   async updateProfile(userId: string, updates: Partial<User>): Promise<User | null> {

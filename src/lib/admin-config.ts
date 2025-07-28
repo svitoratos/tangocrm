@@ -1,7 +1,6 @@
 // Admin configuration - central place to manage admin access
 export const ADMIN_EMAILS = [
   "stevenvitoratos@gmail.com", // Your email
-  "stevenvitoratos@getbondlyapp.com", // Temporary admin access
   // Add more admin emails here as needed
   // "admin2@example.com",
   // "admin3@example.com",

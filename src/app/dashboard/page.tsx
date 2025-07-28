@@ -235,7 +235,7 @@ function MainDashboardWithSearchParams() {
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches
-  const adminEmails = ['stevenvitoratos@gmail.com', 'stevenvitoratos@getbondlyapp.com'];
+  const adminEmails = ['stevenvitoratos@gmail.com'];
   const isAdmin = currentUser?.emailAddresses?.[0]?.emailAddress && adminEmails.includes(currentUser.emailAddresses[0].emailAddress);
   const availableNiches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : subscribedNiches;
 

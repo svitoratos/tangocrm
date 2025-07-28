@@ -43,7 +43,12 @@ function OnboardingPageContent() {
   }) => {
     // You can process the onboarding data here if needed
     console.log('Onboarding completed with data:', data);
-    router.push('/dashboard');
+    
+    // Redirect to success page with progress animation
+    const primaryNiche = data.roles[0] || 'creator';
+    const niches = data.roles;
+    
+    router.push(`/onboarding/success?niche=${primaryNiche}&niches=${JSON.stringify(niches)}`);
   };
 
   // Show loading state while checking onboarding status

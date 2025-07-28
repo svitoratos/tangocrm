@@ -1,74 +1,89 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import Stripe from 'stripe'
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+// Force test mode in development
+const isDevelopment = process.env.NODE_ENV === 'development' ||
+                     process.env.NEXT_PUBLIC_APP_URL?.includes('localhost') ||
+                     process.env.NEXT_PUBLIC_APP_URL?.includes('127.0.0.1');
+
+// Use test key for development, live key for production
+const stripeKey = isDevelopment 
+  ? process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY
+  : process.env.STRIPE_SECRET_KEY;
+
+if (!stripeKey) {
+  throw new Error('Stripe secret key is not configured');
+}
+
+const stripe = new Stripe(stripeKey, {
   apiVersion: '2025-06-30.basil',
-})
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
+    const { userId } = await auth();
+    
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { sessionId } = await request.json()
+    const body = await request.json();
+    const { sessionId } = body;
 
     if (!sessionId) {
-      return NextResponse.json(
-        { error: 'Session ID is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
-    // Retrieve the checkout session
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    // Retrieve the checkout session from Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
-    // Check if the session belongs to the current user
-    if (session.metadata?.clerk_user_id !== userId) {
-      return NextResponse.json(
-        { error: 'Session does not belong to user' },
-        { status: 403 }
-      )
+    // Check if the session is completed and payment was successful
+    if (session.payment_status === 'paid' && session.status === 'complete') {
+      console.log('✅ Session verified successfully:', {
+        sessionId,
+        paymentStatus: session.payment_status,
+        status: session.status,
+        customerId: session.customer,
+        metadata: session.metadata
+      });
+
+      return NextResponse.json({ 
+        verified: true, 
+        session: {
+          id: session.id,
+          paymentStatus: session.payment_status,
+          status: session.status,
+          customerId: session.customer,
+          metadata: session.metadata
+        }
+      });
+    } else {
+      console.log('❌ Session verification failed:', {
+        sessionId,
+        paymentStatus: session.payment_status,
+        status: session.status
+      });
+
+      return NextResponse.json({ 
+        verified: false, 
+        error: 'Payment not completed',
+        session: {
+          id: session.id,
+          paymentStatus: session.payment_status,
+          status: session.status
+        }
+      }, { status: 400 });
     }
-
-    // Check if the payment was successful
-    if (session.payment_status !== 'paid') {
-      return NextResponse.json(
-        { error: 'Payment not completed' },
-        { status: 400 }
-      )
-    }
-
-    // Here you would typically:
-    // 1. Update user's subscription status in your database
-    // 2. Set onboarding completion flag
-    // 3. Store niche preference
-    // 4. Create initial user data
-
-    return NextResponse.json({
-      success: true,
-      session: {
-        id: session.id,
-        payment_status: session.payment_status,
-        customer: session.customer,
-        subscription: session.subscription,
-        metadata: session.metadata,
-      },
-    })
   } catch (error) {
-    console.error('Session verification error:', error)
+    console.error('Session verification error:', error);
     return NextResponse.json(
       { error: 'Failed to verify session' },
       { status: 500 }
-    )
+    );
   }
 } 

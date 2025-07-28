@@ -373,47 +373,28 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     Switch Business Type
                   </p>
                 </div>
-                {niches.map((niche) => {
-                  const subscribed = isSubscribed(niche.id);
-                  return (
-                    <DropdownMenuItem
-                      key={niche.id}
-                      onClick={() => {
-                        if (subscribed) {
-                          onNicheChange(niche.id);
-                        } else {
-                          onAddNiche();
-                        }
-                      }}
-                      className={cn(
-                        "flex items-center gap-3 p-3 cursor-pointer",
-                        !subscribed && "opacity-50"
-                      )}
-                    >
-                      <div 
-                        className="flex-shrink-0" 
-                        style={{ 
-                          color: subscribed ? niche.color : '#9ca3af'
-                        }}
+                {niches
+                  .filter(niche => isSubscribed(niche.id))
+                  .map((niche) => {
+                    return (
+                      <DropdownMenuItem
+                        key={niche.id}
+                        onClick={() => onNicheChange(niche.id)}
+                        className="flex items-center gap-3 p-3 cursor-pointer"
                       >
-                        {niche.icon}
-                      </div>
-                      <div className="flex-1">
-                        <div className={cn(
-                          "text-sm font-medium",
-                          !subscribed && "text-muted-foreground font-normal"
-                        )}>
-                          {niche.name}
-                          {!subscribed && (
-                            <span className="ml-2 text-xs text-muted-foreground/60">
-                              (Upgrade)
-                            </span>
-                          )}
+                        <div 
+                          className="flex-shrink-0" 
+                          style={{ 
+                            color: niche.color
+                          }}
+                        >
+                          {niche.icon}
                         </div>
-                        <div className={cn(
-                          "text-xs",
-                          subscribed ? "text-muted-foreground" : "text-muted-foreground/60"
-                        )}>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">
+                          {niche.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
                           {niche.label}
                         </div>
                       </div>

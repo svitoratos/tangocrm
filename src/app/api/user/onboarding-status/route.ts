@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { userOperations } from '@/lib/database'
 
 export async function GET(request: NextRequest) {
@@ -46,16 +46,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🔧 Onboarding status POST request received');
+    
     const { userId } = await auth()
+    console.log('🔧 User ID from auth:', userId);
     
     if (!userId) {
+      console.error('❌ No user ID found in auth');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
+    const user = await currentUser()
+    console.log('🔧 Current user:', user?.emailAddresses?.[0]?.emailAddress);
+    
     const body = await request.json()
+    console.log('🔧 Request body:', body);
+    
     const { onboardingCompleted, primaryNiche, niches } = body
 
     console.log('🔧 Updating onboarding status:', {
@@ -65,31 +74,48 @@ export async function POST(request: NextRequest) {
       niches
     })
 
+    // Validate required fields
+    if (onboardingCompleted === undefined || !primaryNiche || !niches) {
+      console.error('❌ Missing required fields:', { onboardingCompleted, primaryNiche, niches });
+      return NextResponse.json(
+        { error: 'Missing required fields: onboardingCompleted, primaryNiche, niches' },
+        { status: 400 }
+      )
+    }
+
     // Update user profile with onboarding status
+    console.log('🔧 Calling userOperations.upsertProfile...');
     const updatedUser = await userOperations.upsertProfile(userId, {
+      email: user?.emailAddresses[0]?.emailAddress || '',
       onboarding_completed: onboardingCompleted,
       primary_niche: primaryNiche,
       niches: niches,
       updated_at: new Date().toISOString()
     })
 
-    console.log('🔧 Updated user profile:', updatedUser)
+    console.log('🔧 Updated user profile result:', updatedUser);
 
     if (!updatedUser) {
+      console.error('❌ userOperations.upsertProfile returned null');
       return NextResponse.json(
-        { error: 'Failed to update user profile' },
+        { error: 'Failed to update user profile. Please check your database connection.' },
         { status: 500 }
       )
     }
 
+    console.log('✅ Onboarding status updated successfully');
     return NextResponse.json({
       success: true,
       user: updatedUser
     })
   } catch (error) {
-    console.error('Error updating onboarding status:', error)
+    console.error('❌ Error updating onboarding status:', error);
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

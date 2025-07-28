@@ -100,7 +100,7 @@ const publicRoutes = createRouteMatcher([
   '/signup(.*)',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/onboarding(.*)',
+  '/onboarding$', // Only match /onboarding exactly, not /onboarding/success
   '/api/stripe(.*)',
   '/api/user/onboarding-status',
   '/api/user/payment-status',
@@ -125,6 +125,20 @@ export default clerkMiddleware(async (auth, req) => {
   const rateLimitResponse = applyRateLimit(req, pathname);
   if (rateLimitResponse) {
     return rateLimitResponse;
+  }
+  
+  // Special handling for onboarding success page
+  if (pathname === '/onboarding/success') {
+    console.log('🔧 Middleware: Handling /onboarding/success for user:', userId);
+    // Allow access to success page for authenticated users
+    // This page handles its own verification and redirects
+    if (userId) {
+      console.log('🔧 Middleware: Allowing access to success page');
+      return NextResponse.next();
+    } else {
+      console.log('🔧 Middleware: Redirecting unauthenticated user to signin');
+      return NextResponse.redirect(new URL('/signin', req.url));
+    }
   }
   
   // Allow public routes
@@ -201,7 +215,7 @@ export default clerkMiddleware(async (auth, req) => {
         
         // If user hasn't completed onboarding, redirect to onboarding
         if (!hasCompletedOnboarding) {
-          console.log('🔧 Redirecting to onboarding - hasCompletedOnboarding:', hasCompletedOnboarding);
+          console.log('🔧 Middleware: Redirecting to onboarding - hasCompletedOnboarding:', hasCompletedOnboarding, 'for pathname:', pathname);
           return NextResponse.redirect(new URL('/onboarding', req.url));
         }
         
