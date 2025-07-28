@@ -81,9 +81,10 @@ function OnboardingSuccessContent() {
       if (newProgress >= 100) {
         clearInterval(progressInterval);
         // Redirect to dashboard after setup is complete
+        // Add extra delay to ensure database updates are processed
         setTimeout(() => {
           router.push(`/dashboard?niche=${niche}&section=crm`);
-        }, 1000);
+        }, 3000);
       }
     }, 100);
 

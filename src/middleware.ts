@@ -162,6 +162,14 @@ export default clerkMiddleware(async (auth, req) => {
   
   // Check if route requires payment verification
   if (protectedRoutes(req)) {
+    // Special handling for users coming from onboarding success
+    const referer = req.headers.get('referer');
+    const isFromSuccessPage = referer && referer.includes('/onboarding/success');
+    
+    if (isFromSuccessPage) {
+      console.log('🔧 User coming from success page, allowing access temporarily');
+      return NextResponse.next();
+    }
     try {
       // First check if user is admin - admins bypass onboarding and payment requirements
       const { sessionClaims } = await auth();
@@ -184,13 +192,22 @@ export default clerkMiddleware(async (auth, req) => {
       if (response.ok) {
         const { hasActiveSubscription, hasCompletedOnboarding } = await response.json();
         
+        console.log('🔧 Middleware payment check:', {
+          pathname,
+          hasActiveSubscription,
+          hasCompletedOnboarding,
+          userEmail: sessionClaims?.email
+        });
+        
         // If user hasn't completed onboarding, redirect to onboarding
         if (!hasCompletedOnboarding) {
+          console.log('🔧 Redirecting to onboarding - hasCompletedOnboarding:', hasCompletedOnboarding);
           return NextResponse.redirect(new URL('/onboarding', req.url));
         }
         
         // If user doesn't have active subscription, redirect to pricing
         if (!hasActiveSubscription) {
+          console.log('🔧 Redirecting to pricing - hasActiveSubscription:', hasActiveSubscription);
           return NextResponse.redirect(new URL('/pricing?require_payment=true', req.url));
         }
       } else {
