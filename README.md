@@ -3,6 +3,7 @@
 A comprehensive CRM platform designed for creators, coaches, podcasters, and freelancers.
 
 <!-- Updated for test mode deployment -->
+<!-- Force environment variable refresh -->
 
 ## Features
 
