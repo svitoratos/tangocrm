@@ -58,6 +58,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { onboardingCompleted, primaryNiche, niches } = body
 
+    console.log('🔧 Updating onboarding status:', {
+      userId,
+      onboardingCompleted,
+      primaryNiche,
+      niches
+    })
+
     // Update user profile with onboarding status
     const updatedUser = await userOperations.upsertProfile(userId, {
       onboarding_completed: onboardingCompleted,
@@ -65,6 +72,8 @@ export async function POST(request: NextRequest) {
       niches: niches,
       updated_at: new Date().toISOString()
     })
+
+    console.log('🔧 Updated user profile:', updatedUser)
 
     if (!updatedUser) {
       return NextResponse.json(

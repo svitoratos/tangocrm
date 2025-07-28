@@ -40,6 +40,14 @@ export async function GET(request: NextRequest) {
     // Check if user has completed onboarding
     const hasCompletedOnboarding = isAdmin ? true : (user.onboarding_completed === true)
     
+    console.log('🔧 Onboarding status check:', {
+      userId,
+      isAdmin,
+      onboarding_completed: user.onboarding_completed,
+      hasCompletedOnboarding,
+      userProfile: user
+    })
+    
     // Check if user has active subscription (admins bypass this)
     const hasActiveSubscription = isAdmin ? true : (user.subscription_status === 'active' || 
                                  user.subscription_status === 'trialing')

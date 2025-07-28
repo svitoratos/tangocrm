@@ -40,7 +40,14 @@ export async function POST(request: NextRequest) {
         const niches = session.metadata?.niches ? JSON.parse(session.metadata.niches) : [primaryNiche];
         
         if (userId) {
-          await userOperations.upsertProfile(userId, {
+          console.log('🔧 Webhook: Updating user profile with onboarding completion:', {
+            userId,
+            primaryNiche,
+            niches,
+            stripeCustomerId: session.customer
+          });
+          
+          const updatedUser = await userOperations.upsertProfile(userId, {
             onboarding_completed: true,
             primary_niche: primaryNiche,
             niches: niches,
@@ -50,7 +57,7 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString()
           });
           
-          console.log('✅ User onboarding completed successfully');
+          console.log('✅ Webhook: User onboarding completed successfully:', updatedUser);
         } else {
           console.error('No user ID found in session metadata');
         }
