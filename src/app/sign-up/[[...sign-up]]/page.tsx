@@ -39,7 +39,7 @@ function SignUpWithSearchParams() {
           
           <div className="flex justify-center">
             <SignUp 
-              redirectUrl={redirectUrl}
+              fallbackRedirectUrl={redirectUrl}
               appearance={{
                 elements: {
                   formButtonPrimary: "bg-emerald-500 hover:bg-emerald-600 text-white",

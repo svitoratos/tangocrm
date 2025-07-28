@@ -46,8 +46,8 @@ export default function RootLayout({
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       signInUrl="/signin"
       signUpUrl="/signup"
-      afterSignUpUrl="/onboarding"
-      afterSignInUrl="/dashboard"
+      signUpFallbackRedirectUrl="/onboarding"
+      signInFallbackRedirectUrl="/dashboard"
     >
       <html lang="en" suppressHydrationWarning className={inter.variable}>
         <head>
