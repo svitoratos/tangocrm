@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     // Check if user is admin
     const userEmail = sessionClaims?.email as string
-    const isAdmin = isAdminEmail(userEmail) || userEmail === 'stevenvitoratos@tango.com'
+    const isAdmin = isAdminEmail(userEmail) || userEmail === 'stevenvitoratos@gotangocrm.com'
     
     console.log('🔧 Payment status check for:', userEmail, 'isAdmin:', isAdmin)
 

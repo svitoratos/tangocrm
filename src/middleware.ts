@@ -146,12 +146,12 @@ export default clerkMiddleware(async (auth, req) => {
       const userEmail = sessionClaims?.email;
       const isAdmin = sessionClaims?.metadata?.role === 'admin';
       
-      if (!isAdmin && userEmail !== 'stevenvitoratos@gmail.com' && userEmail !== 'stevenvitoratos@getbondlyapp.com' && userEmail !== 'stevenvitoratos@tango.com') {
+      if (!isAdmin && userEmail !== 'stevenvitoratos@gmail.com' && userEmail !== 'stevenvitoratos@getbondlyapp.com' && userEmail !== 'stevenvitoratos@gotangocrm.com') {
         // Redirect to home page if user doesn't have admin role
         return NextResponse.redirect(new URL('/', req.url));
       }
       
-      if (userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@tango.com') {
+      if (userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@gotangocrm.com') {
         console.log('🔧 Temporary admin access granted for:', userEmail);
       }
     } catch (error) {
@@ -169,7 +169,7 @@ export default clerkMiddleware(async (auth, req) => {
       const isAdmin = sessionClaims?.metadata?.role === 'admin';
       
       // Temporary bypass for your email during development
-      if (isAdmin || userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@tango.com') {
+      if (isAdmin || userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@gotangocrm.com') {
         console.log('Admin user detected - bypassing onboarding and payment verification');
         return NextResponse.next();
       }
