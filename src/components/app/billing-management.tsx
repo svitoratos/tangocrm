@@ -84,6 +84,19 @@ export const BillingManagement = () => {
   // Determine if user has active subscription based on niches
   const hasActiveSubscription = paymentStatus?.niches && paymentStatus.niches.length > 0;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🔧 BillingManagement Debug:', {
+      paymentStatusLoading,
+      subscriptionLoading,
+      hasPaymentStatus: !!paymentStatus,
+      hasSubscriptionDetails: !!subscriptionDetails,
+      paymentStatusNiches: paymentStatus?.niches,
+      subscriptionStatus: subscriptionDetails?.subscription?.status,
+      stripeCustomerId: paymentStatus?.stripeCustomerId
+    });
+  }, [paymentStatus, subscriptionDetails, paymentStatusLoading, subscriptionLoading]);
+
   return (
     <div className="space-y-6">
       <div>
