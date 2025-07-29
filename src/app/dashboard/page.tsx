@@ -275,15 +275,30 @@ function MainDashboardWithSearchParams() {
     const upgradedNiche = searchParams.get('niche');
     
     if (upgradeStatus === 'success') {
-      // Refresh payment status to get updated niches
+      console.log('🎉 Upgrade successful detected!');
+      
+      // Force immediate refresh of payment status
+      console.log('🔄 Forcing immediate payment status refresh...');
       refreshPaymentStatus();
+      
+      // Also refresh after a short delay to ensure database updates are propagated
+      setTimeout(() => {
+        console.log('🔄 Delayed payment status refresh...');
+        refreshPaymentStatus();
+      }, 2000);
+      
+      // And refresh again after a longer delay
+      setTimeout(() => {
+        console.log('🔄 Final payment status refresh...');
+        refreshPaymentStatus();
+      }, 5000);
       
       // If we have a specific upgraded niche, switch to it
       if (upgradedNiche) {
+        console.log(`🎯 Switching to upgraded niche: ${upgradedNiche}`);
         setSelectedNiche(upgradedNiche);
-        console.log(`Successfully upgraded to ${upgradedNiche} niche!`);
       } else {
-        console.log('Upgrade successful - refreshing available niches');
+        console.log('📋 Upgrade successful - refreshing available niches');
       }
       
       // Clear the URL parameters

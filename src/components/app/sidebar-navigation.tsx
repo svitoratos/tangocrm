@@ -515,7 +515,13 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuItem onClick={onRefresh} className="flex items-center gap-2">
+            <DropdownMenuItem 
+              onClick={() => {
+                console.log('🔄 Manual refresh triggered from sidebar');
+                onRefresh();
+              }} 
+              className="flex items-center gap-2"
+            >
               <RefreshCw size={16} />
               Refresh Data
             </DropdownMenuItem>

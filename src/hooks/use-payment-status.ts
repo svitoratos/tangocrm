@@ -51,6 +51,7 @@ export const usePaymentStatus = () => {
     if (!user) return
 
     try {
+      console.log('🔄 Refreshing payment status...');
       setIsLoading(true)
       setError(null)
 
@@ -61,9 +62,10 @@ export const usePaymentStatus = () => {
       }
 
       const data = await response.json()
+      console.log('✅ Payment status refreshed:', data);
       setPaymentStatus(data)
     } catch (err) {
-      console.error('Error refreshing payment status:', err)
+      console.error('❌ Error refreshing payment status:', err)
       setError(err instanceof Error ? err.message : 'Failed to refresh payment status')
     } finally {
       setIsLoading(false)
