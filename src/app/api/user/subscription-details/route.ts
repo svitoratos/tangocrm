@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth()
     
+    console.log('🔧 Subscription details API called for userId:', userId);
+    
     if (!userId) {
+      console.log('❌ No userId found - user not authenticated');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -21,12 +24,30 @@ export async function GET(request: NextRequest) {
     // Get user profile from database
     const user = await userOperations.getProfile(userId)
     
-    if (!user || !user.stripe_customer_id) {
+    console.log('🔧 User profile from database:', {
+      userId,
+      hasProfile: !!user,
+      stripeCustomerId: user?.stripe_customer_id,
+      email: user?.email
+    });
+    
+    if (!user) {
+      console.log('❌ No user profile found in database');
+      return NextResponse.json(
+        { error: 'User profile not found' },
+        { status: 404 }
+      )
+    }
+    
+    if (!user.stripe_customer_id) {
+      console.log('❌ No Stripe customer ID found for user');
       return NextResponse.json(
         { error: 'No Stripe customer found' },
         { status: 404 }
       )
     }
+
+    console.log('🔧 Fetching subscriptions from Stripe for customer:', user.stripe_customer_id);
 
     // Get customer's subscriptions from Stripe
     const subscriptions = await stripe.subscriptions.list({
@@ -35,7 +56,18 @@ export async function GET(request: NextRequest) {
       expand: ['data.default_payment_method', 'data.items.data.price.product']
     });
 
+    console.log('🔧 Stripe subscriptions response:', {
+      customerId: user.stripe_customer_id,
+      subscriptionCount: subscriptions.data.length,
+      subscriptions: subscriptions.data.map(sub => ({
+        id: sub.id,
+        status: sub.status,
+        itemsCount: sub.items.data.length
+      }))
+    });
+
     if (subscriptions.data.length === 0) {
+      console.log('❌ No subscriptions found in Stripe for customer:', user.stripe_customer_id);
       return NextResponse.json(
         { error: 'No subscriptions found' },
         { status: 404 }
@@ -97,12 +129,14 @@ export async function GET(request: NextRequest) {
       customerId: user.stripe_customer_id
     };
 
-    console.log('✅ Subscription details fetched:', {
+    console.log('✅ Subscription details fetched successfully:', {
       customerId: user.stripe_customer_id,
       subscriptionId: subscription.id,
       status: subscription.status,
       totalAmount: subscriptionDetails.totalAmount,
-      currency: subscriptionDetails.currency
+      currency: subscriptionDetails.currency,
+      itemsCount: subscriptionDetails.items.length,
+      billingHistoryCount: billingHistory.length
     });
 
     return NextResponse.json(response)

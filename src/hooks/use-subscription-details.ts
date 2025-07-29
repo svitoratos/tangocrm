@@ -52,9 +52,12 @@ export const useSubscriptionDetails = () => {
   useEffect(() => {
     const fetchSubscriptionDetails = async () => {
       if (!isLoaded || !user) {
+        console.log('🔧 useSubscriptionDetails: User not loaded or not authenticated');
         setIsLoading(false)
         return
       }
+
+      console.log('🔧 useSubscriptionDetails: Fetching subscription details for user:', user.emailAddresses[0]?.emailAddress);
 
       try {
         setIsLoading(true)
@@ -62,20 +65,25 @@ export const useSubscriptionDetails = () => {
 
         const response = await fetch('/api/user/subscription-details')
         
+        console.log('🔧 useSubscriptionDetails: API response status:', response.status);
+        
         if (!response.ok) {
           if (response.status === 404) {
             // No subscription found - this is not an error
+            console.log('🔧 useSubscriptionDetails: No subscription found (404)');
             setSubscriptionDetails(null)
             return
           }
-          throw new Error('Failed to fetch subscription details')
+          const errorText = await response.text();
+          console.log('🔧 useSubscriptionDetails: API error response:', errorText);
+          throw new Error(`Failed to fetch subscription details: ${response.status} ${errorText}`)
         }
 
         const data = await response.json()
-        console.log('🔧 Subscription details loaded:', data)
+        console.log('🔧 useSubscriptionDetails: Subscription details loaded:', data)
         setSubscriptionDetails(data)
       } catch (err) {
-        console.error('Error fetching subscription details:', err)
+        console.error('❌ useSubscriptionDetails: Error fetching subscription details:', err)
         setError(err instanceof Error ? err.message : 'Failed to fetch subscription details')
       } finally {
         setIsLoading(false)
