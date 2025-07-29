@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User, Bell, CreditCard, Save } from 'lucide-react';
 import { TimezonePicker } from '@/components/TimezonePicker';
 import { useTimezone } from '@/hooks/use-timezone';
+import { BillingManagement } from '@/components/app/billing-management';
 
 function SettingsPage() {
   const { userTimezone, updateTimezone } = useTimezone();
@@ -30,13 +31,6 @@ function SettingsPage() {
     email: true,
     push: true,
     sms: false
-  });
-
-  const [subscription, setSubscription] = useState({
-    plan: 'Tango Core',
-    status: 'active',
-    nextBilling: '2024-02-15',
-    amount: '$39.99/month'
   });
 
   const handleNotificationChange = (key: string, value: boolean) => {
@@ -239,56 +233,9 @@ function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Subscription Tab */}
+        {/* Subscription Tab - Now uses the enhanced BillingManagement component */}
         <TabsContent value="subscription" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription & Billing</CardTitle>
-              <CardDescription>
-                Manage your subscription and billing information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h3 className="font-medium">{subscription.plan} Plan</h3>
-                  <p className="text-sm text-gray-500">{subscription.amount}</p>
-                  <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
-                    {subscription.status}
-                  </Badge>
-                </div>
-                <Button variant="outline">
-                  Manage Billing
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-medium">Billing Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Next Billing Date</Label>
-                    <p className="text-sm text-gray-500">{subscription.nextBilling}</p>
-                  </div>
-                  <div>
-                    <Label>Amount</Label>
-                    <p className="text-sm text-gray-500">{subscription.amount}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-2">
-                <Button variant="outline">
-                  Download Invoice
-                </Button>
-                <Button variant="outline">
-                  Update Payment Method
-                </Button>
-                <Button variant="outline" className="text-destructive hover:text-destructive">
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <BillingManagement />
         </TabsContent>
       </Tabs>
     </div>
