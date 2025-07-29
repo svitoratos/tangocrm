@@ -156,17 +156,20 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       const { sessionClaims } = await auth();
       
-      // Temporary bypass for your email during development
-      const userEmail = sessionClaims?.email;
+      const userEmail = sessionClaims?.email as string | undefined;
       const isAdmin = sessionClaims?.metadata?.role === 'admin';
       
-      if (!isAdmin && userEmail !== 'stevenvitoratos@gmail.com' && userEmail !== 'stevenvitoratos@getbondlyapp.com' && userEmail !== 'stevenvitoratos@gotangocrm.com') {
+      // Get admin emails from environment variable
+      const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [];
+      const isAdminEmail = userEmail ? adminEmails.includes(userEmail) : false;
+      
+      if (!isAdmin && !isAdminEmail) {
         // Redirect to home page if user doesn't have admin role
         return NextResponse.redirect(new URL('/', req.url));
       }
       
-      if (userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@gotangocrm.com') {
-        console.log('🔧 Temporary admin access granted for:', userEmail);
+      if (isAdminEmail && !isAdmin) {
+        console.log('🔧 Admin email access granted for:', userEmail);
       }
     } catch (error) {
       console.error('Admin verification error:', error);
@@ -187,11 +190,14 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       // First check if user is admin - admins bypass onboarding and payment requirements
       const { sessionClaims } = await auth();
-      const userEmail = sessionClaims?.email;
+      const userEmail = sessionClaims?.email as string | undefined;
       const isAdmin = sessionClaims?.metadata?.role === 'admin';
       
-      // Temporary bypass for your email during development
-      if (isAdmin || userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@gotangocrm.com') {
+      // Get admin emails from environment variable
+      const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [];
+      const isAdminEmail = userEmail ? adminEmails.includes(userEmail) : false;
+      
+      if (isAdmin || isAdminEmail) {
         console.log('Admin user detected - bypassing onboarding and payment verification');
         return NextResponse.next();
       }
