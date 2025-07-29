@@ -9,8 +9,18 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     // Add a small delay to ensure the page loads properly
     const timer = setTimeout(() => {
+      // Get the selected niche from sessionStorage
+      const selectedNiche = sessionStorage.getItem('pendingNicheUpgrade');
+      
+      // Clear the stored niche
+      sessionStorage.removeItem('pendingNicheUpgrade');
+      
       // Redirect to the onboarding success page with niche upgrade parameters
-      router.push('/onboarding/success?upgrade=true');
+      if (selectedNiche) {
+        router.push(`/onboarding/success?upgrade=true&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D`);
+      } else {
+        router.push('/onboarding/success?upgrade=true');
+      }
     }, 1000);
 
     return () => clearTimeout(timer);

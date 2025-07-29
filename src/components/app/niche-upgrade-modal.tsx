@@ -102,6 +102,9 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
 
   const handleUpgrade = () => {
     if (selectedNiche) {
+      // Store the selected niche in sessionStorage so we can retrieve it after payment
+      sessionStorage.setItem('pendingNicheUpgrade', selectedNiche);
+      
       // Use the appropriate payment link based on billing cycle
       const monthlyPaymentLink = 'https://buy.stripe.com/14A28s5l0dqzgZG0XO2Nq02';
       const yearlyPaymentLink = 'https://buy.stripe.com/4gM6oIdRw9aj24Mayo2Nq04';

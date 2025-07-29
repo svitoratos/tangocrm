@@ -60,9 +60,9 @@ function OnboardingSuccessContent() {
         } else {
           console.log('🔧 No session ID - coming from payment link');
           
-          // If this is a niche upgrade from hardcoded payment link, add a default niche
+          // If this is a niche upgrade from hardcoded payment link, add the specific niche
           if (isNicheUpgradeFromLink) {
-            console.log('🔧 Detected niche upgrade from payment link, adding default niche...');
+            console.log('🔧 Detected niche upgrade from payment link, adding specific niche...');
             try {
               const addNicheResponse = await fetch('/api/user/add-niche', {
                 method: 'POST',
@@ -70,17 +70,17 @@ function OnboardingSuccessContent() {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  nicheToAdd: 'creator' // Default niche to add
+                  nicheToAdd: finalNiche // Use the specific niche from URL params
                 }),
               });
               
               if (addNicheResponse.ok) {
-                console.log('✅ Successfully added default niche from payment link');
+                console.log('✅ Successfully added specific niche from payment link:', finalNiche);
               } else {
-                console.error('❌ Failed to add default niche from payment link');
+                console.error('❌ Failed to add specific niche from payment link');
               }
             } catch (error) {
-              console.error('❌ Error adding default niche:', error);
+              console.error('❌ Error adding specific niche:', error);
             }
           }
           
