@@ -28,13 +28,16 @@ export const usePaymentStatus = () => {
         setIsLoading(true)
         setError(null)
 
-        const response = await fetch('/api/user/payment-status')
+        // Add cache-busting parameter to ensure fresh data
+        const cacheBuster = Date.now();
+        const response = await fetch(`/api/user/payment-status?t=${cacheBuster}`)
         
         if (!response.ok) {
           throw new Error('Failed to check payment status')
         }
 
         const data = await response.json()
+        console.log('🔧 Initial payment status loaded:', data);
         setPaymentStatus(data)
       } catch (err) {
         console.error('Error checking payment status:', err)
@@ -55,7 +58,9 @@ export const usePaymentStatus = () => {
       setIsLoading(true)
       setError(null)
 
-      const response = await fetch('/api/user/payment-status')
+      // Add cache-busting parameter to ensure fresh data
+      const cacheBuster = Date.now();
+      const response = await fetch(`/api/user/payment-status?t=${cacheBuster}`)
       
       if (!response.ok) {
         throw new Error('Failed to refresh payment status')
