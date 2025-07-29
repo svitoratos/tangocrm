@@ -61,8 +61,37 @@ function OnboardingSuccessContent() {
         } else {
           console.log('🔧 No session ID - coming from payment link');
           
-          // If this is a niche upgrade from hardcoded payment link, add the specific niche
-          if (isNicheUpgradeFromLink) {
+          // Handle specific niche upgrade from the upgrade modal or payment links
+          if (specificNiche) {
+            console.log('🔧 Adding specific niche from upgrade modal or payment link:', specificNiche);
+            try {
+              const addNicheResponse = await fetch('/api/user/add-niche', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  nicheToAdd: specificNiche
+                }),
+              });
+              
+              if (addNicheResponse.ok) {
+                console.log('✅ Successfully added specific niche:', specificNiche);
+                
+                // Special handling for coach niche - immediately switch to coach dashboard
+                if (specificNiche === 'coach') {
+                  console.log('🎯 Coach niche added - will redirect to coach dashboard');
+                }
+              } else {
+                console.error('❌ Failed to add specific niche');
+                const errorData = await addNicheResponse.json();
+                console.error('❌ Add niche error details:', errorData);
+              }
+            } catch (error) {
+              console.error('❌ Error adding specific niche:', error);
+            }
+          } else if (isNicheUpgradeFromLink) {
+            // If this is a niche upgrade from hardcoded payment link, add the specific niche
             console.log('🔧 Detected niche upgrade from payment link, adding specific niche...');
             try {
               const addNicheResponse = await fetch('/api/user/add-niche', {
@@ -83,47 +112,18 @@ function OnboardingSuccessContent() {
             } catch (error) {
               console.error('❌ Error adding specific niche:', error);
             }
-          }
-          
-          // Also check if user came from any payment link (even without session ID)
-          // This handles cases where the payment link redirects to a different URL
-          const referrer = document.referrer;
-          const isFromStripePaymentLink = referrer.includes('stripe.com') || referrer.includes('buy.stripe.com');
-          
-          if (isFromStripePaymentLink) {
-            console.log('🔧 Detected user came from Stripe payment link, but no specific niche was specified');
-            console.log('⚠️ Cannot determine which niche to add - user should use the upgrade modal for specific niche selection');
+          } else {
+            // Also check if user came from any payment link (even without session ID)
+            // This handles cases where the payment link redirects to a different URL
+            const referrer = document.referrer;
+            const isFromStripePaymentLink = referrer.includes('stripe.com') || referrer.includes('buy.stripe.com');
             
-            // Don't automatically add any niche - let the user choose through the upgrade modal
-            // This prevents incorrect assumptions about which niche they want
-          }
-          
-          // Handle specific niche upgrade from the upgrade modal
-          if (specificNiche) {
-            console.log('🔧 Adding specific niche from upgrade modal:', specificNiche);
-            try {
-              const addNicheResponse = await fetch('/api/user/add-niche', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  nicheToAdd: specificNiche
-                }),
-              });
+            if (isFromStripePaymentLink) {
+              console.log('🔧 Detected user came from Stripe payment link, but no specific niche was specified');
+              console.log('⚠️ Cannot determine which niche to add - user should use the upgrade modal for specific niche selection');
               
-              if (addNicheResponse.ok) {
-                console.log('✅ Successfully added specific niche from upgrade modal:', specificNiche);
-                
-                // Special handling for coach niche - immediately switch to coach dashboard
-                if (specificNiche === 'coach') {
-                  console.log('🎯 Coach niche added - will redirect to coach dashboard');
-                }
-              } else {
-                console.error('❌ Failed to add specific niche from upgrade modal');
-              }
-            } catch (error) {
-              console.error('❌ Error adding specific niche from upgrade modal:', error);
+              // Don't automatically add any niche - let the user choose through the upgrade modal
+              // This prevents incorrect assumptions about which niche they want
             }
           }
         }

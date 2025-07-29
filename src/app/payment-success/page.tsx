@@ -9,18 +9,27 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     // Immediate redirect without delay for streamlined flow
     const redirectToOnboardingSuccess = () => {
+      console.log('🔧 Payment success page loaded');
+      console.log('🔧 Referrer:', document.referrer);
+      
       // Get the selected niche from sessionStorage
       const selectedNiche = sessionStorage.getItem('pendingNicheUpgrade');
+      console.log('🔧 Selected niche from sessionStorage:', selectedNiche);
       
       // Clear the stored niche
       sessionStorage.removeItem('pendingNicheUpgrade');
       
       if (selectedNiche) {
         // If we have a specific niche from the upgrade modal, use it
-        router.push(`/onboarding/success?upgrade=true&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D&specific_niche=${selectedNiche}`);
+        console.log('🔧 Using niche from sessionStorage:', selectedNiche);
+        const redirectUrl = `/onboarding/success?upgrade=true&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D&specific_niche=${selectedNiche}`;
+        console.log('🔧 Redirecting to:', redirectUrl);
+        router.push(redirectUrl);
       } else {
         // Check if user came from the coach payment links
         const referrer = document.referrer;
+        console.log('🔧 Checking referrer for payment links...');
+        
         if (referrer.includes('buy.stripe.com/5kQ3cw5l086faBieOE2Nq05') || 
             referrer.includes('buy.stripe.com/00w5kEcNs1HR10IdKA2Nq03')) {
           console.log('🔧 Detected coach niche payment link, adding coach niche');
@@ -38,6 +47,7 @@ export default function PaymentSuccessPage() {
           console.log('🔧 Detected freelancer niche payment link, adding freelancer niche');
           router.push('/onboarding/success?upgrade=true&niche=freelancer&niches=%5B%22freelancer%22%5D&specific_niche=freelancer');
         } else {
+          console.log('🔧 No specific payment link detected, redirecting to dashboard');
           // If no specific niche (coming from other hardcoded payment link), 
           // redirect to dashboard without making assumptions
           router.push('/dashboard?upgrade=success');
