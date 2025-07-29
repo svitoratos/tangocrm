@@ -15,13 +15,23 @@ function OnboardingSuccessContent() {
   useEffect(() => {
     // Get session data from URL params
     const sessionId = searchParams.get('session_id');
-    const niche = searchParams.get('niche') || 'creator';
-    const niches = searchParams.get('niches') || JSON.stringify([niche]);
+    const niche = searchParams.get('niche');
+    const niches = searchParams.get('niches');
     const isUpgrade = searchParams.get('upgrade') === 'true';
+    
+    // Detect if this is a niche upgrade from hardcoded payment link
+    // If we have a session ID but no specific niche params, it's likely a niche upgrade
+    const isNicheUpgradeFromLink = sessionId && !niche && !niches;
+    
+    // Set default values for niche upgrade
+    const finalNiche = niche || 'creator';
+    const finalNiches = niches || JSON.stringify([finalNiche]);
+    const finalIsUpgrade = isUpgrade || isNicheUpgradeFromLink;
 
     console.log('🔧 Success page loaded with session:', sessionId);
-    console.log('🔧 Niche:', niche);
-    console.log('🔧 Niches:', niches);
+    console.log('🔧 Niche:', finalNiche);
+    console.log('🔧 Niches:', finalNiches);
+    console.log('🔧 Is upgrade:', finalIsUpgrade);
 
     // Verify payment and update onboarding status
     const verifyPaymentAndUpdateStatus = async () => {
@@ -49,6 +59,30 @@ function OnboardingSuccessContent() {
           }
         } else {
           console.log('🔧 No session ID - coming from payment link');
+          
+          // If this is a niche upgrade from hardcoded payment link, add a default niche
+          if (isNicheUpgradeFromLink) {
+            console.log('🔧 Detected niche upgrade from payment link, adding default niche...');
+            try {
+              const addNicheResponse = await fetch('/api/user/add-niche', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  nicheToAdd: 'creator' // Default niche to add
+                }),
+              });
+              
+              if (addNicheResponse.ok) {
+                console.log('✅ Successfully added default niche from payment link');
+              } else {
+                console.error('❌ Failed to add default niche from payment link');
+              }
+            } catch (error) {
+              console.error('❌ Error adding default niche:', error);
+            }
+          }
         }
 
         // Update onboarding status (fallback in case webhook hasn't processed yet)
@@ -60,9 +94,9 @@ function OnboardingSuccessContent() {
           },
           body: JSON.stringify({
             onboardingCompleted: true,
-            primaryNiche: niche,
-            niches: JSON.parse(niches),
-            isUpgrade: isUpgrade
+            primaryNiche: finalNiche,
+            niches: JSON.parse(finalNiches),
+            isUpgrade: finalIsUpgrade
           }),
         });
 
@@ -122,8 +156,9 @@ function OnboardingSuccessContent() {
               },
               body: JSON.stringify({
                 onboardingCompleted: true,
-                primaryNiche: niche,
-                niches: JSON.parse(niches)
+                primaryNiche: finalNiche,
+                niches: JSON.parse(finalNiches),
+                isUpgrade: finalIsUpgrade
               }),
             });
             
@@ -187,18 +222,18 @@ function OnboardingSuccessContent() {
               
               if (finalStatus.hasCompletedOnboarding) {
                 console.log('✅ Onboarding completed, redirecting to dashboard...');
-                router.push(`/dashboard?niche=${niche}&section=crm`);
+                router.push(`/dashboard?niche=${finalNiche}&section=crm`);
               } else {
                 console.warn('⚠️ Onboarding not completed, staying on success page');
                 // Don't redirect, let the user see the success page
               }
             } else {
               console.error('❌ Failed to check final status, redirecting anyway...');
-              router.push(`/dashboard?niche=${niche}&section=crm`);
+              router.push(`/dashboard?niche=${finalNiche}&section=crm`);
             }
           } catch (error) {
             console.error('❌ Error checking final status:', error);
-            router.push(`/dashboard?niche=${niche}&section=crm`);
+            router.push(`/dashboard?niche=${finalNiche}&section=crm`);
           }
         }, 3000);
       }
