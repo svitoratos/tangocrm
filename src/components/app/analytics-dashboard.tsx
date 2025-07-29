@@ -886,6 +886,7 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
     if (!stage) return { color: '#6b7280', icon: Target };
     
     const iconMap: Record<string, any> = {
+      // Creator niche icons (base reference)
       'Outreach / Pitched': Target,
       'Awaiting Response': Clock,
       'In Conversation': Activity,
@@ -895,23 +896,29 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
       'Delivered': CheckCircle,
       'Paid': CheckCircle,
       'Archived / Lost': XCircle,
-      'New Lead': UserPlus,
-      'Discovery Call Scheduled': UserCheck,
-      'Discovery Call Completed': UserCheck,
-      'Proposal Sent': FileText,
-      'Follow-Up': Activity,
-      'Signed Client': CheckCircle,
-      'Active Program': Activity,
-      'Completed': CheckCircle,
-      'Guest Outreach': Target,
-      'Agreement in Place': FileText,
-      'Scheduled': Activity,
-      'Recorded': Activity,
-      'Published': CheckCircle,
-      'New Inquiry': UserPlus,
-      'Discovery Call': UserCheck,
-      'In Negotiation': Activity,
-      'Project In Progress': Activity
+      
+      // Coach niche - use same icons as creator for equivalent stages
+      'New Lead': Target, // Same as Outreach
+      'Discovery Call Scheduled': Clock, // Same as Awaiting Response
+      'Discovery Call Completed': Activity, // Same as In Conversation
+      'Proposal Sent': FileText, // Same as Contract Signed
+      'Follow-Up': Activity, // Same as Negotiation
+      'Signed Client': CheckCircle, // Same as Delivered
+      'Active Program': Activity, // Same as Content in Progress
+      'Completed': CheckCircle, // Same as Paid
+      
+      // Podcaster niche - use same icons as creator for equivalent stages
+      'Guest Outreach': Target, // Same as Outreach
+      'Agreement in Place': FileText, // Same as Contract Signed
+      'Scheduled': Activity, // Same as Content in Progress
+      'Recorded': Activity, // Same as Content in Progress
+      'Published': CheckCircle, // Same as Delivered
+      
+      // Freelancer niche - use same icons as creator for equivalent stages
+      'New Inquiry': Target, // Same as Outreach
+      'Discovery Call': Clock, // Same as Awaiting Response
+      'In Negotiation': Activity, // Same as Negotiation
+      'Project In Progress': Activity // Same as Content in Progress
     };
 
     return {
