@@ -49,10 +49,10 @@ export async function GET(request: NextRequest) {
 
     console.log('🔧 Fetching subscriptions from Stripe for customer:', user.stripe_customer_id);
 
-    // Get customer's subscriptions from Stripe
+    // Get customer's subscriptions from Stripe (include canceled ones)
     const subscriptions = await stripe.subscriptions.list({
       customer: user.stripe_customer_id,
-      status: 'all',
+      status: 'all', // Include all statuses: active, canceled, past_due, etc.
       expand: ['data.default_payment_method', 'data.items.data.price.product']
     });
 
@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get the most recent subscription (active or canceled)
     const subscription = subscriptions.data[0];
     
     // Extract subscription details
@@ -101,14 +102,16 @@ export async function GET(request: NextRequest) {
       defaultPaymentMethod: (subscription as any).default_payment_method
     };
 
-    // Calculate next billing date
-    const nextBillingDate = new Date((subscription as any).current_period_end * 1000);
+    // Calculate next billing date (only for active subscriptions)
+    let nextBillingDate = null;
+    if (subscription.status === 'active' && (subscription as any).current_period_end) {
+      nextBillingDate = new Date((subscription as any).current_period_end * 1000);
+    }
     
-    // Get billing history (recent invoices)
+    // Get billing history (recent invoices) - include all invoices
     const invoices = await stripe.invoices.list({
       customer: user.stripe_customer_id,
-      limit: 5,
-      status: 'paid'
+      limit: 10 // Get more invoices
     });
 
     const billingHistory = invoices.data.map(invoice => ({
@@ -124,7 +127,7 @@ export async function GET(request: NextRequest) {
 
     const response = {
       subscription: subscriptionDetails,
-      nextBillingDate: nextBillingDate.toISOString(),
+      nextBillingDate: nextBillingDate ? nextBillingDate.toISOString() : null,
       billingHistory,
       customerId: user.stripe_customer_id
     };
@@ -136,7 +139,8 @@ export async function GET(request: NextRequest) {
       totalAmount: subscriptionDetails.totalAmount,
       currency: subscriptionDetails.currency,
       itemsCount: subscriptionDetails.items.length,
-      billingHistoryCount: billingHistory.length
+      billingHistoryCount: billingHistory.length,
+      hasNextBillingDate: !!nextBillingDate
     });
 
     return NextResponse.json(response)

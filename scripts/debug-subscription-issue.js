@@ -88,7 +88,7 @@ async function debugSubscriptionIssue() {
       console.log(`   Subscription ${index + 1}:`);
       console.log(`     - ID: ${subscription.id}`);
       console.log(`     - Status: ${subscription.status}`);
-      console.log(`     - Current Period End: ${new Date(subscription.current_period_end * 1000).toISOString()}`);
+      console.log(`     - Current Period End: ${subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : 'N/A'}`);
       console.log(`     - Cancel at Period End: ${subscription.cancel_at_period_end}`);
       console.log(`     - Items: ${subscription.items.data.length}`);
       
