@@ -7,23 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useStripe } from '@/hooks/use-stripe';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
+import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { CreditCard, Loader2, AlertTriangle, Info, Calendar, XCircle } from 'lucide-react';
 
 export const BillingManagement = () => {
   const { openCustomerPortal, loading } = useStripe();
-  const { paymentStatus, isLoading, refreshPaymentStatus } = usePaymentStatus();
+  const { paymentStatus, isLoading: paymentStatusLoading } = usePaymentStatus();
+  const { subscriptionDetails, isLoading: subscriptionLoading, formatCurrency, formatDate } = useSubscriptionDetails();
   const [showCancellationInfo, setShowCancellationInfo] = useState(false);
 
-  // Calculate next billing date (placeholder - would come from Stripe)
-  const getNextBillingDate = () => {
-    const today = new Date();
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
-    return nextMonth.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
+  const isLoading = paymentStatusLoading || subscriptionLoading;
 
   // Get subscription status badge variant
   const getStatusBadgeVariant = (status: string) => {
@@ -53,15 +46,6 @@ export const BillingManagement = () => {
     }
   };
 
-  // Calculate total monthly cost based on number of niches
-  const calculateMonthlyCost = (niches: string[]) => {
-    const basePrice = 39.99; // Tango Core base price
-    const additionalNichePrice = 19.99; // Price per additional niche
-    const additionalNiches = Math.max(0, niches.length - 1);
-    const totalCost = basePrice + (additionalNichePrice * additionalNiches);
-    return { basePrice, additionalNichePrice, additionalNiches, totalCost };
-  };
-
   // Get niche display name
   const getNicheDisplayName = (niche: string) => {
     const nicheNames: Record<string, string> = {
@@ -71,6 +55,21 @@ export const BillingManagement = () => {
       'freelancer': 'Freelancer'
     };
     return nicheNames[niche] || niche;
+  };
+
+  // Get next billing date from Stripe or fallback
+  const getNextBillingDate = () => {
+    if (subscriptionDetails?.nextBillingDate) {
+      return formatDate(subscriptionDetails.nextBillingDate);
+    }
+    // Fallback calculation
+    const today = new Date();
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    return nextMonth.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
   return (
@@ -100,20 +99,25 @@ export const BillingManagement = () => {
                 <Loader2 className="h-6 w-6 animate-spin" />
                 <span className="ml-2">Loading subscription details...</span>
               </div>
-            ) : (
+            ) : subscriptionDetails ? (
               <div className="space-y-4">
                 {/* Main subscription info */}
                 <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
                   <div>
-                    <h3 className="font-medium">Tango Core Plan</h3>
-                    <p className="text-sm text-gray-500">Monthly billing</p>
+                    <h3 className="font-medium">
+                      {subscriptionDetails.subscription.items[0]?.productName || 'Tango Core Plan'}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {subscriptionDetails.subscription.items[0]?.interval === 'month' ? 'Monthly' : 'Yearly'} billing
+                    </p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge 
-                        variant={getStatusBadgeVariant(paymentStatus?.subscriptionStatus || 'inactive')} 
-                        className={getStatusColor(paymentStatus?.subscriptionStatus || 'inactive')}
+                        variant={getStatusBadgeVariant(subscriptionDetails.subscription.status)} 
+                        className={getStatusColor(subscriptionDetails.subscription.status)}
                       >
-                        {paymentStatus?.subscriptionStatus === 'active' ? 'Active' : 
-                         paymentStatus?.subscriptionStatus === 'past_due' ? 'Past Due' : 'Inactive'}
+                        {subscriptionDetails.subscription.status === 'active' ? 'Active' : 
+                         subscriptionDetails.subscription.status === 'past_due' ? 'Past Due' : 
+                         subscriptionDetails.subscription.status === 'trialing' ? 'Trial' : 'Inactive'}
                       </Badge>
                       <span className="text-sm text-gray-500">
                         Next billing: {getNextBillingDate()}
@@ -121,52 +125,71 @@ export const BillingManagement = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold">$39.99</p>
-                    <p className="text-sm text-gray-500">base plan</p>
+                    <p className="text-2xl font-bold">
+                      {formatCurrency(subscriptionDetails.subscription.totalAmount, subscriptionDetails.subscription.currency)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      per {subscriptionDetails.subscription.items[0]?.interval || 'month'}
+                    </p>
                   </div>
                 </div>
 
-                {/* Niche breakdown */}
+                {/* Subscription items breakdown */}
+                {subscriptionDetails.subscription.items.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm text-gray-700">Subscription Items:</h4>
+                    <div className="space-y-2">
+                      {subscriptionDetails.subscription.items.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="font-medium">{item.productName}</span>
+                            <Badge variant="secondary" className="text-xs">
+                              {item.interval}ly
+                            </Badge>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-medium">
+                              {formatCurrency((item.unitAmount || 0) * (item.quantity || 1), item.currency)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Niche breakdown (from payment status) */}
                 {paymentStatus?.niches && paymentStatus.niches.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-gray-700">Active Niches:</h4>
                     <div className="space-y-2">
-                      {paymentStatus.niches.map((niche, index) => {
-                        const isFirstNiche = index === 0;
-                        const cost = isFirstNiche ? 0 : 19.99; // First niche included, additional cost $19.99
-                        
-                        return (
-                          <div key={niche} className="flex items-center justify-between p-3 border rounded-lg bg-white">
-                            <div className="flex items-center gap-3">
-                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                              <span className="font-medium">{getNicheDisplayName(niche)}</span>
-                              {isFirstNiche && (
-                                <Badge variant="secondary" className="text-xs">Included</Badge>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              {isFirstNiche ? (
-                                <span className="text-sm text-green-600 font-medium">Included</span>
-                              ) : (
-                                <span className="text-sm font-medium">+$19.99</span>
-                              )}
-                            </div>
+                      {paymentStatus.niches.map((niche, index) => (
+                        <div key={niche} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span className="font-medium">{getNicheDisplayName(niche)}</span>
+                            <Badge variant="secondary" className="text-xs">Active</Badge>
                           </div>
-                        );
-                      })}
+                          <div className="text-right">
+                            <span className="text-sm text-green-600 font-medium">Active</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    
-                    {/* Total cost */}
-                    {paymentStatus.niches.length > 1 && (
-                      <div className="flex items-center justify-between p-3 border-t-2 border-gray-200 bg-gray-50 rounded-lg">
-                        <span className="font-semibold">Total Monthly Cost:</span>
-                        <span className="text-lg font-bold text-blue-600">
-                          ${calculateMonthlyCost(paymentStatus.niches).totalCost.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 )}
+              </div>
+            ) : (
+              <div className="text-center p-8 border border-dashed border-gray-300 rounded-lg">
+                <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Subscription</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  You don't have an active subscription. Subscribe to access all features.
+                </p>
+                <Button variant="outline">
+                  View Plans
+                </Button>
               </div>
             )}
           </div>
@@ -183,7 +206,7 @@ export const BillingManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {paymentStatus?.stripeCustomerId ? (
+            {subscriptionDetails?.subscription.defaultPaymentMethod ? (
               <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                 <div className="flex items-center gap-3">
                   <CreditCard className="h-5 w-5 text-muted-foreground" />
@@ -217,7 +240,30 @@ export const BillingManagement = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {paymentStatus?.stripeCustomerId ? (
+            {subscriptionDetails?.billingHistory && subscriptionDetails.billingHistory.length > 0 ? (
+              <div className="space-y-3">
+                {subscriptionDetails.billingHistory.map((invoice) => (
+                  <div key={invoice.id} className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className="font-medium">{invoice.number || 'Invoice'}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatDate(new Date(invoice.created * 1000).toISOString())}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="font-medium">
+                        {formatCurrency(invoice.amountPaid, invoice.currency)}
+                      </span>
+                      <Badge className="bg-emerald-500">
+                        {invoice.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
               <div className="text-center p-4">
                 <p className="text-sm text-gray-500 mb-2">Billing history available in Stripe portal</p>
                 <Button 
@@ -236,10 +282,6 @@ export const BillingManagement = () => {
                   )}
                 </Button>
               </div>
-            ) : (
-              <div className="text-center p-4 border border-dashed border-gray-300 rounded-lg">
-                <p className="text-sm text-gray-500">No billing history available</p>
-              </div>
             )}
           </div>
         </CardContent>
@@ -257,7 +299,7 @@ export const BillingManagement = () => {
           <div className="space-y-4">
             <Button 
               onClick={openCustomerPortal}
-              disabled={loading || !paymentStatus?.stripeCustomerId}
+              disabled={loading || !subscriptionDetails}
               className="w-full"
               variant="outline"
             >
@@ -273,9 +315,9 @@ export const BillingManagement = () => {
             <p className="text-sm text-muted-foreground text-center">
               The billing portal allows you to update payment methods, view invoices, and manage your subscription
             </p>
-            {!paymentStatus?.stripeCustomerId && (
+            {!subscriptionDetails && (
               <p className="text-sm text-orange-600 text-center">
-                ⚠️ No Stripe customer ID found. Please contact support if you have billing questions.
+                ⚠️ No active subscription found. Please contact support if you have billing questions.
               </p>
             )}
           </div>
@@ -318,7 +360,7 @@ export const BillingManagement = () => {
             <div className="flex gap-3">
               <Button 
                 onClick={openCustomerPortal}
-                disabled={loading || !paymentStatus?.stripeCustomerId}
+                disabled={loading || !subscriptionDetails}
                 variant="destructive"
                 className="flex-1"
               >
