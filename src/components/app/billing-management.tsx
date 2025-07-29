@@ -53,6 +53,26 @@ export const BillingManagement = () => {
     }
   };
 
+  // Calculate total monthly cost based on number of niches
+  const calculateMonthlyCost = (niches: string[]) => {
+    const basePrice = 39.99; // Tango Core base price
+    const additionalNichePrice = 19.99; // Price per additional niche
+    const additionalNiches = Math.max(0, niches.length - 1);
+    const totalCost = basePrice + (additionalNichePrice * additionalNiches);
+    return { basePrice, additionalNichePrice, additionalNiches, totalCost };
+  };
+
+  // Get niche display name
+  const getNicheDisplayName = (niche: string) => {
+    const nicheNames: Record<string, string> = {
+      'creator': 'Creator',
+      'coach': 'Coach',
+      'podcaster': 'Podcaster',
+      'freelancer': 'Freelancer'
+    };
+    return nicheNames[niche] || niche;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -81,35 +101,72 @@ export const BillingManagement = () => {
                 <span className="ml-2">Loading subscription details...</span>
               </div>
             ) : (
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
-                <div>
-                  <h3 className="font-medium">Tango Core Plan</h3>
-                  <p className="text-sm text-gray-500">Monthly billing</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge 
-                      variant={getStatusBadgeVariant(paymentStatus?.subscriptionStatus || 'inactive')} 
-                      className={getStatusColor(paymentStatus?.subscriptionStatus || 'inactive')}
-                    >
-                      {paymentStatus?.subscriptionStatus === 'active' ? 'Active' : 
-                       paymentStatus?.subscriptionStatus === 'trialing' ? 'Trial' :
-                       paymentStatus?.subscriptionStatus === 'past_due' ? 'Past Due' : 'Inactive'}
-                    </Badge>
-                    <span className="text-sm text-gray-500">
-                      Next billing: {getNextBillingDate()}
-                    </span>
-                  </div>
-                  {paymentStatus?.niches && paymentStatus.niches.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-600">
-                        Active niches: {paymentStatus.niches.join(', ')}
-                      </p>
+              <div className="space-y-4">
+                {/* Main subscription info */}
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+                  <div>
+                    <h3 className="font-medium">Tango Core Plan</h3>
+                    <p className="text-sm text-gray-500">Monthly billing</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge 
+                        variant={getStatusBadgeVariant(paymentStatus?.subscriptionStatus || 'inactive')} 
+                        className={getStatusColor(paymentStatus?.subscriptionStatus || 'inactive')}
+                      >
+                        {paymentStatus?.subscriptionStatus === 'active' ? 'Active' : 
+                         paymentStatus?.subscriptionStatus === 'past_due' ? 'Past Due' : 'Inactive'}
+                      </Badge>
+                      <span className="text-sm text-gray-500">
+                        Next billing: {getNextBillingDate()}
+                      </span>
                     </div>
-                  )}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold">$39.99</p>
+                    <p className="text-sm text-gray-500">base plan</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold">$39.99</p>
-                  <p className="text-sm text-gray-500">per month</p>
-                </div>
+
+                {/* Niche breakdown */}
+                {paymentStatus?.niches && paymentStatus.niches.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm text-gray-700">Active Niches:</h4>
+                    <div className="space-y-2">
+                      {paymentStatus.niches.map((niche, index) => {
+                        const isFirstNiche = index === 0;
+                        const cost = isFirstNiche ? 0 : 19.99; // First niche included, additional cost $19.99
+                        
+                        return (
+                          <div key={niche} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                            <div className="flex items-center gap-3">
+                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                              <span className="font-medium">{getNicheDisplayName(niche)}</span>
+                              {isFirstNiche && (
+                                <Badge variant="secondary" className="text-xs">Included</Badge>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              {isFirstNiche ? (
+                                <span className="text-sm text-green-600 font-medium">Included</span>
+                              ) : (
+                                <span className="text-sm font-medium">+$19.99</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Total cost */}
+                    {paymentStatus.niches.length > 1 && (
+                      <div className="flex items-center justify-between p-3 border-t-2 border-gray-200 bg-gray-50 rounded-lg">
+                        <span className="font-semibold">Total Monthly Cost:</span>
+                        <span className="text-lg font-bold text-blue-600">
+                          ${calculateMonthlyCost(paymentStatus.niches).totalCost.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
