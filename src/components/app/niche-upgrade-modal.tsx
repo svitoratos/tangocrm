@@ -102,8 +102,8 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
 
   const handleUpgrade = () => {
     if (selectedNiche) {
-      // Use the dedicated add niche payment link
-      const addNichePaymentLink = 'https://buy.stripe.com/14A28s5l0dqzgZG0XO2Nq02';
+      // Use the dedicated add niche payment link for yearly billing
+      const addNichePaymentLink = 'https://buy.stripe.com/00w5kEcNs1HR10IdKA2Nq03';
       // Open in same window to avoid getting stuck
       window.location.href = addNichePaymentLink;
       onClose();
