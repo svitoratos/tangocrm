@@ -141,6 +141,88 @@ export const userOperations = {
     }
   },
 
+
+
+  async updateNotificationPreferences(userId: string, preferences: any) {
+    try {
+      console.log('🔧 Database: Updating notification preferences for user:', userId);
+      console.log('🔧 Database: Preferences:', preferences);
+
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          email_notifications_enabled: preferences.email,
+          notification_preferences: preferences,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Database: Error updating notification preferences:', error);
+        
+        // Check if the error is due to missing columns
+        if (error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+          console.log('⚠️ Database: Notification columns do not exist yet - returning null');
+          return null;
+        }
+        
+        throw error;
+      }
+
+      console.log('✅ Database: Notification preferences updated successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Database: Failed to update notification preferences:', error);
+      
+      // Check if the error is due to missing columns
+      if (error instanceof Error && error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+        console.log('⚠️ Database: Notification columns do not exist yet - returning null');
+        return null;
+      }
+      
+      throw error;
+    }
+  },
+
+  async getNotificationPreferences(userId: string) {
+    try {
+      console.log('🔧 Database: Getting notification preferences for user:', userId);
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('email_notifications_enabled, notification_preferences')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('❌ Database: Error getting notification preferences:', error);
+        
+        // Check if the error is due to missing columns
+        if (error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+          console.log('⚠️ Database: Notification columns do not exist yet - returning null');
+          return null;
+        }
+        
+        throw error;
+      }
+
+      console.log('✅ Database: Notification preferences retrieved:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Database: Failed to get notification preferences:', error);
+      
+      // Check if the error is due to missing columns
+      if (error instanceof Error && error.message && error.message.includes('column') && error.message.includes('does not exist')) {
+        console.log('⚠️ Database: Notification columns do not exist yet - returning null');
+        return null;
+      }
+      
+      throw error;
+    }
+  },
+
   async updateProfile(userId: string, updates: Partial<User>): Promise<User | null> {
     const { data, error } = await supabase
       .from('users')

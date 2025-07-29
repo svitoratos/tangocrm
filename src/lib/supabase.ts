@@ -6,7 +6,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Type definitions for Supabase
-export type Database = {
+export interface Database {
   public: {
     Tables: {
       users: {
@@ -23,6 +23,8 @@ export type Database = {
           subscription_status: string | null
           subscription_tier: string | null
           timezone: string
+          email_notifications_enabled: boolean | null
+          notification_preferences: any | null
           created_at: string
           updated_at: string
         }
@@ -39,6 +41,8 @@ export type Database = {
           subscription_status?: string | null
           subscription_tier?: string | null
           timezone?: string
+          email_notifications_enabled?: boolean | null
+          notification_preferences?: any | null
           created_at?: string
           updated_at?: string
         }
@@ -55,6 +59,9 @@ export type Database = {
           subscription_status?: string | null
           subscription_tier?: string | null
           timezone?: string
+          email_notifications_enabled?: boolean | null
+          notification_preferences?: any | null
+          created_at?: string
           updated_at?: string
         }
       }

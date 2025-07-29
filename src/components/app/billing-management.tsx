@@ -11,12 +11,31 @@ import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { CreditCard, Loader2, AlertTriangle, Info, Calendar, XCircle } from 'lucide-react';
 
 export const BillingManagement = () => {
-  const { openCustomerPortal, loading } = useStripe();
+  const { openCustomerPortal, loading, error: stripeError } = useStripe();
   const { paymentStatus, isLoading: paymentStatusLoading } = usePaymentStatus();
   const { subscriptionDetails, isLoading: subscriptionLoading, formatCurrency, formatDate } = useSubscriptionDetails();
   const [showCancellationInfo, setShowCancellationInfo] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
 
   const isLoading = paymentStatusLoading || subscriptionLoading;
+
+  // Clear portal error when component mounts or when loading changes
+  useEffect(() => {
+    if (!loading && portalError) {
+      setPortalError(null);
+    }
+  }, [loading, portalError]);
+
+  // Handle portal opening with error handling
+  const handleOpenPortal = async () => {
+    setPortalError(null);
+    try {
+      await openCustomerPortal();
+    } catch (err) {
+      console.error('❌ Error opening customer portal:', err);
+      setPortalError(err instanceof Error ? err.message : 'Failed to open billing portal');
+    }
+  };
 
   // Get subscription status badge variant
   const getStatusBadgeVariant = (status: string) => {
@@ -93,9 +112,11 @@ export const BillingManagement = () => {
       hasSubscriptionDetails: !!subscriptionDetails,
       paymentStatusNiches: paymentStatus?.niches,
       subscriptionStatus: subscriptionDetails?.subscription?.status,
-      stripeCustomerId: paymentStatus?.stripeCustomerId
+      stripeCustomerId: paymentStatus?.stripeCustomerId,
+      portalError,
+      stripeError
     });
-  }, [paymentStatus, subscriptionDetails, paymentStatusLoading, subscriptionLoading]);
+  }, [paymentStatus, subscriptionDetails, paymentStatusLoading, subscriptionLoading, portalError, stripeError]);
 
   return (
     <div className="space-y-6">
@@ -105,6 +126,20 @@ export const BillingManagement = () => {
           Manage your billing information, payment methods, and subscription
         </p>
       </div>
+
+      {/* Error Alert */}
+      {(portalError || stripeError) && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Error:</strong> {portalError || stripeError}
+            <br />
+            <span className="text-sm">
+              Please try again or contact support if the issue persists.
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Current Subscription Status */}
       <Card>
@@ -324,7 +359,7 @@ export const BillingManagement = () => {
               </div>
             )}
             <Button 
-              onClick={openCustomerPortal}
+              onClick={handleOpenPortal}
               disabled={loading}
               variant="outline" 
               className="w-full"
@@ -341,6 +376,11 @@ export const BillingManagement = () => {
             {hasActiveSubscription && !subscriptionDetails && (
               <p className="text-sm text-blue-600 text-center">
                 💡 Adding a payment method will connect your account to Stripe for full billing management.
+              </p>
+            )}
+            {!hasActiveSubscription && (
+              <p className="text-sm text-gray-500 text-center">
+                You need an active subscription to manage payment methods.
               </p>
             )}
           </div>
@@ -390,7 +430,7 @@ export const BillingManagement = () => {
                 </p>
                 {subscriptionDetails && (
                   <Button 
-                    onClick={openCustomerPortal}
+                    onClick={handleOpenPortal}
                     disabled={loading}
                     variant="outline"
                     size="sm"
@@ -422,7 +462,7 @@ export const BillingManagement = () => {
         <CardContent>
           <div className="space-y-4">
             <Button 
-              onClick={openCustomerPortal}
+              onClick={handleOpenPortal}
               disabled={loading || !subscriptionDetails}
               className="w-full"
               variant="outline"
@@ -488,7 +528,7 @@ export const BillingManagement = () => {
 
             <div className="flex gap-3">
               <Button 
-                onClick={openCustomerPortal}
+                onClick={handleOpenPortal}
                 disabled={loading || !subscriptionDetails}
                 variant="destructive"
                 className="flex-1"

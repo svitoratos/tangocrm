@@ -52,6 +52,8 @@ export const useStripe = () => {
     setError(null);
 
     try {
+      console.log('🔧 Opening customer portal...');
+      
       const response = await fetch('/api/stripe/portal', {
         method: 'POST',
         headers: {
@@ -59,17 +61,41 @@ export const useStripe = () => {
         },
       });
 
-      const { url, error } = await response.json();
+      console.log('🔧 Portal API response status:', response.status);
+      
+      const data = await response.json();
+      console.log('🔧 Portal API response data:', data);
 
-      if (error) {
-        throw new Error(error);
+      if (!response.ok) {
+        // Handle different error status codes
+        if (response.status === 401) {
+          throw new Error('You must be logged in to access billing management');
+        } else if (response.status === 404) {
+          throw new Error('User profile not found. Please complete your profile setup');
+        } else if (response.status === 400) {
+          throw new Error(data.error || 'Invalid request. Please check your profile information');
+        } else if (response.status === 500) {
+          throw new Error(data.error || 'Server error. Please try again or contact support');
+        } else {
+          throw new Error(data.error || `Request failed with status ${response.status}`);
+        }
       }
 
-      if (url) {
-        window.location.href = url;
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.url) {
+        console.log('✅ Redirecting to billing portal:', data.url);
+        window.location.href = data.url;
+      } else {
+        throw new Error('No portal URL received from server');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      console.error('❌ Error opening customer portal:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to open billing portal';
+      setError(errorMessage);
+      throw err; // Re-throw so the component can handle it
     } finally {
       setLoading(false);
     }
