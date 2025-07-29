@@ -231,7 +231,7 @@ function MainDashboardWithSearchParams() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   // Get actual subscribed niches from payment status
-  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading } = usePaymentStatus();
+  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus } = usePaymentStatus();
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches
@@ -274,20 +274,25 @@ function MainDashboardWithSearchParams() {
     const upgradeStatus = searchParams.get('upgrade');
     const upgradedNiche = searchParams.get('niche');
     
-    if (upgradeStatus === 'success' && upgradedNiche) {
-      // Switch to the newly upgraded niche
-      setSelectedNiche(upgradedNiche);
+    if (upgradeStatus === 'success') {
+      // Refresh payment status to get updated niches
+      refreshPaymentStatus();
+      
+      // If we have a specific upgraded niche, switch to it
+      if (upgradedNiche) {
+        setSelectedNiche(upgradedNiche);
+        console.log(`Successfully upgraded to ${upgradedNiche} niche!`);
+      } else {
+        console.log('Upgrade successful - refreshing available niches');
+      }
       
       // Clear the URL parameters
       const url = new URL(window.location.href);
       url.searchParams.delete('upgrade');
       url.searchParams.delete('niche');
       window.history.replaceState({}, '', url.toString());
-      
-      // Show success message
-      console.log(`Successfully upgraded to ${upgradedNiche} niche!`);
     }
-  }, [searchParams]);
+  }, [searchParams, refreshPaymentStatus]);
 
   const checkOnboardingStatus = async () => {
     // Skip onboarding check for development - allow direct access
@@ -312,8 +317,17 @@ function MainDashboardWithSearchParams() {
     // Add resize listener
     window.addEventListener('resize', handleResize);
 
+    // Check if user just came from payment success page and refresh payment status
+    const referrer = document.referrer;
+    if (referrer.includes('/payment-success') || referrer.includes('/onboarding/success')) {
+      console.log('🔧 User came from payment success page, refreshing payment status...');
+      setTimeout(() => {
+        refreshPaymentStatus();
+      }, 1000); // Small delay to ensure everything is loaded
+    }
+
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [refreshPaymentStatus]);
 
   const isSubscribed = (niche: string) => availableNiches.includes(niche);
   
@@ -399,12 +413,37 @@ function MainDashboardWithSearchParams() {
     try {
       setIsLoading(true);
       
-      // Redirect to the add niche payment link
-      const addNichePaymentLink = 'https://buy.stripe.com/14A28s5l0dqzgZG0XO2Nq02';
-      window.open(addNichePaymentLink, '_blank');
+      // Use the proper API to create a checkout session with the specific niche
+      const response = await fetch('/api/stripe/niche-upgrade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          selectedNiche: nicheId,
+          billingCycle: billingCycle
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Created niche upgrade checkout session:', data);
+        
+        // Redirect to Stripe checkout
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          console.error('❌ No checkout URL received');
+          setError('Failed to create checkout session');
+        }
+      } else {
+        console.error('❌ Failed to create checkout session');
+        const errorData = await response.json();
+        console.error('❌ Error details:', errorData);
+        setError('Failed to process upgrade request');
+      }
       
       setIsUpgradeModalOpen(false);
-      console.log(`Redirecting to add ${nicheId} niche payment`);
     } catch (error) {
       console.error('Error upgrading niche:', error);
       setError('Failed to process upgrade request');

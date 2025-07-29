@@ -18,6 +18,7 @@ function OnboardingSuccessContent() {
     const niche = searchParams.get('niche');
     const niches = searchParams.get('niches');
     const isUpgrade = searchParams.get('upgrade') === 'true';
+    const specificNiche = searchParams.get('specific_niche');
     
     // Detect if this is a niche upgrade from hardcoded payment link
     // If we have a session ID but no specific niche params, it's likely a niche upgrade
@@ -90,7 +91,16 @@ function OnboardingSuccessContent() {
           const isFromStripePaymentLink = referrer.includes('stripe.com') || referrer.includes('buy.stripe.com');
           
           if (isFromStripePaymentLink) {
-            console.log('🔧 Detected user came from Stripe payment link, ensuring niche is added...');
+            console.log('🔧 Detected user came from Stripe payment link, but no specific niche was specified');
+            console.log('⚠️ Cannot determine which niche to add - user should use the upgrade modal for specific niche selection');
+            
+            // Don't automatically add any niche - let the user choose through the upgrade modal
+            // This prevents incorrect assumptions about which niche they want
+          }
+          
+          // Handle specific niche upgrade from the upgrade modal
+          if (specificNiche) {
+            console.log('🔧 Adding specific niche from upgrade modal:', specificNiche);
             try {
               const addNicheResponse = await fetch('/api/user/add-niche', {
                 method: 'POST',
@@ -98,17 +108,22 @@ function OnboardingSuccessContent() {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  nicheToAdd: 'creator' // Default niche to add
+                  nicheToAdd: specificNiche
                 }),
               });
               
               if (addNicheResponse.ok) {
-                console.log('✅ Successfully added niche from Stripe payment link');
+                console.log('✅ Successfully added specific niche from upgrade modal:', specificNiche);
+                
+                // Special handling for coach niche - immediately switch to coach dashboard
+                if (specificNiche === 'coach') {
+                  console.log('🎯 Coach niche added - will redirect to coach dashboard');
+                }
               } else {
-                console.error('❌ Failed to add niche from Stripe payment link');
+                console.error('❌ Failed to add specific niche from upgrade modal');
               }
             } catch (error) {
-              console.error('❌ Error adding niche from Stripe payment link:', error);
+              console.error('❌ Error adding specific niche from upgrade modal:', error);
             }
           }
         }
@@ -250,18 +265,54 @@ function OnboardingSuccessContent() {
               
               if (finalStatus.hasCompletedOnboarding) {
                 console.log('✅ Onboarding completed, redirecting to dashboard...');
-                router.push(`/dashboard?niche=${finalNiche}&section=crm`);
+                
+                // Special handling for coach niche - redirect to coach dashboard
+                if (finalNiche === 'coach' || specificNiche === 'coach') {
+                  console.log('🎯 Redirecting to coach dashboard...');
+                  router.push('/dashboard?niche=coach&section=dashboard&upgrade=success');
+                } else if (finalNiche === 'creator' || specificNiche === 'creator') {
+                  console.log('🎯 Redirecting to creator dashboard...');
+                  router.push('/dashboard?niche=creator&section=dashboard&upgrade=success');
+                } else if (finalNiche === 'podcaster' || specificNiche === 'podcaster') {
+                  console.log('🎯 Redirecting to podcaster dashboard...');
+                  router.push('/dashboard?niche=podcaster&section=dashboard&upgrade=success');
+                } else if (finalNiche === 'freelancer' || specificNiche === 'freelancer') {
+                  console.log('🎯 Redirecting to freelancer dashboard...');
+                  router.push('/dashboard?niche=freelancer&section=dashboard&upgrade=success');
+                } else {
+                  router.push(`/dashboard?niche=${finalNiche}&section=crm`);
+                }
               } else {
                 console.warn('⚠️ Onboarding not completed, staying on success page');
                 // Don't redirect, let the user see the success page
               }
             } else {
               console.error('❌ Failed to check final status, redirecting anyway...');
-              router.push(`/dashboard?niche=${finalNiche}&section=crm`);
+              if (finalNiche === 'coach' || specificNiche === 'coach') {
+                router.push('/dashboard?niche=coach&section=dashboard&upgrade=success');
+              } else if (finalNiche === 'creator' || specificNiche === 'creator') {
+                router.push('/dashboard?niche=creator&section=dashboard&upgrade=success');
+              } else if (finalNiche === 'podcaster' || specificNiche === 'podcaster') {
+                router.push('/dashboard?niche=podcaster&section=dashboard&upgrade=success');
+              } else if (finalNiche === 'freelancer' || specificNiche === 'freelancer') {
+                router.push('/dashboard?niche=freelancer&section=dashboard&upgrade=success');
+              } else {
+                router.push(`/dashboard?niche=${finalNiche}&section=crm`);
+              }
             }
           } catch (error) {
             console.error('❌ Error checking final status:', error);
-            router.push(`/dashboard?niche=${finalNiche}&section=crm`);
+            if (finalNiche === 'coach' || specificNiche === 'coach') {
+              router.push('/dashboard?niche=coach&section=dashboard&upgrade=success');
+            } else if (finalNiche === 'creator' || specificNiche === 'creator') {
+              router.push('/dashboard?niche=creator&section=dashboard&upgrade=success');
+            } else if (finalNiche === 'podcaster' || specificNiche === 'podcaster') {
+              router.push('/dashboard?niche=podcaster&section=dashboard&upgrade=success');
+            } else if (finalNiche === 'freelancer' || specificNiche === 'freelancer') {
+              router.push('/dashboard?niche=freelancer&section=dashboard&upgrade=success');
+            } else {
+              router.push(`/dashboard?niche=${finalNiche}&section=crm`);
+            }
           }
         }, 3000);
       }

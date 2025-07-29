@@ -107,13 +107,15 @@ export async function POST(request: NextRequest) {
 
       // Create checkout session with proper success URL
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      const successUrl = `${baseUrl}/onboarding/success?session_id={CHECKOUT_SESSION_ID}&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D&upgrade=true`;
+      const successUrl = `${baseUrl}/onboarding/success?session_id={CHECKOUT_SESSION_ID}&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D&upgrade=true&specific_niche=${selectedNiche}`;
       const cancelUrl = `${baseUrl}/dashboard`;
 
       console.log('🔧 Creating niche upgrade checkout session with URLs:', {
         successUrl,
         cancelUrl,
-        baseUrl
+        baseUrl,
+        selectedNiche,
+        billingCycle
       });
 
       const session = await stripe.checkout.sessions.create({
@@ -132,13 +134,20 @@ export async function POST(request: NextRequest) {
           niche: selectedNiche,
           niches: JSON.stringify([selectedNiche]),
           email: user?.emailAddresses?.[0]?.emailAddress || '',
-          upgrade_type: 'niche_upgrade'
+          upgrade_type: 'niche_upgrade',
+          billing_cycle: billingCycle,
+          product_name: `Tango ${selectedNiche} Niche Upgrade`
         },
         customer_email: user?.emailAddresses?.[0]?.emailAddress,
         allow_promotion_codes: true,
       });
 
-      console.log('Created niche upgrade checkout session:', session.id);
+      console.log('✅ Created niche upgrade checkout session:', {
+        sessionId: session.id,
+        niche: selectedNiche,
+        billingCycle: billingCycle,
+        priceId: priceId
+      });
 
       return NextResponse.json({
         url: session.url,

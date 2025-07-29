@@ -8,18 +8,40 @@ export default function PaymentSuccessPage() {
 
   useEffect(() => {
     // Add a small delay to ensure the page loads properly
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       // Get the selected niche from sessionStorage
       const selectedNiche = sessionStorage.getItem('pendingNicheUpgrade');
       
       // Clear the stored niche
       sessionStorage.removeItem('pendingNicheUpgrade');
       
-      // Redirect to the onboarding success page with niche upgrade parameters
       if (selectedNiche) {
-        router.push(`/onboarding/success?upgrade=true&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D`);
+        // If we have a specific niche from the upgrade modal, use it
+        router.push(`/onboarding/success?upgrade=true&niche=${selectedNiche}&niches=%5B%22${selectedNiche}%22%5D&specific_niche=${selectedNiche}`);
       } else {
-        router.push('/onboarding/success?upgrade=true');
+        // Check if user came from the coach payment links
+        const referrer = document.referrer;
+        if (referrer.includes('buy.stripe.com/5kQ3cw5l086faBieOE2Nq05') || 
+            referrer.includes('buy.stripe.com/00w5kEcNs1HR10IdKA2Nq03')) {
+          console.log('🔧 Detected coach niche payment link, adding coach niche');
+          router.push('/onboarding/success?upgrade=true&niche=coach&niches=%5B%22coach%22%5D&specific_niche=coach');
+        } else if (referrer.includes('buy.stripe.com/fZu14o7t83PZeRy35W2Nq06') || 
+                   referrer.includes('buy.stripe.com/7sY6oI6p44U3gZGgWM2Nq07')) {
+          console.log('🔧 Detected creator niche payment link, adding creator niche');
+          router.push('/onboarding/success?upgrade=true&niche=creator&niches=%5B%22creator%22%5D&specific_niche=creator');
+        } else if (referrer.includes('buy.stripe.com/14AcN65l00DNbFm9uk2Nq08') || 
+                   referrer.includes('buy.stripe.com/28E3cw3cSdqz9xe0XO2Nq09')) {
+          console.log('🔧 Detected podcaster niche payment link, adding podcaster niche');
+          router.push('/onboarding/success?upgrade=true&niche=podcaster&niches=%5B%22podcaster%22%5D&specific_niche=podcaster');
+        } else if (referrer.includes('buy.stripe.com/3cI7sMcNs5Y710I21S2Nq0a') || 
+                   referrer.includes('buy.stripe.com/5kQ9AU6p4cmvfVC35W2Nq0b')) {
+          console.log('🔧 Detected freelancer niche payment link, adding freelancer niche');
+          router.push('/onboarding/success?upgrade=true&niche=freelancer&niches=%5B%22freelancer%22%5D&specific_niche=freelancer');
+        } else {
+          // If no specific niche (coming from other hardcoded payment link), 
+          // redirect to dashboard without making assumptions
+          router.push('/dashboard?upgrade=success');
+        }
       }
     }, 1000);
 
