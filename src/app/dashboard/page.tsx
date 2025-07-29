@@ -567,7 +567,6 @@ function MainDashboardWithSearchParams() {
               onAddNiche={handleAddNiche}
               onSettings={handleSettings}
               onLogout={handleLogout}
-              onRefresh={refreshPaymentStatus}
               subscribedNiches={availableNiches}
               isSubscribed={isSubscribed}
               hasCorePlan={hasCorePlan}
