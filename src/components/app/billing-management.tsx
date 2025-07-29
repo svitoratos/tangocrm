@@ -302,12 +302,34 @@ export const BillingManagement = () => {
             ) : (
               <div className="text-center p-4 border border-dashed border-gray-300 rounded-lg">
                 <CreditCard className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No payment method on file</p>
+                <p className="text-sm text-gray-500">
+                  {hasActiveSubscription 
+                    ? "No payment method on file. Add one to enable full billing management."
+                    : "No payment method on file"
+                  }
+                </p>
               </div>
             )}
-            <Button variant="outline" className="w-full">
-              Add Payment Method
+            <Button 
+              onClick={openCustomerPortal}
+              disabled={loading}
+              variant="outline" 
+              className="w-full"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                hasActiveSubscription ? 'Add Payment Method' : 'Manage Payment Methods'
+              )}
             </Button>
+            {hasActiveSubscription && !subscriptionDetails && (
+              <p className="text-sm text-blue-600 text-center">
+                💡 Adding a payment method will connect your account to Stripe for full billing management.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
