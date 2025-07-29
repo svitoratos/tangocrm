@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@clerk/nextjs/server';
+import { userOperations } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,18 +21,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get customer by user ID (you might want to store this in your database)
-    // For now, we'll create a customer portal session without a specific customer
+    // Get user profile to find Stripe customer ID
+    const user = await userOperations.getProfile(userId);
+    
+    if (!user || !user.stripe_customer_id) {
+      return NextResponse.json(
+        { error: 'No Stripe customer found for this user' },
+        { status: 404 }
+      );
+    }
+
+    // Create billing portal session with actual Stripe customer ID
     const session = await stripe.billingPortal.sessions.create({
-      customer: userId, // You'll need to get the actual Stripe customer ID
+      customer: user.stripe_customer_id,
       return_url: `${request.nextUrl.origin}/dashboard/settings`,
     });
 
+    console.log('✅ Created billing portal session for user:', userId, 'customer:', user.stripe_customer_id);
+
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Stripe portal error:', error);
+    console.error('❌ Stripe portal error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create billing portal session' },
       { status: 500 }
     );
   }
