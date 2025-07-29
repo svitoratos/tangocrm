@@ -100,11 +100,37 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
 
   const availableNiches = NICHE_DATA.filter(niche => niche.id !== currentNiche);
 
-  const handleUpgrade = () => {
+  const handleUpgrade = async () => {
     if (selectedNiche) {
-      // Use the dedicated add niche payment link
-      const addNichePaymentLink = 'https://buy.stripe.com/14A28s5l0dqzgZG0XO2Nq02';
-      window.open(addNichePaymentLink, '_blank');
+      try {
+        // Create a proper checkout session for adding a niche
+        const response = await fetch('/api/stripe/niche-upgrade', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            selectedNiche: selectedNiche,
+            billingCycle: billingCycle
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.url) {
+            // Redirect to the checkout session
+            window.location.href = data.url;
+          } else {
+            console.error('No checkout URL received');
+          }
+        } else {
+          console.error('Failed to create checkout session');
+          const errorData = await response.json();
+          console.error('Error details:', errorData);
+        }
+      } catch (error) {
+        console.error('Error creating checkout session:', error);
+      }
       onClose();
     }
   };

@@ -17,6 +17,7 @@ function OnboardingSuccessContent() {
     const sessionId = searchParams.get('session_id');
     const niche = searchParams.get('niche') || 'creator';
     const niches = searchParams.get('niches') || JSON.stringify([niche]);
+    const isUpgrade = searchParams.get('upgrade') === 'true';
 
     console.log('🔧 Success page loaded with session:', sessionId);
     console.log('🔧 Niche:', niche);
@@ -60,7 +61,8 @@ function OnboardingSuccessContent() {
           body: JSON.stringify({
             onboardingCompleted: true,
             primaryNiche: niche,
-            niches: JSON.parse(niches)
+            niches: JSON.parse(niches),
+            isUpgrade: isUpgrade
           }),
         });
 

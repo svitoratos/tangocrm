@@ -65,13 +65,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('🔧 Request body:', body);
     
-    const { onboardingCompleted, primaryNiche, niches } = body
+    const { onboardingCompleted, primaryNiche, niches, isUpgrade } = body
 
     console.log('🔧 Updating onboarding status:', {
       userId,
       onboardingCompleted,
       primaryNiche,
-      niches
+      niches,
+      isUpgrade
     })
 
     // Validate required fields
@@ -83,13 +84,32 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get current user profile to handle niche upgrades properly
+    const currentProfile = await userOperations.getProfile(userId);
+    let updatedNiches = niches;
+    
+    if (isUpgrade && currentProfile) {
+      // For niche upgrades, append the new niche to existing niches
+      const existingNiches = currentProfile.niches || [];
+      const newNiches = Array.isArray(niches) ? niches : [niches];
+      
+      // Merge existing and new niches, removing duplicates
+      updatedNiches = [...new Set([...existingNiches, ...newNiches])];
+      
+      console.log('🔧 Niche upgrade - merging niches:', {
+        existing: existingNiches,
+        new: newNiches,
+        merged: updatedNiches
+      });
+    }
+
     // Update user profile with onboarding status
     console.log('🔧 Calling userOperations.upsertProfile...');
     const updatedUser = await userOperations.upsertProfile(userId, {
       email: user?.emailAddresses[0]?.emailAddress || '',
       onboarding_completed: onboardingCompleted,
       primary_niche: primaryNiche,
-      niches: niches,
+      niches: updatedNiches,
       updated_at: new Date().toISOString()
     })
 
