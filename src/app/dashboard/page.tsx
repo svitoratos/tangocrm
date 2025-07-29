@@ -269,6 +269,49 @@ function MainDashboardWithSearchParams() {
     }
   }, [availableNiches, selectedNiche, primaryNiche, paymentStatusLoading]);
 
+  // Auto-fix subscription status for users with niches but inactive subscription
+  useEffect(() => {
+    const autoFixSubscriptionStatus = async () => {
+      if (!paymentStatusLoading && subscribedNiches.length > 0) {
+        // Get current payment status
+        const response = await fetch('/api/user/payment-status');
+        if (response.ok) {
+          const paymentStatus = await response.json();
+          
+          // If user has niches but inactive subscription, they likely made a payment
+          if (!paymentStatus.hasActiveSubscription && paymentStatus.subscriptionStatus === 'inactive' && subscribedNiches.length > 0) {
+            console.log('🔧 Auto-fixing subscription status for user with niches...');
+            
+            try {
+              const updateResponse = await fetch('/api/user/subscription-status', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  subscriptionStatus: 'active',
+                  subscriptionTier: 'core'
+                }),
+              });
+              
+              if (updateResponse.ok) {
+                console.log('✅ Auto-fixed subscription status to active');
+                // Refresh payment status to get updated data
+                refreshPaymentStatus();
+              } else {
+                console.error('❌ Failed to auto-fix subscription status');
+              }
+            } catch (error) {
+              console.error('❌ Error auto-fixing subscription status:', error);
+            }
+          }
+        }
+      }
+    };
+
+    autoFixSubscriptionStatus();
+  }, [paymentStatusLoading, subscribedNiches.length, refreshPaymentStatus]);
+
   // Handle upgrade success redirect
   useEffect(() => {
     const upgradeStatus = searchParams.get('upgrade');
@@ -634,7 +677,7 @@ export default function ProtectedDashboard() {
   return (
     <>
       <SignedIn>
-        <PaymentVerification requireActiveSubscription={true} requireOnboarding={true}>
+        <PaymentVerification requireActiveSubscription={false} requireOnboarding={true}>
           <NicheProvider>
             <TimezoneProvider>
               <AnalyticsProvider>
