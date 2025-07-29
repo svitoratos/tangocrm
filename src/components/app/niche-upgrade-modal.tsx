@@ -13,6 +13,7 @@ interface NicheUpgradeModalProps {
   onClose: () => void;
   currentNiche: string;
   hasCorePlan?: boolean;
+  subscribedNiches?: string[];
 }
 
 interface Niche {
@@ -93,12 +94,16 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
   isOpen,
   onClose,
   currentNiche,
-  hasCorePlan = true
+  hasCorePlan = true,
+  subscribedNiches = []
 }) => {
   const [selectedNiche, setSelectedNiche] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
-  const availableNiches = NICHE_DATA.filter(niche => niche.id !== currentNiche);
+  // Filter out niches that the user already has
+  const availableNiches = NICHE_DATA.filter(niche => 
+    !subscribedNiches.includes(niche.id)
+  );
 
   const handleUpgrade = async () => {
     if (selectedNiche) {
@@ -317,117 +322,138 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {availableNiches.map((niche) => (
-                  <Card
-                    key={niche.id}
-                    className={`relative p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                      selectedNiche === niche.id 
-                        ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedNiche(niche.id)}
+              {availableNiches.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Check size={24} className="text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    You have all available niches!
+                  </h3>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    You already have access to all the available business types. You're all set to manage your business across all niches.
+                  </p>
+                  <Button
+                    onClick={onClose}
+                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
                   >
-                    {selectedNiche === niche.id && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
+                    Close
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {availableNiches.map((niche) => (
+                      <Card
+                        key={niche.id}
+                        className={`relative p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                          selectedNiche === niche.id 
+                            ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' 
+                            : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => setSelectedNiche(niche.id)}
                       >
-                        <Check size={12} className="text-white" />
-                      </motion.div>
-                    )}
+                        {selectedNiche === niche.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
+                          >
+                            <Check size={12} className="text-white" />
+                          </motion.div>
+                        )}
 
-                    {/* Niche Header */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div 
-                        className="p-2 rounded-lg"
-                        style={{ backgroundColor: `${niche.color}20`, color: niche.color }}
-                      >
-                        {niche.icon}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{niche.name}</h3>
-                        <p className="text-sm text-gray-600">{niche.label}</p>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-gray-600 mb-4">{niche.description}</p>
-
-                    {/* Price */}
-                    <div className="mb-4">
-                      {billingCycle === 'monthly' ? (
-                        <div>
-                          <span className="text-2xl font-bold text-gray-900">${niche.price}</span>
-                          <span className="text-gray-600">/month</span>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-lg line-through text-gray-400">
-                              ${(niche.price * 12).toFixed(2)}
-                            </span>
-                            <Badge className="bg-orange-100 text-orange-700 text-xs">
-                              Save ${(niche.price * 12 * 0.2).toFixed(2)}
-                            </Badge>
+                        {/* Niche Header */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <div 
+                            className="p-2 rounded-lg"
+                            style={{ backgroundColor: `${niche.color}20`, color: niche.color }}
+                          >
+                            {niche.icon}
                           </div>
                           <div>
-                            <span className="text-2xl font-bold text-gray-900">
-                              ${(niche.price * 12 * 0.8).toFixed(2)}
-                            </span>
-                            <span className="text-gray-600">/year</span>
+                            <h3 className="font-semibold text-gray-900">{niche.name}</h3>
+                            <p className="text-sm text-gray-600">{niche.label}</p>
                           </div>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Features */}
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">Includes:</h4>
-                      {niche.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                          <Check size={14} className="text-green-500 flex-shrink-0" />
-                          <span>{feature}</span>
+                        {/* Description */}
+                        <p className="text-sm text-gray-600 mb-4">{niche.description}</p>
+
+                        {/* Price */}
+                        <div className="mb-4">
+                          {billingCycle === 'monthly' ? (
+                            <div>
+                              <span className="text-2xl font-bold text-gray-900">${niche.price}</span>
+                              <span className="text-gray-600">/month</span>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg line-through text-gray-400">
+                                  ${(niche.price * 12).toFixed(2)}
+                                </span>
+                                <Badge className="bg-orange-100 text-orange-700 text-xs">
+                                  Save ${(niche.price * 12 * 0.2).toFixed(2)}
+                                </Badge>
+                              </div>
+                              <div>
+                                <span className="text-2xl font-bold text-gray-900">
+                                  ${(niche.price * 12 * 0.8).toFixed(2)}
+                                </span>
+                                <span className="text-gray-600">/year</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  </Card>
-                ))}
-              </div>
 
-              {/* Benefits Section */}
-              <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-emerald-50 rounded-xl">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Zap size={20} className="text-purple-600" />
-                  Why Add More Niches?
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Users size={16} className="text-purple-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Diversify Your Business</h4>
-                      <p className="text-sm text-gray-600">Manage multiple business types from one platform</p>
+                        {/* Features */}
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Includes:</h4>
+                          {niche.features.map((feature, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                              <Check size={14} className="text-green-500 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Benefits Section */}
+                  <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-emerald-50 rounded-xl">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Zap size={20} className="text-purple-600" />
+                      Why Add More Niches?
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <Users size={16} className="text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">Diversify Your Business</h4>
+                          <p className="text-sm text-gray-600">Manage multiple business types from one platform</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-emerald-100 rounded-lg">
+                          <BarChart3 size={16} className="text-emerald-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">Advanced Analytics</h4>
+                          <p className="text-sm text-gray-600">Get insights across all your business types</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-emerald-100 rounded-lg">
-                      <BarChart3 size={16} className="text-emerald-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Advanced Analytics</h4>
-                      <p className="text-sm text-gray-600">Get insights across all your business types</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
                 </>
               )}
             </div>
 
-            {/* Footer */}
+          {/* Footer - Only show when there are available niches */}
+          {availableNiches.length > 0 && (
             <div className="flex items-center justify-between p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
               <div className="text-sm text-gray-600">
                 {selectedNiche ? (
@@ -459,6 +485,7 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
                 </Button>
               </div>
             </div>
+          )}
           </motion.div>
         </motion.div>
       )}

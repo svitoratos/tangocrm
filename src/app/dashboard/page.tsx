@@ -573,6 +573,7 @@ function MainDashboardWithSearchParams() {
         onClose={() => setIsUpgradeModalOpen(false)}
         currentNiche={selectedNiche}
         hasCorePlan={hasCorePlan()}
+        subscribedNiches={subscribedNiches}
       />
     </AppContext.Provider>
   );
