@@ -14,6 +14,7 @@ import {
   User,
   Settings,
   LogOut,
+  RefreshCw,
   Video,
   GraduationCap,
   Mic,
@@ -62,6 +63,7 @@ interface SidebarNavigationProps {
   onAddNiche?: () => void
   onSettings?: () => void
   onLogout?: () => void
+  onRefresh?: () => void
   subscribedNiches?: string[]
   isSubscribed?: (niche: string) => boolean
   hasCorePlan?: () => boolean
@@ -148,6 +150,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onAddNiche = () => {},
   onSettings = () => {},
   onLogout = () => {},
+  onRefresh = () => {},
   subscribedNiches = ["creator"],
   isSubscribed = (niche: string) => subscribedNiches.includes(niche),
   hasCorePlan = () => false,
@@ -512,6 +515,10 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuItem onClick={onRefresh} className="flex items-center gap-2">
+              <RefreshCw size={16} />
+              Refresh Data
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={onSettings} className="flex items-center gap-2">
               <Settings size={16} />
               Settings
