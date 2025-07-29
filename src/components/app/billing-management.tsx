@@ -72,6 +72,18 @@ export const BillingManagement = () => {
     });
   };
 
+  // Calculate pricing based on niches (fallback when no Stripe data)
+  const calculateNichePricing = (niches: string[]) => {
+    const basePrice = 39.99;
+    const additionalNichePrice = 19.99;
+    const additionalNiches = Math.max(0, niches.length - 1);
+    const totalCost = basePrice + (additionalNichePrice * additionalNiches);
+    return { basePrice, additionalNichePrice, additionalNiches, totalCost };
+  };
+
+  // Determine if user has active subscription based on niches
+  const hasActiveSubscription = paymentStatus?.niches && paymentStatus.niches.length > 0;
+
   return (
     <div className="space-y-6">
       <div>
@@ -100,6 +112,7 @@ export const BillingManagement = () => {
                 <span className="ml-2">Loading subscription details...</span>
               </div>
             ) : subscriptionDetails ? (
+              // Show Stripe subscription data if available
               <div className="space-y-4">
                 {/* Main subscription info */}
                 <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
@@ -179,6 +192,75 @@ export const BillingManagement = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            ) : hasActiveSubscription ? (
+              // Show subscription info based on niches when no Stripe data
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+                  <div>
+                    <h3 className="font-medium">Tango Core Plan</h3>
+                    <p className="text-sm text-gray-500">Monthly billing</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="default" className="bg-green-500">Active</Badge>
+                      <span className="text-sm text-gray-500">
+                        Next billing: {getNextBillingDate()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold">$39.99</p>
+                    <p className="text-sm text-gray-500">base plan</p>
+                  </div>
+                </div>
+
+                {/* Niche breakdown with pricing */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm text-gray-700">Active Niches:</h4>
+                  <div className="space-y-2">
+                    {paymentStatus.niches.map((niche, index) => {
+                      const isFirstNiche = index === 0;
+                      const pricing = calculateNichePricing(paymentStatus.niches);
+                      
+                      return (
+                        <div key={niche} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                          <div className="flex items-center gap-3">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="font-medium">{getNicheDisplayName(niche)}</span>
+                            {isFirstNiche && (
+                              <Badge variant="secondary" className="text-xs">Included</Badge>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            {isFirstNiche ? (
+                              <span className="text-sm text-green-600 font-medium">Included</span>
+                            ) : (
+                              <span className="text-sm font-medium">+$19.99</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Total cost */}
+                  {paymentStatus.niches.length > 1 && (
+                    <div className="flex items-center justify-between p-3 border-t-2 border-gray-200 bg-gray-50 rounded-lg">
+                      <span className="font-semibold">Total Monthly Cost:</span>
+                      <span className="text-lg font-bold text-blue-600">
+                        ${calculateNichePricing(paymentStatus.niches).totalCost.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Note about Stripe integration */}
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Note:</strong> Your subscription is active but not yet connected to Stripe billing. 
+                    Contact support to link your account for full billing management.
+                  </AlertDescription>
+                </Alert>
               </div>
             ) : (
               <div className="text-center p-8 border border-dashed border-gray-300 rounded-lg">
@@ -265,22 +347,29 @@ export const BillingManagement = () => {
               </div>
             ) : (
               <div className="text-center p-4">
-                <p className="text-sm text-gray-500 mb-2">Billing history available in Stripe portal</p>
-                <Button 
-                  onClick={openCustomerPortal}
-                  disabled={loading}
-                  variant="outline"
-                  size="sm"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    'View Billing History'
-                  )}
-                </Button>
+                <p className="text-sm text-gray-500 mb-2">
+                  {hasActiveSubscription 
+                    ? "Billing history will be available once your account is connected to Stripe"
+                    : "Billing history available in Stripe portal"
+                  }
+                </p>
+                {subscriptionDetails && (
+                  <Button 
+                    onClick={openCustomerPortal}
+                    disabled={loading}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      'View Billing History'
+                    )}
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -315,7 +404,12 @@ export const BillingManagement = () => {
             <p className="text-sm text-muted-foreground text-center">
               The billing portal allows you to update payment methods, view invoices, and manage your subscription
             </p>
-            {!subscriptionDetails && (
+            {!subscriptionDetails && hasActiveSubscription && (
+              <p className="text-sm text-orange-600 text-center">
+                ⚠️ Your subscription is active but not connected to Stripe. Contact support to enable full billing management.
+              </p>
+            )}
+            {!subscriptionDetails && !hasActiveSubscription && (
               <p className="text-sm text-orange-600 text-center">
                 ⚠️ No active subscription found. Please contact support if you have billing questions.
               </p>
