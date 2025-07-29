@@ -85,6 +85,29 @@ function OnboardingSuccessContent() {
           
           if (!paymentStatus.hasActiveSubscription) {
             console.warn('⚠️ User still doesn\'t have active subscription, this might indicate a webhook issue');
+            
+            // Directly update subscription status since webhook might not have processed yet
+            console.log('🔧 Manually updating subscription status to active...');
+            try {
+              const subscriptionUpdateResponse = await fetch('/api/user/subscription-status', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  subscriptionStatus: 'active',
+                  subscriptionTier: 'core'
+                }),
+              });
+              
+              if (subscriptionUpdateResponse.ok) {
+                console.log('✅ Manually updated subscription status to active');
+              } else {
+                console.error('❌ Failed to manually update subscription status');
+              }
+            } catch (error) {
+              console.error('❌ Error manually updating subscription status:', error);
+            }
           }
           
           if (!paymentStatus.hasCompletedOnboarding) {
