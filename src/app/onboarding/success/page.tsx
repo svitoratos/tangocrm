@@ -83,6 +83,34 @@ function OnboardingSuccessContent() {
               console.error('❌ Error adding default niche:', error);
             }
           }
+          
+          // Also check if user came from any payment link (even without session ID)
+          // This handles cases where the payment link redirects to a different URL
+          const referrer = document.referrer;
+          const isFromStripePaymentLink = referrer.includes('stripe.com') || referrer.includes('buy.stripe.com');
+          
+          if (isFromStripePaymentLink) {
+            console.log('🔧 Detected user came from Stripe payment link, ensuring niche is added...');
+            try {
+              const addNicheResponse = await fetch('/api/user/add-niche', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  nicheToAdd: 'creator' // Default niche to add
+                }),
+              });
+              
+              if (addNicheResponse.ok) {
+                console.log('✅ Successfully added niche from Stripe payment link');
+              } else {
+                console.error('❌ Failed to add niche from Stripe payment link');
+              }
+            } catch (error) {
+              console.error('❌ Error adding niche from Stripe payment link:', error);
+            }
+          }
         }
 
         // Update onboarding status (fallback in case webhook hasn't processed yet)
