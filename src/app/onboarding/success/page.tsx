@@ -220,9 +220,9 @@ function OnboardingSuccessContent() {
 
     // Simulate setup process with progress updates
     const setupSteps = [
-      { name: 'Creating your CRM dashboard', duration: 2000 },
-      { name: 'Personalizing your workspace', duration: 1500 },
-      { name: 'Getting everything ready for you', duration: 1000 },
+      { name: 'Creating your CRM dashboard', duration: 1000 },
+      { name: 'Personalizing your workspace', duration: 800 },
+      { name: 'Getting everything ready for you', duration: 500 },
     ];
 
     let currentStep = 0;
@@ -252,7 +252,7 @@ function OnboardingSuccessContent() {
       if (newProgress >= 100) {
         clearInterval(progressInterval);
         // Redirect to dashboard after setup is complete
-        // Add extra delay to ensure database updates are processed
+        // Reduced delay for faster redirect
         setTimeout(async () => {
           console.log('🔧 Checking final status before redirecting to dashboard...');
           
@@ -314,7 +314,7 @@ function OnboardingSuccessContent() {
               router.push(`/dashboard?niche=${finalNiche}&section=crm`);
             }
           }
-        }, 3000);
+        }, 1500); // Reduced from 3000ms to 1500ms for faster redirect
       }
     }, 100);
 

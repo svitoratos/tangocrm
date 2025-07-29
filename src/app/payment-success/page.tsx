@@ -7,8 +7,8 @@ export default function PaymentSuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Add a small delay to ensure the page loads properly
-    const timer = setTimeout(async () => {
+    // Immediate redirect without delay for streamlined flow
+    const redirectToOnboardingSuccess = () => {
       // Get the selected niche from sessionStorage
       const selectedNiche = sessionStorage.getItem('pendingNicheUpgrade');
       
@@ -43,9 +43,10 @@ export default function PaymentSuccessPage() {
           router.push('/dashboard?upgrade=success');
         }
       }
-    }, 1000);
+    };
 
-    return () => clearTimeout(timer);
+    // Redirect immediately
+    redirectToOnboardingSuccess();
   }, [router]);
 
   return (
@@ -62,7 +63,7 @@ export default function PaymentSuccessPage() {
           Payment Successful!
         </h2>
         <p className="text-gray-600 mb-6">
-          Thank you for your purchase. We're setting up your new niche access...
+          Redirecting you to your dashboard...
         </p>
         <div className="animate-pulse">
           <div className="h-2 bg-gray-200 rounded mb-2"></div>
