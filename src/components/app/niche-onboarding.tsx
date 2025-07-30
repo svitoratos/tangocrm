@@ -231,7 +231,7 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-6">
         <div className="w-full max-w-4xl">
           <AnimatePresence mode="wait">
             {/* Step 1: Welcome */}
@@ -244,45 +244,45 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
                 transition={{ duration: 0.3 }}
                 className="text-center"
               >
-                <div className="mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary to-accent rounded-full mb-6">
-                    <Sparkles className="w-8 h-8 text-white" />
+                <div className="mb-6 md:mb-8">
+                  <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-primary to-accent rounded-full mb-4 md:mb-6">
+                    <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-white" />
                   </div>
-                  <h1 className="text-4xl font-bold text-foreground mb-4">
+                  <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-4">
                     Welcome to Your Business Growth Platform
                   </h1>
-                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto">
                     Let's set up your personalized pipeline to track leads, manage relationships, 
                     and grow your business. This will only take a few minutes.
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6 mt-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-12">
                   <Card className="bg-card border-border">
-                    <CardContent className="p-6 text-center">
-                      <Target className="w-10 h-10 text-primary mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Targeted Setup</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <CardContent className="p-4 md:p-6 text-center">
+                      <Target className="w-8 h-8 md:w-10 md:h-10 text-primary mx-auto mb-3 md:mb-4" />
+                      <h3 className="text-base md:text-lg font-semibold mb-2">Targeted Setup</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         Customize your pipeline based on your specific business type
                       </p>
                     </CardContent>
                   </Card>
 
                   <Card className="bg-card border-border">
-                    <CardContent className="p-6 text-center">
-                      <TrendingUp className="w-10 h-10 text-primary mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Growth Focused</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <CardContent className="p-4 md:p-6 text-center">
+                      <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-primary mx-auto mb-3 md:mb-4" />
+                      <h3 className="text-base md:text-lg font-semibold mb-2">Growth Focused</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         Track every interaction from first contact to conversion
                       </p>
                     </CardContent>
                   </Card>
 
                   <Card className="bg-card border-border">
-                    <CardContent className="p-6 text-center">
-                      <HeartHandshake className="w-10 h-10 text-primary mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Relationship Building</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <CardContent className="p-4 md:p-6 text-center">
+                      <HeartHandshake className="w-8 h-8 md:w-10 md:h-10 text-primary mx-auto mb-3 md:mb-4" />
+                      <h3 className="text-base md:text-lg font-semibold mb-2">Relationship Building</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         Nurture connections and build lasting business relationships
                       </p>
                     </CardContent>
@@ -300,16 +300,16 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-foreground mb-4">
+                <div className="text-center mb-8 md:mb-12">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
                     What best describes your business?
                   </h2>
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-base md:text-lg text-muted-foreground">
                     Choose your business type to get a customized pipeline
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   {NICHE_OPTIONS.map((niche) => (
                     <motion.div
                       key={niche.id}
@@ -324,25 +324,25 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
                         }`}
                         onClick={() => setSelectedNiche(niche.id)}
                       >
-                        <CardContent className="p-8">
-                          <div className="flex items-start space-x-4">
-                            <div className={`p-3 rounded-lg bg-gradient-to-r ${niche.color} text-white`}>
+                        <CardContent className="p-4 md:p-8">
+                          <div className="flex flex-col md:flex-row md:items-start space-y-3 md:space-y-0 md:space-x-4">
+                            <div className={`p-3 rounded-lg bg-gradient-to-r ${niche.color} text-white w-fit`}>
                               {niche.icon}
                             </div>
                             <div className="flex-1">
-                              <h3 className="text-xl font-semibold text-foreground mb-2">
+                              <h3 className="text-lg md:text-xl font-semibold text-foreground mb-2">
                                 {niche.title}
                               </h3>
-                              <p className="text-muted-foreground mb-4">
+                              <p className="text-sm md:text-base text-muted-foreground mb-4">
                                 {niche.description}
                               </p>
                               <div className="space-y-2">
                                 <p className="text-sm font-medium text-foreground">
                                   Perfect for:
                                 </p>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1 md:gap-2">
                                   {niche.examples.map((example, index) => (
-                                    <Badge key={index} variant="secondary">
+                                    <Badge key={index} variant="secondary" className="text-xs md:text-sm">
                                       {example}
                                     </Badge>
                                   ))}
@@ -350,7 +350,7 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
                               </div>
                             </div>
                             {selectedNiche === niche.id && (
-                              <Check className="w-6 h-6 text-primary" />
+                              <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />
                             )}
                           </div>
                         </CardContent>
@@ -609,14 +609,14 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
 
       {/* Navigation Footer */}
       <div className="border-t border-border bg-card">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
             <div>
               {currentStep > 1 && (
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 w-full sm:w-auto"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Back</span>
@@ -624,12 +624,12 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
               )}
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
               {currentStep < totalSteps && (
                 <Button
                   variant="ghost"
                   onClick={handleSkip}
-                  className="text-muted-foreground"
+                  className="text-muted-foreground w-full sm:w-auto"
                 >
                   Skip for now
                 </Button>
@@ -638,7 +638,7 @@ export default function NicheOnboarding({ onComplete }: OnboardingProps) {
               <Button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className="flex items-center space-x-2 min-w-[120px]"
+                className="flex items-center space-x-2 min-w-[120px] w-full sm:w-auto"
               >
                 <span>{currentStep === totalSteps ? "Complete Setup" : "Continue"}</span>
                 <ChevronRight className="w-4 h-4" />
