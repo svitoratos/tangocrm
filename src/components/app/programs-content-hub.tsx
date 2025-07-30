@@ -206,8 +206,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     concept: "",
     hashtags: "",
     description: "",
-    brandLink: "",
-    cta: "",
     
     // Schedule & Workflow (for creator)
     creationDate: "",
@@ -297,8 +295,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     concept: "",
     hashtags: "",
     description: "",
-    brandLink: "",
-    cta: "",
     
     // Schedule & Workflow (for creator)
     creationDate: "",
@@ -835,8 +831,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         concept: "",
         hashtags: String(selectedItem.hashtags?.join(", ") || ""),
         description: "",
-        brandLink: String(selectedItem.brand || ""),
-        cta: "",
         
         // Schedule & Workflow (for creator) - with bulletproof date handling
         creationDate: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.creationDate)),
@@ -966,7 +960,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
             type: editFormData.postType || selectedItem.type,
             hook: editFormData.hook || selectedItem.hook,
             hashtags: editFormData.hashtags ? editFormData.hashtags.split(", ") : selectedItem.hashtags,
-            brand: editFormData.brandLink || selectedItem.brand,
+            brand: selectedItem.brand,
             creationDate: formattedCreationDate,
             postDate: formattedPublishDate,
             deadline: formattedDeadline,
@@ -1045,7 +1039,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
             type: editFormData.postType || selectedItem.type,
             hook: editFormData.hook || selectedItem.hook,
             hashtags: editFormData.hashtags ? editFormData.hashtags.split(", ") : selectedItem.hashtags,
-            brand: editFormData.brandLink || selectedItem.brand,
+            brand: selectedItem.brand,
             postDate: dateHandler.formatDateForStorage(dateHandler.parseDateForForm(editFormData.publishDate)),
             notes: editFormData.notes || selectedItem.notes,
             views: parseInt(editFormData.views) || selectedItem.analytics?.views || 0,
@@ -1992,26 +1986,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               rows={4}
                             />
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="brandLink">Brand or Campaign Link (if sponsored)</Label>
-                              <Input
-                                id="brandLink"
-                                value={createFormData.brandLink}
-                                onChange={(e) => setCreateFormData({...createFormData, brandLink: e.target.value})}
-                                placeholder="https://..."
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="cta">Call-to-Action (CTA)</Label>
-                              <Input
-                                id="cta"
-                                value={createFormData.cta}
-                                onChange={(e) => setCreateFormData({...createFormData, cta: e.target.value})}
-                                placeholder="e.g. comment, click link, save"
-                              />
-                            </div>
-                          </div>
+
                         </div>
                       </div>
 
@@ -2730,7 +2705,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                             niche: activeNiche,
                           type: createFormData.postType,
                           platform: createFormData.platform.join(', '),
-                            brand: createFormData.brandLink || null,
+                            brand: null,
                             creationDate: dateHandler.formatDateForStorage(dateHandler.parseDateForForm(createFormData.creationDate)),
                             postDate: createFormattedPublishDate,
                             deadline: createFormattedDeadline,
@@ -2848,8 +2823,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         concept: "",
                         hashtags: "",
                         description: "",
-                        brandLink: "",
-                        cta: "",
+
                         creationDate: "",
                         publishDate: "",
                         deadline: "",
@@ -3548,26 +3522,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                           rows={4}
                         />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="editBrandLink">Brand or Campaign Link (if sponsored)</Label>
-                          <Input
-                            id="editBrandLink"
-                            value={editFormData.brandLink}
-                            onChange={(e) => setEditFormData({...editFormData, brandLink: e.target.value})}
-                            placeholder="https://..."
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="editCta">Call-to-Action (CTA)</Label>
-                          <Input
-                            id="editCta"
-                            value={editFormData.cta}
-                            onChange={(e) => setEditFormData({...editFormData, cta: e.target.value})}
-                            placeholder="e.g. comment, click link, save"
-                          />
-                        </div>
-                      </div>
+
                     </div>
                   </div>
 
