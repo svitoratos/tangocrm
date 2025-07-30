@@ -625,28 +625,6 @@ function MainDashboardWithSearchParams() {
               </ErrorBoundary>
             </div>
 
-            {/* Floating Action Button - Creator Niche Only */}
-            {selectedNiche === 'creator' && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1 }}
-                className="fixed bottom-6 right-6 z-50"
-              >
-                <Button
-                  size="lg"
-                  className="rounded-full w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-2xl hover:shadow-3xl transition-all duration-300"
-                  onClick={() => {
-                    // Add screenshot functionality or export
-                    console.log('Screenshot this fire dashboard!');
-                  }}
-                >
-                  <Share2 className="w-6 h-6" />
-                </Button>
-              </motion.div>
-            )}
-
-
           </div>
         </div>
       </div>
