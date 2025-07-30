@@ -173,6 +173,15 @@ export const PricingSection = () => {
                   </div>
                 ))}
               </div>
+              
+              <div className="mt-6 pt-4 border-t border-slate-200">
+                <p className="text-xs text-slate-500 text-center">
+                  No setup fees • Cancel anytime
+                </p>
+                <p className="text-xs text-emerald-600 text-center mt-1">
+                  ✅ 15-day satisfaction guarantee — full refund if you're not happy
+                </p>
+              </div>
             </div>
           ))}
         </div>
@@ -180,6 +189,9 @@ export const PricingSection = () => {
         <div className="mt-12 text-center">
           <p className="text-sm text-slate-500">
             All plans include no setup fees • Cancel anytime
+          </p>
+          <p className="text-sm text-emerald-600 font-medium mt-2">
+            ✅ 15-day satisfaction guarantee — full refund if you're not happy
           </p>
           {billingCycle === 'yearly' && (
             <p className="text-sm text-emerald-600 font-medium mt-2">

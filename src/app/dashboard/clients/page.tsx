@@ -178,7 +178,7 @@ function ClientsPageWithSearchParams() {
   };
 
   const handleDeleteContact = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this contact?')) {
+            if (window.confirm('Tango CRM says: Are you sure you want to delete this contact?')) {
       try {
         await deleteClient(id);
         await loadClients();

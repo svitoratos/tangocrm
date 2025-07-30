@@ -283,6 +283,7 @@ export default function CreatorCRMGuidePage() {
                    </Button>
                  </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>

@@ -149,7 +149,7 @@ export const FreelancerOpportunityCard = ({
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    if (confirm('Are you sure you want to delete this opportunity? This action cannot be undone.')) {
+            if (confirm('Tango CRM says: Are you sure you want to delete this opportunity? This action cannot be undone.')) {
       try {
         // Delete from database
         await deleteOpportunity(opportunity.id);

@@ -429,6 +429,9 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     <p className="text-xs text-slate-500 text-center mt-3">
                       No setup fees · Cancel anytime · Billed immediately
                     </p>
+                    <p className="text-xs text-emerald-600 text-center mt-1">
+                      ✅ 15-day satisfaction guarantee — full refund if you're not happy
+                    </p>
                   </div>
 
                   {/* Selection Counter */}

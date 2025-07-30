@@ -349,7 +349,7 @@ function ContentStageDetailPageWithSearchParams() {
 
   const handleDeleteItem = async (e: React.MouseEvent, item: ContentItem) => {
     e.stopPropagation();
-    if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+            if (confirm(`Tango CRM says: Are you sure you want to delete "${item.title}"?`)) {
       try {
         const response = await fetch(`/api/content-items/${item.id}`, {
           method: 'DELETE',

@@ -255,7 +255,7 @@ export const ContactHistoryTimeline: React.FC<ContactHistoryTimelineProps> = ({
   const handleDeleteActivity = async (activity: ContactHistoryItem) => {
     if ((activity as any).isOpportunityNotes) return; // Don't allow deleting opportunity notes
     
-    if (!confirm('Are you sure you want to delete this contact entry? This action cannot be undone.')) {
+            if (!confirm('Tango CRM says: Are you sure you want to delete this contact entry? This action cannot be undone.')) {
       return;
     }
 

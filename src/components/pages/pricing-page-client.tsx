@@ -150,6 +150,9 @@ function PricingContent() {
                     {plan.cta}
                   </Button>
                 </Link>
+                <p className="text-xs text-emerald-600 text-center mt-3">
+                  ✅ 15-day satisfaction guarantee — full refund if you're not happy
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -201,7 +204,7 @@ function PricingContent() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  We offer a 30-day money-back guarantee. If you're not satisfied, we'll refund your payment in full.
+                  We offer a 15-day satisfaction guarantee — full refund if you're not happy. This applies to both monthly and annual subscriptions.
                 </p>
               </CardContent>
             </Card>

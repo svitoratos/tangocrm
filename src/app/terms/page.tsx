@@ -130,7 +130,7 @@ export default function TermsOfService() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Money-Back Guarantee</h3>
                 <p className="text-gray-600">
-                  Annual subscribers are eligible for a <strong>30-day money-back guarantee</strong> if a refund is requested within 30 days of the initial purchase.
+                  All subscribers are eligible for a <strong>15-day satisfaction guarantee</strong> — full refund if you're not happy. This applies to both monthly and annual subscriptions.
                 </p>
               </div>
 

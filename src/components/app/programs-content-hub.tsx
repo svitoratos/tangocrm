@@ -1403,7 +1403,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
               title="Delete"
               onClick={async (e) => {
                 e.stopPropagation();
-                if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
+                if (confirm(`Tango CRM says: Are you sure you want to delete "${item.title}"?`)) {
                   await deleteContentItem(item.id);
                 }
               }}

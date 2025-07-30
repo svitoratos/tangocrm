@@ -28,7 +28,7 @@ const TangoFAQs = [
   {
     question: "What happens when I sign up?",
     answer:
-      "You'll choose a paid plan starting at $39.99/month (or save with yearly billing). Each plan includes one niche, and you can add more niches for $9.99/month each. Cancel anytime, no setup fees.",
+      "Simple Pricing, No Surprises\n\nYou'll choose a paid plan starting at $39.99/month (or save with annual billing).\nEach plan includes one niche — add more for just $9.99/month each.\n✅ No setup fees\n✅ Cancel anytime\n✅ 15-day satisfaction guarantee — full refund if you're not happy.",
   },
 ];
 
