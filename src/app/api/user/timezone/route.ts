@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { supabase } from '@/lib/supabase';
+
+// Lazy initialization of Supabase client
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const { createClient } = require('@supabase/supabase-js');
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
 
 // Get supported timezones from Intl API
 const getSupportedTimezones = (): string[] => {
@@ -44,6 +51,7 @@ export async function GET() {
     const user = await currentUser();
     
     // First, try to find the user by Clerk ID
+    const supabase = getSupabaseClient();
     let { data, error } = await supabase
       .from('users')
       .select('timezone')
@@ -156,6 +164,7 @@ export async function POST(request: NextRequest) {
     const user = await currentUser();
 
     // First, try to find the user by Clerk ID
+    const supabase = getSupabaseClient();
     let { data: existingUser, error: fetchError } = await supabase
       .from('users')
       .select('id')
