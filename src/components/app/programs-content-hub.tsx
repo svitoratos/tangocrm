@@ -245,13 +245,11 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     // Client Enrollment (for coach)
     enrollmentType: "",
     clientLimit: "",
-    currentEnrollments: "",
     
     // Schedule & Timeline (for coach)
     startDate: "",
     endDate: "",
     linkedEvents: "",
-    progressMilestones: "",
     hostingPlatform: "",
     
     // Budget & Payment (for freelancer)
@@ -331,12 +329,10 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     // Client Enrollment (for coach)
     enrollmentType: "",
     clientLimit: "",
-    currentEnrollments: "",
     enrollmentDeadline: "",
     
     // Scheduling & Progress (for coach)
     linkedEvents: "",
-    progressMilestones: "",
     
     // Schedule & Timeline (for coach)
     startDate: "",
@@ -865,14 +861,14 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         // Client Enrollment (for coach)
         enrollmentType: "",
         clientLimit: "",
-        currentEnrollments: String(selectedItem.enrolled || ""),
+
 
         
         // Schedule & Timeline (for coach) - with bulletproof date handling
         startDate: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.startDate)),
         endDate: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.endDate)),
         linkedEvents: "",
-        progressMilestones: String(selectedItem.milestones || ""),
+
         hostingPlatform: String(selectedItem.hostingPlatform || ""),
         
         // Budget & Payment (for freelancer)
@@ -984,8 +980,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
             customProgramType: editFormData.customProgramType || selectedItem.customProgramType,
             length: editFormData.sessionCount || selectedItem.length,
             price: parseFloat(editFormData.price) || selectedItem.price,
-            enrolled: parseInt(editFormData.currentEnrollments) || selectedItem.enrolled,
-            milestones: parseInt(editFormData.progressMilestones) || selectedItem.milestones,
             startDate: formattedStartDate,
             endDate: formattedEndDate,
 
@@ -1042,8 +1036,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
             customProgramType: editFormData.customProgramType || selectedItem.customProgramType,
             length: editFormData.sessionCount || selectedItem.length,
             price: parseFloat(editFormData.price) || selectedItem.price,
-            enrolled: parseInt(editFormData.currentEnrollments) || selectedItem.enrolled,
-            milestones: parseInt(editFormData.progressMilestones) || selectedItem.milestones,
             startDate: dateHandler.formatDateForStorage(dateHandler.parseDateForForm(editFormData.startDate)),
             endDate: dateHandler.formatDateForStorage(dateHandler.parseDateForForm(editFormData.endDate)),
             hostingPlatform: editFormData.hostingPlatform || selectedItem.hostingPlatform
@@ -2147,16 +2139,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               placeholder="0"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="currentEnrollments">Current Enrollments</Label>
-                            <Input
-                              id="currentEnrollments"
-                              type="number"
-                              value={createFormData.currentEnrollments}
-                              onChange={(e) => setCreateFormData({...createFormData, currentEnrollments: e.target.value})}
-                              placeholder="0"
-                            />
-                          </div>
+
 
                         </div>
                       </div>
@@ -2195,16 +2178,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               placeholder="Calendar event details"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="progressMilestones">Progress Milestones (optional tracking)</Label>
-                            <Textarea
-                              id="progressMilestones"
-                              value={createFormData.progressMilestones}
-                              onChange={(e) => setCreateFormData({...createFormData, progressMilestones: e.target.value})}
-                              placeholder="Key milestones and progress tracking points"
-                              rows={3}
-                            />
-                          </div>
+
                         </div>
                       </div>
                     </>
@@ -2420,14 +2394,14 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                             customProgramType: createFormData.customProgramType || null,
                             length: createFormData.sessionCount || null,
                             price: parseFloat(createFormData.price) || null,
-                          enrolled: parseInt(createFormData.currentEnrollments) || 0,
-                          revenue: parseFloat(createFormData.price) * parseInt(createFormData.currentEnrollments) || 0,
+                          enrolled: 0,
+                          revenue: parseFloat(createFormData.price) || 0,
                             startDate: coachStartDate,
                             endDate: coachEndDate,
 
-                          clientProgress: `${parseInt(createFormData.currentEnrollments) || 0}/${parseInt(createFormData.clientLimit) || 0} completed`,
+                          clientProgress: `0/${parseInt(createFormData.clientLimit) || 0} completed`,
                             hostingPlatform: createFormData.hostingPlatform || null,
-                          milestones: createFormData.progressMilestones ? 1 : 0
+                          milestones: 0
                         };
                       } else if (activeNiche === "podcaster") {
                         // Prepare data for podcaster episode item with bulletproof date handling
@@ -2524,13 +2498,11 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         tags: "",
                         enrollmentType: "",
                         clientLimit: "",
-                        currentEnrollments: "",
                         enrollmentDeadline: "",
                 
                         startDate: "",
                         endDate: "",
                         linkedEvents: "",
-                        progressMilestones: "",
                         hostingPlatform: "",
                         projectName: "",
                         clientName: "",
@@ -3441,26 +3413,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                           placeholder="0.00"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="editCurrentEnrollments">Clients</Label>
-                        <Input
-                          id="editCurrentEnrollments"
-                          type="number"
-                          value={editFormData.currentEnrollments || ""}
-                          onChange={(e) => setEditFormData({...editFormData, currentEnrollments: e.target.value})}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="editProgressMilestones">Milestones</Label>
-                        <Input
-                          id="editProgressMilestones"
-                          type="number"
-                          value={editFormData.progressMilestones || ""}
-                          onChange={(e) => setEditFormData({...editFormData, progressMilestones: e.target.value})}
-                          placeholder="0"
-                        />
-                      </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="editHostingPlatform">Hosting Platform</Label>
                         <Select value={editFormData.hostingPlatform || ""} onValueChange={(value) => setEditFormData({...editFormData, hostingPlatform: value})}>
