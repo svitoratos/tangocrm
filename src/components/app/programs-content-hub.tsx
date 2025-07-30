@@ -235,7 +235,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     programOverview: "",
     sessionCount: "",
     deliveryFormat: "",
-    supportOffered: "",
     
     // Pricing & Sales Info (for coach)
     price: "",
@@ -322,7 +321,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     programOverview: "",
     sessionCount: "",
     deliveryFormat: "",
-    supportOffered: "",
     
     // Pricing & Sales Info (for coach)
     price: "",
@@ -857,7 +855,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         programOverview: "",
         sessionCount: String(selectedItem.length || ""),
         deliveryFormat: "",
-        supportOffered: "",
         
         // Pricing & Sales Info (for coach)
         price: String(selectedItem.price || ""),
@@ -2041,15 +2038,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               </Select>
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="supportOffered">Support Offered</Label>
-                            <Input
-                              id="supportOffered"
-                              value={createFormData.supportOffered}
-                              onChange={(e) => setCreateFormData({...createFormData, supportOffered: e.target.value})}
-                              placeholder="Slack, Voxer, Email, Group Chat, Community Portal, etc."
-                            />
-                          </div>
+
                           <div className="space-y-2">
                             <Label htmlFor="hostingPlatform">Program Hosting Platform</Label>
                             <Select value={createFormData.hostingPlatform} onValueChange={(value) => setCreateFormData({...createFormData, hostingPlatform: value})}>
@@ -2529,7 +2518,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         programOverview: "",
                         sessionCount: "",
                         deliveryFormat: "",
-                        supportOffered: "",
                         price: "",
                         paymentOptions: "",
                         enrollmentLink: "",
