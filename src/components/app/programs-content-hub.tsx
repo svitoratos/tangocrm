@@ -213,7 +213,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     creationDate: "",
     publishDate: "",
     deadline: "",
-    assignedMember: "",
     
     // Analytics (for creator)
     views: "",
@@ -228,7 +227,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     notes: "",
     collaborationTag: "",
     repurposeTag: "",
-    files: [] as File[],
     
     // Program Details (for coach)
     programName: "",
@@ -306,7 +304,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     creationDate: "",
     publishDate: "",
     deadline: "",
-    assignedMember: "",
     
     // Analytics (for creator)
     views: "",
@@ -321,7 +318,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     notes: "",
     collaborationTag: "",
     repurposeTag: "",
-    files: [] as File[],
     
     // Program Details (for coach)
     programName: "",
@@ -846,7 +842,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         creationDate: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.creationDate)),
         publishDate: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.postDate)),
         deadline: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.deadline)),
-        assignedMember: "",
         
         // Analytics (for creator)
         views: String(selectedItem.analytics?.views || ""),
@@ -861,7 +856,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         notes: String(selectedItem.notes || ""),
         collaborationTag: "",
         repurposeTag: "",
-        files: [],
         
         // Program Details (for coach)
         programName: String(selectedItem.title || ""),
@@ -2047,21 +2041,12 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="deadline">Deadline (if sponsored)</Label>
+                            <Label htmlFor="deadline">Deadline</Label>
                             <Input
                               id="deadline"
                               type="date"
                               value={createFormData.deadline}
                               onChange={(e) => setCreateFormData({...createFormData, deadline: e.target.value})}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="assignedMember">Assigned Team Member (optional for collabs/editors)</Label>
-                            <Input
-                              id="assignedMember"
-                              value={createFormData.assignedMember}
-                              onChange={(e) => setCreateFormData({...createFormData, assignedMember: e.target.value})}
-                              placeholder="Team member name"
                             />
                           </div>
                         </div>
@@ -2186,19 +2171,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               />
                             </div>
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="files">File Uploads (e.g. thumbnails, drafts, scripts)</Label>
-                            <Input
-                              id="files"
-                              type="file"
-                              multiple
-                              onChange={(e) => {
-                                const files = Array.from(e.target.files || []);
-                                setCreateFormData({...createFormData, files: files});
-                              }}
-                              className="cursor-pointer"
-                            />
-                          </div>
+
                         </div>
                       </div>
                     </>
@@ -2880,7 +2853,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         creationDate: "",
                         publishDate: "",
                         deadline: "",
-                        assignedMember: "",
                         views: "",
                         likes: "",
                         comments: "",
@@ -2891,7 +2863,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         notes: "",
                         collaborationTag: "",
                         repurposeTag: "",
-                        files: [],
                         programName: "",
                         programType: "",
                         customProgramType: "",
@@ -3634,15 +3605,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                           onChange={(e) => setEditFormData({...editFormData, deadline: e.target.value})}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="editAssignedMember">Assigned Team Member</Label>
-                        <Input
-                          id="editAssignedMember"
-                          value={editFormData.assignedMember}
-                          onChange={(e) => setEditFormData({...editFormData, assignedMember: e.target.value})}
-                          placeholder="e.g. John, Sarah, or 'Me'"
-                        />
-                      </div>
+
                     </div>
                   </div>
 
