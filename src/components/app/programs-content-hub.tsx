@@ -218,7 +218,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     comments: "",
     shares: "",
     saves: "",
-    engagementRate: "",
     revenue: "",
     
     // Notes & Extras (for creator)
@@ -307,7 +306,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     comments: "",
     shares: "",
     saves: "",
-    engagementRate: "",
     revenue: "",
     
     // Notes & Extras (for creator)
@@ -843,7 +841,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         comments: String(selectedItem.analytics?.comments || ""),
         shares: "",
         saves: "",
-        engagementRate: "",
         revenue: String(selectedItem.revenue || ""),
         
         // Notes & Extras (for creator)
@@ -973,7 +970,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
             comments: parseInt(editFormData.comments) || selectedItem.analytics?.comments || 0,
             shares: parseInt(editFormData.shares) || 0,
             saves: parseInt(editFormData.saves) || 0,
-            engagementRate: parseFloat(editFormData.engagementRate) || null,
             revenue: parseFloat(editFormData.revenue) || selectedItem.revenue,
           };
           
@@ -2035,7 +2031,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="views">Views / Impressions</Label>
+                            <Label htmlFor="views">Views</Label>
                             <Input
                               id="views"
                               type="number"
@@ -2084,19 +2080,9 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               placeholder="0"
                             />
                           </div>
+
                           <div className="space-y-2">
-                            <Label htmlFor="engagementRate">Engagement Rate (%)</Label>
-                            <Input
-                              id="engagementRate"
-                              type="number"
-                              step="0.01"
-                              value={createFormData.engagementRate}
-                              onChange={(e) => setCreateFormData({...createFormData, engagementRate: e.target.value})}
-                              placeholder="0.00"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="revenue">Revenue (if monetized)</Label>
+                            <Label htmlFor="revenue">Revenue</Label>
                             <Input
                               id="revenue"
                               type="number"
@@ -2717,7 +2703,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                             comments: parseInt(createFormData.comments) || 0,
                             shares: parseInt(createFormData.shares) || 0,
                             saves: parseInt(createFormData.saves) || 0,
-                            engagementRate: parseFloat(createFormData.engagementRate) || null,
                             revenue: parseFloat(createFormData.revenue) || null
                         };
                                               } else if (activeNiche === "coach") {
@@ -2832,7 +2817,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         comments: "",
                         shares: "",
                         saves: "",
-                        engagementRate: "",
                         revenue: "",
                         notes: "",
                         collaborationTag: "",
@@ -3621,17 +3605,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                           placeholder="0"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="editEngagementRate">Engagement Rate (%)</Label>
-                        <Input
-                          id="editEngagementRate"
-                          type="number"
-                          step="0.01"
-                          value={editFormData.engagementRate}
-                          onChange={(e) => setEditFormData({...editFormData, engagementRate: e.target.value})}
-                          placeholder="0.00"
-                        />
-                      </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="editRevenue">Revenue Generated</Label>
                         <Input
