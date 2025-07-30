@@ -1180,17 +1180,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                 </Badge>
               </div>
               
-              {/* Enrollment Count */}
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {item.enrolled || 0} clients
-                </span>
-                <span className="flex items-center gap-1 font-medium">
-                  <Target className="h-3 w-3" />
-                  {item.milestones || 0} milestones
-                </span>
-              </div>
+
               
               {/* Dates and Progress - Combined to save space */}
               <div className="flex justify-between items-center text-xs">
@@ -1200,12 +1190,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                     {new Date(item.startDate).toLocaleDateString()}
                   </span>
                 )}
-                {item.clientProgress && (
-                  <span className="flex items-center gap-1">
-                    <Target className="h-3 w-3" />
-                    {item.clientProgress}
-                  </span>
-                )}
+
               </div>
               
               {/* Hosting Platform - Only show if not empty */}
@@ -2914,18 +2899,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                       <Label className="text-sm font-medium text-slate-600">Custom Program Type</Label>
                       <p className="text-sm">{selectedItem.customProgramType}</p>
                     </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Clients</Label>
-                      <p className="text-sm">{selectedItem.enrolled || 0}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Milestones</Label>
-                      <p className="text-sm">{selectedItem.milestones || 0}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Progress</Label>
-                      <p className="text-sm">{selectedItem.clientProgress}</p>
-                    </div>
+
                   </div>
                   
                   {selectedItem.startDate && (
