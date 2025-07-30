@@ -1,62 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase';
 
 export interface Goal {
   id: string;
   user_id: string;
   title: string;
-  description?: string;
-  target_value?: number;
-  current_value: number;
-  unit?: string;
-  deadline?: string;
-  status: string;
-  category: string;
-  niche: string;
-  tags?: string[];
+  description: string;
+  target_date: string;
+  status: 'pending' | 'in_progress' | 'completed';
   created_at: string;
   updated_at: string;
-}
-
-// Helper function to get user ID from request
-function getUserId(request: NextRequest): string {
-  // TODO: Get user ID from authentication (Clerk, etc.)
-  // For now, use a fallback user ID for testing
-  return 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11';
 }
 
 // GET /api/goals
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const niche = searchParams.get('niche');
-    const userId = getUserId(request);
+    const { userId } = await auth();
     
-    let query = supabase
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { data: goals, error } = await supabase
       .from('goals')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
-    if (niche) {
-      query = query.eq('niche', niche);
-    }
-    
-    const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error fetching goals:', error);
       return NextResponse.json(
         { error: 'Failed to fetch goals' },
         { status: 500 }
       );
     }
-    
-    return NextResponse.json(data || []);
+
+    return NextResponse.json(goals || []);
   } catch (error) {
-    console.error('Error fetching goals:', error);
+    console.error('Error in goals API:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch goals' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -65,42 +52,50 @@ export async function GET(request: NextRequest) {
 // POST /api/goals
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const userId = getUserId(request);
-    
-    const newGoal = {
-      user_id: userId,
-      title: body.title || 'New Goal',
-      description: body.description || null,
-      target_value: body.target_value || null,
-      current_value: body.current_value || 0,
-      unit: body.unit || null,
-      deadline: body.deadline || null,
-      status: body.status || 'active',
-      category: body.category || 'revenue',
-      niche: body.niche || 'creator',
-      tags: [] // Empty tags array since we're not using tags
-    };
-    
-    const { data, error } = await supabase
+    const { title, description, target_date, status = 'pending' } = body;
+
+    if (!title) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      );
+    }
+
+    const { data: goal, error } = await supabase
       .from('goals')
-      .insert(newGoal)
+      .insert({
+        user_id: userId,
+        title,
+        description,
+        target_date,
+        status
+      })
       .select()
       .single();
-    
+
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error creating goal:', error);
       return NextResponse.json(
         { error: 'Failed to create goal' },
         { status: 500 }
       );
     }
-    
-    return NextResponse.json(data, { status: 201 });
+
+    return NextResponse.json(goal);
   } catch (error) {
-    console.error('Error creating goal:', error);
+    console.error('Error in goals API:', error);
     return NextResponse.json(
-      { error: 'Failed to create goal' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

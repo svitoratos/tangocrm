@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase';
 
 export interface JournalEntry {
@@ -12,46 +13,37 @@ export interface JournalEntry {
   updated_at: string;
 }
 
-// Helper function to get user ID from request
-function getUserId(request: NextRequest): string {
-  // TODO: Get user ID from authentication (Clerk, etc.)
-  // For now, use a fallback user ID for testing
-  return 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11';
-}
-
 // GET /api/journal-entries
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const niche = searchParams.get('niche');
-    const userId = getUserId(request);
+    const { userId } = await auth();
     
-    let query = supabase
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { data: entries, error } = await supabase
       .from('journal_entries')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    
-    // Filter by niche in tags since there's no niche column
-    if (niche) {
-      query = query.contains('tags', [niche]);
-    }
-    
-    const { data, error } = await query;
-    
+
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error fetching journal entries:', error);
       return NextResponse.json(
         { error: 'Failed to fetch journal entries' },
         { status: 500 }
       );
     }
-    
-    return NextResponse.json(data || []);
+
+    return NextResponse.json(entries || []);
   } catch (error) {
-    console.error('Error fetching journal entries:', error);
+    console.error('Error in journal entries API:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch journal entries' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -60,39 +52,50 @@ export async function GET(request: NextRequest) {
 // POST /api/journal-entries
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const userId = getUserId(request);
-    
-    // Add niche to tags array since there's no niche column
-    const tags = body.niche ? [body.niche] : [];
-    
-    const newEntry = {
-      user_id: userId,
-      title: body.title || 'Journal Entry',
-      content: body.content || '',
-      mood: body.mood || null,
-      tags: tags // Store niche in tags for filtering
-    };
-    
-    const { data, error } = await supabase
+    const { title, content, mood, tags } = body;
+
+    if (!title || !content) {
+      return NextResponse.json(
+        { error: 'Title and content are required' },
+        { status: 400 }
+      );
+    }
+
+    const { data: entry, error } = await supabase
       .from('journal_entries')
-      .insert(newEntry)
+      .insert({
+        user_id: userId,
+        title,
+        content,
+        mood,
+        tags: tags || []
+      })
       .select()
       .single();
-    
+
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error creating journal entry:', error);
       return NextResponse.json(
         { error: 'Failed to create journal entry' },
         { status: 500 }
       );
     }
-    
-    return NextResponse.json(data, { status: 201 });
+
+    return NextResponse.json(entry);
   } catch (error) {
-    console.error('Error creating journal entry:', error);
+    console.error('Error in journal entries API:', error);
     return NextResponse.json(
-      { error: 'Failed to create journal entry' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

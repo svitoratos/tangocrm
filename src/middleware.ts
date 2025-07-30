@@ -116,6 +116,24 @@ const publicRoutes = createRouteMatcher([
   '/freelancer-crm',
 ]);
 
+// Helper function to check if user is admin
+function isAdminUser(sessionClaims: any): boolean {
+  // Check for admin role in metadata
+  if (sessionClaims?.metadata?.role === 'admin') {
+    return true;
+  }
+  
+  // Check for admin emails from environment variable
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  const userEmail = sessionClaims?.email;
+  
+  if (userEmail && adminEmails.includes(userEmail.trim())) {
+    return true;
+  }
+  
+  return false;
+}
+
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const url = new URL(req.url);
@@ -156,18 +174,12 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       const { sessionClaims } = await auth();
       
-      // Temporary bypass for your email during development
-      const userEmail = sessionClaims?.email;
-      const isAdmin = sessionClaims?.metadata?.role === 'admin';
-      
-      if (!isAdmin && userEmail !== 'stevenvitoratos@gmail.com' && userEmail !== 'stevenvitoratos@getbondlyapp.com' && userEmail !== 'stevenvitoratos@gotangocrm.com') {
+      if (!isAdminUser(sessionClaims)) {
         // Redirect to home page if user doesn't have admin role
         return NextResponse.redirect(new URL('/', req.url));
       }
       
-      if (userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@gotangocrm.com') {
-        console.log('🔧 Temporary admin access granted for:', userEmail);
-      }
+      console.log('🔧 Admin access granted for:', sessionClaims?.email);
     } catch (error) {
       console.error('Admin verification error:', error);
       return NextResponse.redirect(new URL('/', req.url));
@@ -187,11 +199,8 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       // First check if user is admin - admins bypass onboarding and payment requirements
       const { sessionClaims } = await auth();
-      const userEmail = sessionClaims?.email;
-      const isAdmin = sessionClaims?.metadata?.role === 'admin';
       
-      // Temporary bypass for your email during development
-      if (isAdmin || userEmail === 'stevenvitoratos@gmail.com' || userEmail === 'stevenvitoratos@getbondlyapp.com' || userEmail === 'stevenvitoratos@gotangocrm.com') {
+      if (isAdminUser(sessionClaims)) {
         console.log('Admin user detected - bypassing onboarding and payment verification');
         return NextResponse.next();
       }
