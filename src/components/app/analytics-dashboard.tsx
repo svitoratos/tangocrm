@@ -2612,8 +2612,8 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                 <GrowthRateChart data={opportunitiesForCharts} activeNiche={activeNiche} />
               </div>
               
-              {/* Brands/Clients Grid - Hidden for Freelancer, Podcaster, and Coach */}
-              {activeNiche !== 'freelancer' && activeNiche !== 'podcaster' && activeNiche !== 'coach' && (
+              {/* Brands/Clients Grid - Hidden for Freelancer, Podcaster, Coach, and Creator */}
+              {activeNiche !== 'freelancer' && activeNiche !== 'podcaster' && activeNiche !== 'coach' && activeNiche !== 'creator' && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
