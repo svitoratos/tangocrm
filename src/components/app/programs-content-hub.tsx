@@ -1667,233 +1667,30 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="platform">Platforms</Label>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-tiktok"
-                                  checked={createFormData.platform.includes("TikTok")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "TikTok"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "TikTok") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-tiktok" className="text-sm">TikTok</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-instagram"
-                                  checked={createFormData.platform.includes("Instagram")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Instagram"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Instagram") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-instagram" className="text-sm">Instagram</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-youtube"
-                                  checked={createFormData.platform.includes("YouTube")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "YouTube"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "YouTube") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-youtube" className="text-sm">YouTube</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-facebook"
-                                  checked={createFormData.platform.includes("Facebook")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Facebook"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Facebook") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-facebook" className="text-sm">Facebook</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-snapchat"
-                                  checked={createFormData.platform.includes("Snapchat")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Snapchat"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Snapchat") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-snapchat" className="text-sm">Snapchat</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-pinterest"
-                                  checked={createFormData.platform.includes("Pinterest")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Pinterest"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Pinterest") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-pinterest" className="text-sm">Pinterest</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-twitch"
-                                  checked={createFormData.platform.includes("Twitch")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Twitch"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Twitch") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-twitch" className="text-sm">Twitch</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-twitter"
-                                  checked={createFormData.platform.includes("Twitter")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Twitter"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Twitter") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-twitter" className="text-sm">Twitter (X)</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-linkedin"
-                                  checked={createFormData.platform.includes("LinkedIn")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "LinkedIn"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "LinkedIn") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-linkedin" className="text-sm">LinkedIn</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-substack"
-                                  checked={createFormData.platform.includes("Substack")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Substack"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Substack") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-substack" className="text-sm">Substack</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-medium"
-                                  checked={createFormData.platform.includes("Medium")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Medium"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Medium") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-medium" className="text-sm">Medium</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-onlyfans"
-                                  checked={createFormData.platform.includes("OnlyFans")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "OnlyFans"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "OnlyFans") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-onlyfans" className="text-sm">OnlyFans</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-patreon"
-                                  checked={createFormData.platform.includes("Patreon")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Patreon"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Patreon") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-patreon" className="text-sm">Patreon</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-discord"
-                                  checked={createFormData.platform.includes("Discord")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Discord"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Discord") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-discord" className="text-sm">Discord</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-reddit"
-                                  checked={createFormData.platform.includes("Reddit")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Reddit"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Reddit") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-reddit" className="text-sm">Reddit</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="creator-platform-telegram"
-                                  checked={createFormData.platform.includes("Telegram")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform, "Telegram"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Telegram") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="creator-platform-telegram" className="text-sm">Telegram</Label>
-                              </div>
-                            </div>
+                            <Label htmlFor="platform">Platform</Label>
+                            <Select value={Array.isArray(createFormData.platform) ? createFormData.platform[0] || "" : createFormData.platform} onValueChange={(value) => setCreateFormData({...createFormData, platform: [value]})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="TikTok">TikTok</SelectItem>
+                                <SelectItem value="Instagram">Instagram</SelectItem>
+                                <SelectItem value="YouTube">YouTube</SelectItem>
+                                <SelectItem value="Facebook">Facebook</SelectItem>
+                                <SelectItem value="Snapchat">Snapchat</SelectItem>
+                                <SelectItem value="Pinterest">Pinterest</SelectItem>
+                                <SelectItem value="Twitch">Twitch</SelectItem>
+                                <SelectItem value="Twitter">Twitter (X)</SelectItem>
+                                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                                <SelectItem value="Substack">Substack</SelectItem>
+                                <SelectItem value="Medium">Medium</SelectItem>
+                                <SelectItem value="OnlyFans">OnlyFans</SelectItem>
+                                <SelectItem value="Patreon">Patreon</SelectItem>
+                                <SelectItem value="Discord">Discord</SelectItem>
+                                <SelectItem value="Reddit">Reddit</SelectItem>
+                                <SelectItem value="Telegram">Telegram</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="postType">Post Type</Label>
@@ -2450,107 +2247,21 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="platform">Platforms</Label>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-all"
-                                  checked={createFormData.platform.includes("All")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: ["All"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "All") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-all" className="text-sm">All</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-spotify"
-                                  checked={createFormData.platform.includes("Spotify")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform.filter(p => p !== "All"), "Spotify"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Spotify") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-spotify" className="text-sm">Spotify</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-apple"
-                                  checked={createFormData.platform.includes("Apple Podcasts")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform.filter(p => p !== "All"), "Apple Podcasts"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Apple Podcasts") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-apple" className="text-sm">Apple Podcasts</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-youtube"
-                                  checked={createFormData.platform.includes("YouTube")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform.filter(p => p !== "All"), "YouTube"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "YouTube") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-youtube" className="text-sm">YouTube</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-google"
-                                  checked={createFormData.platform.includes("Google Podcasts")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform.filter(p => p !== "All"), "Google Podcasts"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Google Podcasts") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-google" className="text-sm">Google Podcasts</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-amazon"
-                                  checked={createFormData.platform.includes("Amazon Music")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform.filter(p => p !== "All"), "Amazon Music"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Amazon Music") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-amazon" className="text-sm">Amazon Music</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id="platform-other"
-                                  checked={createFormData.platform.includes("Other")}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setCreateFormData({ ...createFormData, platform: [...createFormData.platform.filter(p => p !== "All"), "Other"] });
-                                    } else {
-                                      setCreateFormData({ ...createFormData, platform: createFormData.platform.filter(p => p !== "Other") });
-                                    }
-                                  }}
-                                />
-                                <Label htmlFor="platform-other" className="text-sm">Other</Label>
-                              </div>
-                            </div>
+                            <Label htmlFor="platform">Platform</Label>
+                            <Select value={Array.isArray(createFormData.platform) ? createFormData.platform[0] || "" : createFormData.platform} onValueChange={(value) => setCreateFormData({...createFormData, platform: [value]})}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="All">All</SelectItem>
+                                <SelectItem value="Spotify">Spotify</SelectItem>
+                                <SelectItem value="Apple Podcasts">Apple Podcasts</SelectItem>
+                                <SelectItem value="YouTube">YouTube</SelectItem>
+                                <SelectItem value="Google Podcasts">Google Podcasts</SelectItem>
+                                <SelectItem value="Amazon Music">Amazon Music</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="guest">Guest</Label>
@@ -3863,107 +3574,21 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="platform">Platforms</Label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-all"
-                              checked={editFormData.platform.includes("All")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: ["All"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "All") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-all" className="text-sm">All</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-spotify"
-                              checked={editFormData.platform.includes("Spotify")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: [...editFormData.platform.filter(p => p !== "All"), "Spotify"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "Spotify") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-spotify" className="text-sm">Spotify</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-apple"
-                              checked={editFormData.platform.includes("Apple Podcasts")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: [...editFormData.platform.filter(p => p !== "All"), "Apple Podcasts"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "Apple Podcasts") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-apple" className="text-sm">Apple Podcasts</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-youtube"
-                              checked={editFormData.platform.includes("YouTube")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: [...editFormData.platform.filter(p => p !== "All"), "YouTube"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "YouTube") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-youtube" className="text-sm">YouTube</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-google"
-                              checked={editFormData.platform.includes("Google Podcasts")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: [...editFormData.platform.filter(p => p !== "All"), "Google Podcasts"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "Google Podcasts") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-google" className="text-sm">Google Podcasts</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-amazon"
-                              checked={editFormData.platform.includes("Amazon Music")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: [...editFormData.platform.filter(p => p !== "All"), "Amazon Music"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "Amazon Music") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-amazon" className="text-sm">Amazon Music</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="edit-platform-other"
-                              checked={editFormData.platform.includes("Other")}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setEditFormData({ ...editFormData, platform: [...editFormData.platform.filter(p => p !== "All"), "Other"] });
-                                } else {
-                                  setEditFormData({ ...editFormData, platform: editFormData.platform.filter(p => p !== "Other") });
-                                }
-                              }}
-                            />
-                            <Label htmlFor="edit-platform-other" className="text-sm">Other</Label>
-                          </div>
-                        </div>
+                        <Label htmlFor="platform">Platform</Label>
+                        <Select value={Array.isArray(editFormData.platform) ? editFormData.platform[0] || "" : editFormData.platform} onValueChange={(value) => setEditFormData({...editFormData, platform: [value]})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select platform" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="All">All</SelectItem>
+                            <SelectItem value="Spotify">Spotify</SelectItem>
+                            <SelectItem value="Apple Podcasts">Apple Podcasts</SelectItem>
+                            <SelectItem value="YouTube">YouTube</SelectItem>
+                            <SelectItem value="Google Podcasts">Google Podcasts</SelectItem>
+                            <SelectItem value="Amazon Music">Amazon Music</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="guest">Guest</Label>
