@@ -104,9 +104,17 @@ export async function POST(request: NextRequest) {
 // PUT /api/goals
 export async function PUT(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { id, ...updateData } = body;
-    const userId = getUserId(request);
     
     if (!id) {
       return NextResponse.json(
@@ -119,12 +127,12 @@ export async function PUT(request: NextRequest) {
       .from('goals')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', userId) // Ensure user can only update their own goals
+      .eq('user_id', userId)
       .select()
       .single();
     
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error updating goal:', error);
       return NextResponse.json(
         { error: 'Failed to update goal' },
         { status: 500 }
@@ -144,9 +152,17 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/goals
 export async function DELETE(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const userId = getUserId(request);
     
     if (!id) {
       return NextResponse.json(
@@ -159,10 +175,10 @@ export async function DELETE(request: NextRequest) {
       .from('goals')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId); // Ensure user can only delete their own goals
+      .eq('user_id', userId);
     
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error deleting goal:', error);
       return NextResponse.json(
         { error: 'Failed to delete goal' },
         { status: 500 }
