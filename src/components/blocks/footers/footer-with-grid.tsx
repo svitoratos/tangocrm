@@ -72,8 +72,24 @@ export function FooterWithGrid() {
                   <li className="mb-4 text-sm font-bold text-slate-800 leading-none">
                     Resources
                   </li>
-                  {RESOURCE_LINKS.map((item, idx) => (
+                  {GUIDE_LINKS.map((item, idx) => (
                     <li key={"resource" + idx} className="mb-4 text-sm font-normal">
+                      <Link
+                        href={item.href}
+                        className="text-slate-500 hover:text-emerald-600 transition-colors"
+                      >
+                        {item.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                <ul className="text-base font-medium">
+                  <li className="mb-4 text-sm font-bold text-slate-800 leading-none">
+                    Platforms
+                  </li>
+                  {PLATFORM_LINKS.map((item, idx) => (
+                    <li key={"platform" + idx} className="mb-4 text-sm font-normal">
                       <Link
                         href={item.href}
                         className="text-slate-500 hover:text-emerald-600 transition-colors"
@@ -145,11 +161,14 @@ const LEGAL_LINKS = [
   { title: "Terms of Service", href: "/terms" },
 ];
 
-const RESOURCE_LINKS = [
+const GUIDE_LINKS = [
   { title: "Creator CRM Guide", href: "/blog/creator-crm-guide" },
   { title: "Podcaster CRM Guide", href: "/blog/podcaster-crm-guide" },
-  { title: "Creator CRM Platform", href: "/creator-crm" },
-  { title: "Podcaster CRM Platform", href: "/podcaster-crm" },
-  { title: "Coach CRM Platform", href: "/coach-crm" },
-  { title: "Freelancer CRM Platform", href: "/freelancer-crm" },
+];
+
+const PLATFORM_LINKS = [
+  { title: "Creator CRM", href: "/creator-crm" },
+  { title: "Podcaster CRM", href: "/podcaster-crm" },
+  { title: "Coach CRM", href: "/coach-crm" },
+  { title: "Freelancer CRM", href: "/freelancer-crm" },
 ];
