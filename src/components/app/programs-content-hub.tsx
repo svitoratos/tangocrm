@@ -247,7 +247,6 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
     enrollmentType: "",
     clientLimit: "",
     currentEnrollments: "",
-    enrollmentDeadline: "",
     
     // Schedule & Timeline (for coach)
     startDate: "",
@@ -870,7 +869,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
         enrollmentType: "",
         clientLimit: "",
         currentEnrollments: String(selectedItem.enrolled || ""),
-        enrollmentDeadline: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.enrollmentDeadline)),
+
         
         // Schedule & Timeline (for coach) - with bulletproof date handling
         startDate: dateHandler.formatDateForInput(dateHandler.parseDateForForm(selectedItem.startDate)),
@@ -978,7 +977,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
           // Coach-specific fields with bulletproof date handling
           const formattedStartDate = dateHandler.formatDateForStorage(dateHandler.parseDateForForm(editFormData.startDate));
           const formattedEndDate = dateHandler.formatDateForStorage(dateHandler.parseDateForForm(editFormData.endDate));
-          const formattedEnrollmentDeadline = dateHandler.formatDateForStorage(dateHandler.parseDateForForm(editFormData.enrollmentDeadline));
+
           
 
           
@@ -992,7 +991,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
             milestones: parseInt(editFormData.progressMilestones) || selectedItem.milestones,
             startDate: formattedStartDate,
             endDate: formattedEndDate,
-            enrollmentDeadline: formattedEnrollmentDeadline,
+
             hostingPlatform: editFormData.hostingPlatform || selectedItem.hostingPlatform,
             notes: editFormData.notes || selectedItem.notes,
           };
@@ -2169,15 +2168,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                               placeholder="0"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="enrollmentDeadline">Enrollment Deadline / Program Start Date</Label>
-                            <Input
-                              id="enrollmentDeadline"
-                              type="date"
-                              value={createFormData.enrollmentDeadline}
-                              onChange={(e) => setCreateFormData({...createFormData, enrollmentDeadline: e.target.value})}
-                            />
-                          </div>
+
                         </div>
                       </div>
 
@@ -2422,15 +2413,14 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                           const coachCreationDate = createFormData.creationDate ? dateHandler.formatDateForStorage(dateHandler.parseDateForForm(createFormData.creationDate)) : new Date().toISOString();
                           const coachStartDate = createFormData.startDate ? dateHandler.formatDateForStorage(dateHandler.parseDateForForm(createFormData.startDate)) : null;
                           const coachEndDate = createFormData.endDate ? dateHandler.formatDateForStorage(dateHandler.parseDateForForm(createFormData.endDate)) : null;
-                          const coachEnrollmentDeadline = createFormData.enrollmentDeadline ? dateHandler.formatDateForStorage(dateHandler.parseDateForForm(createFormData.enrollmentDeadline)) : null;
+
                           
                           console.log('=== COACH CREATE DATE DEBUG ===');
                           console.log('createFormData.startDate (raw):', createFormData.startDate);
                           console.log('coachStartDate:', coachStartDate);
                           console.log('createFormData.endDate (raw):', createFormData.endDate);
                           console.log('coachEndDate:', coachEndDate);
-                          console.log('createFormData.enrollmentDeadline (raw):', createFormData.enrollmentDeadline);
-                          console.log('coachEnrollmentDeadline:', coachEnrollmentDeadline);
+
                           
                           itemData = {
                           title: createFormData.programName,
@@ -2445,7 +2435,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                           revenue: parseFloat(createFormData.price) * parseInt(createFormData.currentEnrollments) || 0,
                             startDate: coachStartDate,
                             endDate: coachEndDate,
-                            enrollmentDeadline: coachEnrollmentDeadline,
+
                           clientProgress: `${parseInt(createFormData.currentEnrollments) || 0}/${parseInt(createFormData.clientLimit) || 0} completed`,
                             hostingPlatform: createFormData.hostingPlatform || null,
                           milestones: createFormData.progressMilestones ? 1 : 0
@@ -2548,6 +2538,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                         clientLimit: "",
                         currentEnrollments: "",
                         enrollmentDeadline: "",
+                
                         startDate: "",
                         endDate: "",
                         linkedEvents: "",
