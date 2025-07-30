@@ -8,25 +8,68 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { useStripe } from '@/hooks/use-stripe';
-import { useUser } from '@clerk/nextjs';
-import { ContactFormModal } from './contact-form-modal';
-import { CreditCard, Loader2, AlertTriangle, Info, Calendar, Mail } from 'lucide-react';
+import { CancellationForm } from './cancellation-form';
+import { YearlyCancellationForm } from './yearly-cancellation-form';
+import { FeedbackForm } from './feedback-form';
+import { RetentionOffer } from './retention-offer';
+import { FinalConfirmation } from './final-confirmation';
+import { CreditCard, Loader2, AlertTriangle, Info, Calendar, XCircle } from 'lucide-react';
 
-export const BillingManagement = () => {
-  const { user } = useUser();
+export const BillingManagementSimple = () => {
   const { paymentStatus, isLoading: paymentStatusLoading } = usePaymentStatus();
-  const {
-    subscriptionDetails,
-    isLoading: subscriptionLoading,
-    formatCurrency,
+  const { 
+    subscriptionDetails, 
+    isLoading: subscriptionLoading, 
+    formatCurrency, 
     formatDate,
     isYearlySubscription,
     isMonthlySubscription
   } = useSubscriptionDetails();
-
   const { openCustomerPortal, loading: portalLoading } = useStripe();
-  const [showContactModal, setShowContactModal] = useState(false);
+  const [showCancellationForm, setShowCancellationForm] = useState(false);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [showRetentionOffer, setShowRetentionOffer] = useState(false);
+  const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
+  const [testYearlyForm, setTestYearlyForm] = useState(false); // Test mode toggle
+
   const isLoading = paymentStatusLoading || subscriptionLoading || portalLoading;
+
+  const handleFeedbackSubmitted = () => {
+    setShowCancellationForm(false);
+    setShowFeedbackForm(true);
+  };
+
+  const handleFeedbackCompleted = () => {
+    setShowFeedbackForm(false);
+    setShowRetentionOffer(true);
+  };
+
+  const handleFeedbackCancelled = () => {
+    setShowFeedbackForm(false);
+    setShowCancellationForm(false);
+  };
+
+  const handleContinueToCancel = () => {
+    setShowRetentionOffer(false);
+    setShowFinalConfirmation(true);
+  };
+
+  const handleKeepAccount = () => {
+    setShowFinalConfirmation(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await openCustomerPortal();
+      setShowFinalConfirmation(false);
+    } catch (error) {
+      console.error('Error opening Stripe portal:', error);
+    }
+  };
+
+  const handleFinalConfirmationClose = () => {
+    setShowFinalConfirmation(false);
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -44,13 +87,13 @@ export const BillingManagement = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-500';
       case 'trialing':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-500';
       case 'past_due':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-500';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-500';
     }
   };
 
@@ -60,7 +103,11 @@ export const BillingManagement = () => {
     }
     const today = new Date();
     const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
-    return nextMonth.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    return nextMonth.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
   };
 
   const getSubscriptionTypeText = () => {
@@ -68,12 +115,14 @@ export const BillingManagement = () => {
       return {
         plan: 'Tango Yearly Plan',
         billing: 'Yearly billing',
+        discount: '50% off your next 3 months',
         savings: 'Save big with yearly billing'
       };
     } else {
       return {
         plan: 'Tango Monthly Plan',
         billing: 'Monthly billing',
+        discount: '50% off your next 3 months',
         savings: 'Upgrade to yearly for better savings'
       };
     }
@@ -81,28 +130,8 @@ export const BillingManagement = () => {
 
   const subscriptionText = getSubscriptionTypeText();
 
-  const handleEmailCancellation = () => {
-    setShowContactModal(true);
-  };
-
-  const getCancellationMessage = () => {
-    return `Hi Tango Team,
-
-I would like to request cancellation of my Tango CRM subscription.
-
-Account Details:
-- Email: ${user?.emailAddresses?.[0]?.emailAddress || 'Not provided'}
-- Subscription Type: ${subscriptionText.plan}
-- Current Status: ${subscriptionDetails?.status || 'Active'}
-
-Please process my cancellation request.
-
-Thank you.`;
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">Billing & Subscription</h2>
         <p className="text-muted-foreground">
@@ -110,7 +139,7 @@ Thank you.`;
         </p>
       </div>
 
-      {/* Current Subscription */}
+      {/* Current Subscription Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -135,12 +164,12 @@ Thank you.`;
                     <h3 className="font-medium">{subscriptionText.plan}</h3>
                     <p className="text-sm text-gray-500">{subscriptionText.billing}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge
-                        variant={getStatusBadgeVariant(subscriptionDetails.status)}
+                      <Badge 
+                        variant={getStatusBadgeVariant(subscriptionDetails.status)} 
                         className={getStatusColor(subscriptionDetails.status)}
                       >
-                        {subscriptionDetails.status === 'active' ? 'Active' :
-                         subscriptionDetails.status === 'past_due' ? 'Past Due' :
+                        {subscriptionDetails.status === 'active' ? 'Active' : 
+                         subscriptionDetails.status === 'past_due' ? 'Past Due' : 
                          subscriptionDetails.status === 'trialing' ? 'Trial' : 'Inactive'}
                       </Badge>
                       <span className="text-sm text-gray-500">
@@ -158,7 +187,7 @@ Thank you.`;
                   </div>
                 </div>
 
-                {/* Niche breakdown */}
+                {/* Niche breakdown (from payment status) */}
                 {paymentStatus?.niches && paymentStatus.niches.length > 0 && (
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-gray-700">Active Niches:</h4>
@@ -188,56 +217,20 @@ Thank you.`;
         </CardContent>
       </Card>
 
-      {/* Billing Portal */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-blue-600" />
-            Billing Management
-          </CardTitle>
-          <CardDescription>
-            Update payment methods, view invoices, and manage your billing
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Access your Stripe customer portal to manage payment methods, view billing history, and download invoices.
-              </AlertDescription>
-            </Alert>
-
-            <Button
-              onClick={openCustomerPortal}
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Manage Billing
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Cancellation Request */}
+      {/* Cancellation Section */}
       <Card className="border-orange-200 bg-orange-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-orange-800">
-            <Mail className="w-5 h-5" />
-            Request Cancellation
+            <XCircle className="w-5 h-5" />
+            Cancel Subscription
           </CardTitle>
           <CardDescription className="text-orange-700">
-            Need to cancel your subscription? Send us a message and we'll help you.
+            {testYearlyForm 
+              ? "TEST MODE: Will show yearly cancellation form"
+              : isYearlySubscription 
+                ? "Cancel your yearly subscription and manage your account"
+                : "Cancel your monthly subscription and manage your account"
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -245,7 +238,7 @@ Thank you.`;
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Important:</strong> Cancellation takes effect at the end of your current billing period.
+                <strong>Important:</strong> Cancellation takes effect at the end of your current billing period. 
                 You'll retain access to all features until then.
               </AlertDescription>
             </Alert>
@@ -255,44 +248,93 @@ Thank you.`;
                 <Calendar className="w-4 h-4 text-orange-600" />
                 <span>Your subscription will remain active until <strong>{getNextBillingDate()}</strong></span>
               </div>
-
+              
               <div className="flex items-center gap-2 text-sm">
                 <Info className="w-4 h-4 text-blue-600" />
                 <span>You can reactivate your subscription at any time</span>
               </div>
             </div>
 
-            <Button
-              onClick={handleEmailCancellation}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full border-orange-300 text-orange-700 hover:bg-orange-100"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Request Cancellation
-                </>
-              )}
-            </Button>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => setShowCancellationForm(true)}
+                disabled={isLoading}
+                variant="destructive"
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Cancel Subscription'
+                )}
+              </Button>
+              
+              {/* Test Mode Toggle */}
+              <div className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                <span className="text-xs text-gray-600">Test Mode:</span>
+                <Button
+                  onClick={() => setTestYearlyForm(!testYearlyForm)}
+                  size="sm"
+                  variant={testYearlyForm ? "default" : "outline"}
+                  className="text-xs"
+                >
+                  {testYearlyForm ? "Yearly Form" : "Monthly Form"}
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Contact Form Modal */}
-      <ContactFormModal
-        isOpen={showContactModal}
-        onClose={() => setShowContactModal(false)}
-        prefillSubject="Cancellation Request"
-        prefillEmail={user?.emailAddresses?.[0]?.emailAddress || ""}
-        title="Request Cancellation"
-        description="Please provide your details and we'll process your cancellation request."
-      />
+      {/* Modals */}
+      {showCancellationForm && (
+        // Temporary test mode - set to true to test yearly form
+        testYearlyForm ? (
+          <YearlyCancellationForm
+            onFeedbackSubmitted={handleFeedbackSubmitted}
+            onClose={() => setShowCancellationForm(false)}
+            nextBillingDate={getNextBillingDate()}
+          />
+        ) : isYearlySubscription ? (
+          <YearlyCancellationForm
+            onFeedbackSubmitted={handleFeedbackSubmitted}
+            onClose={() => setShowCancellationForm(false)}
+            nextBillingDate={getNextBillingDate()}
+          />
+        ) : (
+          <CancellationForm
+            onFeedbackSubmitted={handleFeedbackSubmitted}
+            onClose={() => setShowCancellationForm(false)}
+            nextBillingDate={getNextBillingDate()}
+          />
+        )
+      )}
+
+      {showFeedbackForm && (
+        <FeedbackForm
+          onContinue={handleFeedbackCompleted}
+          onCancel={handleFeedbackCancelled}
+        />
+      )}
+
+      {showRetentionOffer && (
+        <RetentionOffer
+          onContinueToCancel={handleContinueToCancel}
+          onPauseAccount={handleKeepAccount}
+          onClose={() => setShowRetentionOffer(false)}
+        />
+      )}
+
+      {showFinalConfirmation && (
+        <FinalConfirmation
+          onKeepAccount={handleKeepAccount}
+          onDeleteAccount={handleDeleteAccount}
+          onClose={handleFinalConfirmationClose}
+        />
+      )}
     </div>
   );
 }; 

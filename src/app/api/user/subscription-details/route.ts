@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { userOperations } from '@/lib/database'
-import Stripe from 'stripe'
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
@@ -9,146 +8,73 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    
-    console.log('🔧 Subscription details API called for userId:', userId);
-    
+    const { userId } = await auth();
     if (!userId) {
-      console.log('❌ No userId found - user not authenticated');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user profile from database
-    const user = await userOperations.getProfile(userId)
-    
-    console.log('🔧 User profile from database:', {
-      userId,
-      hasProfile: !!user,
-      stripeCustomerId: user?.stripe_customer_id,
-      email: user?.email
-    });
-    
-    if (!user) {
-      console.log('❌ No user profile found in database');
+    // Get user's subscription from your database
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('stripe_customer_id, stripe_subscription_id')
+      .eq('id', userId)
+      .single();
+
+    if (!user?.stripe_subscription_id) {
       return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      )
-    }
-    
-    if (!user.stripe_customer_id) {
-      console.log('❌ No Stripe customer ID found for user');
-      return NextResponse.json(
-        { error: 'No Stripe customer found' },
-        { status: 404 }
-      )
+        { error: 'No active subscription found' },
+        { status: 400 }
+      );
     }
 
-    console.log('🔧 Fetching subscriptions from Stripe for customer:', user.stripe_customer_id);
-
-    // Get customer's subscriptions from Stripe (include canceled ones)
-    const subscriptions = await stripe.subscriptions.list({
-      customer: user.stripe_customer_id,
-      status: 'all', // Include all statuses: active, canceled, past_due, etc.
-      expand: ['data.default_payment_method', 'data.items.data.price.product']
-    });
-
-    console.log('🔧 Stripe subscriptions response:', {
-      customerId: user.stripe_customer_id,
-      subscriptionCount: subscriptions.data.length,
-      subscriptions: subscriptions.data.map(sub => ({
-        id: sub.id,
-        status: sub.status,
-        itemsCount: sub.items.data.length
-      }))
-    });
-
-    if (subscriptions.data.length === 0) {
-      console.log('❌ No subscriptions found in Stripe for customer:', user.stripe_customer_id);
-      return NextResponse.json(
-        { error: 'No subscriptions found' },
-        { status: 404 }
-      )
-    }
-
-    // Get the most recent subscription (active or canceled)
-    const subscription = subscriptions.data[0];
+    // Get detailed subscription info from Stripe
+    const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
     
-    // Extract subscription details
+    // Ensure subscription.items.data[0].price.id exists before retrieving price
+    if (!subscription.items.data[0]?.price?.id) {
+      return NextResponse.json(
+        { error: 'Subscription price ID not found' },
+        { status: 400 }
+      );
+    }
+    
+    // Get the price details to determine billing interval
+    const price = await stripe.prices.retrieve(subscription.items.data[0].price.id);
+    
+    // Handle discounts properly
+    const firstDiscount = subscription.discounts?.[0];
+    const discountApplied = typeof firstDiscount === 'object' && firstDiscount?.coupon ? firstDiscount.coupon.id : null;
+    const discountEnd = typeof firstDiscount === 'object' && firstDiscount?.end ? firstDiscount.end : null;
+    
     const subscriptionDetails = {
       id: subscription.id,
       status: subscription.status,
-      currentPeriodStart: (subscription as any).current_period_start,
-      currentPeriodEnd: (subscription as any).current_period_end,
-      cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
-      items: subscription.items.data.map(item => ({
-        id: item.id,
-        priceId: item.price.id,
-        productId: (item.price.product as Stripe.Product).id,
-        productName: (item.price.product as Stripe.Product).name,
-        unitAmount: item.price.unit_amount,
-        currency: item.price.currency,
-        interval: item.price.recurring?.interval,
-        intervalCount: item.price.recurring?.interval_count,
-        quantity: item.quantity
-      })),
-      totalAmount: subscription.items.data.reduce((total, item) => {
-        return total + ((item.price.unit_amount || 0) * (item.quantity || 1));
-      }, 0),
-      currency: subscription.currency,
-      defaultPaymentMethod: (subscription as any).default_payment_method
+      current_period_end: (subscription as any).current_period_end,
+      billing_interval: price.recurring?.interval, // 'month' or 'year'
+      billing_interval_count: price.recurring?.interval_count, // 1 for monthly, 12 for yearly
+      amount: price.unit_amount, // Use price.unit_amount for the base amount
+      currency: price.currency,
+      product_id: price.product,
+      discount_applied: discountApplied,
+      discount_end: discountEnd,
     };
 
-    // Calculate next billing date (only for active subscriptions)
-    let nextBillingDate = null;
-    if (subscription.status === 'active' && (subscription as any).current_period_end) {
-      nextBillingDate = new Date((subscription as any).current_period_end * 1000);
-    }
-    
-    // Get billing history (recent invoices) - include all invoices
-    const invoices = await stripe.invoices.list({
-      customer: user.stripe_customer_id,
-      limit: 10 // Get more invoices
-    });
-
-    const billingHistory = invoices.data.map(invoice => ({
-      id: invoice.id,
-      number: invoice.number,
-      amountPaid: invoice.amount_paid,
-      currency: invoice.currency,
-      status: invoice.status,
-      created: invoice.created,
-      periodStart: invoice.period_start,
-      periodEnd: invoice.period_end
-    }));
-
-    const response = {
+    return NextResponse.json({
+      success: true,
       subscription: subscriptionDetails,
-      nextBillingDate: nextBillingDate ? nextBillingDate.toISOString() : null,
-      billingHistory,
-      customerId: user.stripe_customer_id
-    };
-
-    console.log('✅ Subscription details fetched successfully:', {
-      customerId: user.stripe_customer_id,
-      subscriptionId: subscription.id,
-      status: subscription.status,
-      totalAmount: subscriptionDetails.totalAmount,
-      currency: subscriptionDetails.currency,
-      itemsCount: subscriptionDetails.items.length,
-      billingHistoryCount: billingHistory.length,
-      hasNextBillingDate: !!nextBillingDate
     });
 
-    return NextResponse.json(response)
   } catch (error) {
-    console.error('❌ Error fetching subscription details:', error)
+    console.error('Error fetching subscription details:', error);
     return NextResponse.json(
       { error: 'Failed to fetch subscription details' },
       { status: 500 }
-    )
+    );
   }
 } 
