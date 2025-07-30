@@ -104,27 +104,35 @@ export async function POST(request: NextRequest) {
 // PUT /api/journal-entries
 export async function PUT(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { id, ...updateData } = body;
-    const userId = getUserId(request);
     
-    // Handle niche by adding it to tags
-    const tags = updateData.niche ? [updateData.niche] : [];
-    
-    // Remove niche from updateData since it doesn't exist in the database
-    const { niche, ...cleanUpdateData } = updateData;
-    cleanUpdateData.tags = tags;
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Journal entry ID is required' },
+        { status: 400 }
+      );
+    }
     
     const { data, error } = await supabase
       .from('journal_entries')
-      .update(cleanUpdateData)
+      .update(updateData)
       .eq('id', id)
-      .eq('user_id', userId) // Ensure user can only update their own entries
+      .eq('user_id', userId)
       .select()
       .single();
     
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error updating journal entry:', error);
       return NextResponse.json(
         { error: 'Failed to update journal entry' },
         { status: 500 }
@@ -144,9 +152,17 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/journal-entries
 export async function DELETE(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const userId = getUserId(request);
     
     if (!id) {
       return NextResponse.json(
@@ -159,10 +175,10 @@ export async function DELETE(request: NextRequest) {
       .from('journal_entries')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId); // Ensure user can only delete their own entries
+      .eq('user_id', userId);
     
     if (error) {
-      console.error('Supabase error:', error);
+      console.error('Error deleting journal entry:', error);
       return NextResponse.json(
         { error: 'Failed to delete journal entry' },
         { status: 500 }
