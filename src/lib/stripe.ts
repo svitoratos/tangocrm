@@ -1,8 +1,10 @@
 import Stripe from 'stripe';
 
 // Server-side Stripe instance (only create on server)
-console.log('🔧 Stripe Secret Key:', process.env.STRIPE_SECRET_KEY?.substring(0, 20) + '...');
-console.log('🔧 Stripe Publishable Key:', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 20) + '...');
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔧 Stripe Secret Key:', process.env.STRIPE_SECRET_KEY?.substring(0, 20) + '...');
+  console.log('🔧 Stripe Publishable Key:', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.substring(0, 20) + '...');
+}
 
 export const stripe = typeof window === 'undefined' 
   ? new Stripe(process.env.STRIPE_SECRET_KEY!, {

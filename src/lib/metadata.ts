@@ -12,6 +12,10 @@ export const siteConfig = {
 }
 
 export const defaultMetadata: Metadata = {
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.svg',
+  },
   title: {
     default: `${siteConfig.name} - Creator CRM Platform`,
     template: `%s | ${siteConfig.name}`,

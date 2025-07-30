@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { supabase } from '@/lib/supabase';
+
+// Lazy initialization of Supabase client
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+  
+  const { createClient } = require('@supabase/supabase-js');
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
 
 // Get supported timezones from Intl API
 const getSupportedTimezones = (): string[] => {
@@ -31,14 +43,22 @@ const isValidTimezone = (timezone: string): boolean => {
 
 export async function GET() {
   try {
+    console.log('🔧 Timezone API GET called');
     const { userId } = await auth();
     
     if (!userId) {
+      console.log('❌ No userId found');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('🔧 UserId found:', userId);
+
+    // Initialize Supabase client
+    const supabase = getSupabaseClient();
+    console.log('🔧 Supabase client initialized');
 
     // Get user details from Clerk
     const user = await currentUser();
@@ -115,9 +135,9 @@ export async function GET() {
 
     return NextResponse.json({ timezone: data?.timezone || 'UTC' });
   } catch (error) {
-    console.error('Error in GET /api/user/timezone:', error);
+    console.error('❌ Error in GET /api/user/timezone:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -133,6 +153,9 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Initialize Supabase client
+    const supabase = getSupabaseClient();
 
     const body = await request.json();
     const { timezone } = body;
