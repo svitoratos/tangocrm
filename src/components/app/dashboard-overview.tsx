@@ -530,7 +530,9 @@ export default function DashboardOverview({
       console.log('Dashboard loadMetricsData called for niche:', activeNiche);
       try {
         // Load opportunities count
+        console.log('Fetching opportunities for niche:', activeNiche);
         const opportunitiesResponse = await fetch(`/api/opportunities?niche=${activeNiche}`);
+        console.log('Opportunities response status:', opportunitiesResponse.status);
         if (!opportunitiesResponse.ok) {
           console.error('Opportunities fetch failed:', opportunitiesResponse.status, opportunitiesResponse.statusText);
           // Don't throw error, just set empty data
@@ -600,24 +602,35 @@ export default function DashboardOverview({
 
         // Load content items for podcaster niche (episodes and guests)
         if (activeNiche === 'podcaster') {
-          const contentResponse = await fetch(`/api/content-items?niche=${activeNiche}`);
-          if (contentResponse.ok) {
-            const contentItems = await contentResponse.json();
-            // Store episodes count and unique guests for use in metrics
-            const episodesCount = contentItems.length;
-            const uniqueGuests = new Set(contentItems.filter((item: any) => item.guest).map((item: any) => item.guest)).size;
-            // Store these values in state for use in metrics
-            setEpisodesCount(episodesCount);
-            setGuestsCount(uniqueGuests);
+          try {
+            const contentResponse = await fetch(`/api/content-items?niche=${activeNiche}`);
+            if (contentResponse.ok) {
+              const contentItems = await contentResponse.json();
+              // Store episodes count and unique guests for use in metrics
+              const episodesCount = contentItems.length;
+              const uniqueGuests = new Set(contentItems.filter((item: any) => item.guest).map((item: any) => item.guest)).size;
+              // Store these values in state for use in metrics
+              setEpisodesCount(episodesCount);
+              setGuestsCount(uniqueGuests);
+            } else {
+              console.error('Content items fetch failed:', contentResponse.status, contentResponse.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching content items:', error);
           }
         }
 
         // Load calendar events
-        const calendarResponse = await fetch(`/api/calendar-events?niche=${activeNiche}`);
         let calendarEvents: any[] = [];
-        
-        if (calendarResponse.ok) {
-          calendarEvents = await calendarResponse.json();
+        try {
+          const calendarResponse = await fetch(`/api/calendar-events?niche=${activeNiche}`);
+          if (calendarResponse.ok) {
+            calendarEvents = await calendarResponse.json();
+          } else {
+            console.error('Calendar events fetch failed:', calendarResponse.status, calendarResponse.statusText);
+          }
+        } catch (error) {
+          console.error('Error fetching calendar events:', error);
         }
 
         // Create tasks from opportunities and calendar events
@@ -1244,7 +1257,7 @@ export default function DashboardOverview({
       case 'creator':
         return [
           { icon: Target, label: 'Add Opportunity', action: () => setIsOpportunityModalOpen(true) },
-          { icon: Camera, label: 'Create Content', action: () => setIsCreateContentModalOpen(true) },
+          { icon: Camera, label: 'Content Card – For Creators & Influencers', action: () => onNavigate('content-stage/idea') },
           { icon: CheckSquare, label: 'Create Task', action: () => setIsCreateTaskModalOpen(true) }
         ]
       
