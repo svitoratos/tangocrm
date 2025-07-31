@@ -1257,7 +1257,7 @@ export default function DashboardOverview({
       case 'creator':
         return [
           { icon: Target, label: 'Add Opportunity', action: () => setIsOpportunityModalOpen(true) },
-          { icon: Camera, label: 'Content Card – For Creators & Influencers', action: () => onNavigate('content-stage/idea') },
+          { icon: Camera, label: 'Content Card – For Creators & Influencers', action: () => onNavigate(`content-stage?niche=${activeNiche}`) },
           { icon: CheckSquare, label: 'Create Task', action: () => setIsCreateTaskModalOpen(true) }
         ]
       
