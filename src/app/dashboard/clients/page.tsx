@@ -336,7 +336,7 @@ function ClientsPageWithSearchParams() {
   }
 
   const renderGridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid gap-4 w-full" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
       {filteredContacts.map((contact, index) => {
         const contactColor = getContactColor(contact.status);
         return (
@@ -351,9 +351,9 @@ function ClientsPageWithSearchParams() {
               transition: { duration: 0.2 }
             }}
             whileTap={{ scale: 0.98 }}
-            className="group"
+            className="group w-full"
           >
-            <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-full w-full ${gradientClasses[contactColor as keyof typeof gradientClasses] || gradientClasses.blue}`}>
+            <Card className={`p-6 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden relative h-full w-full min-w-0 ${gradientClasses[contactColor as keyof typeof gradientClasses] || gradientClasses.blue}`}>
               {/* Animated background gradient */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
@@ -566,7 +566,7 @@ function ClientsPageWithSearchParams() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 w-full ${activeNiche === 'podcaster' ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
