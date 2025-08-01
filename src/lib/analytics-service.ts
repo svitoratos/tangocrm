@@ -237,45 +237,53 @@ class AnalyticsService {
 
   // Revenue Analytics
   private async getRevenueAnalytics(niche: string, userId: string) {
-    // For coach niche, include both 'won' and 'paid' statuses
-    const statusFilter = niche === 'coach' ? ['won', 'paid'] : ['won'];
-    
-    const { data: opportunities, error } = await supabase
+    // Get all opportunities for the niche (not just won/paid ones)
+    const { data: allOpportunities, error: allError } = await supabase
       .from('opportunities')
       .select('value, status, created_at')
       .eq('user_id', userId)
-      .eq('niche', niche)
-      .in('status', statusFilter);
+      .eq('niche', niche);
 
-    if (error) {
-      console.error('Error fetching revenue data:', error);
+    if (allError) {
+      console.error('Error fetching all opportunities data:', allError);
       return { revenue: { total: 0, monthly: 0, averageDealSize: 0, growthRate: 0, byMonth: [] } };
     }
 
-    const total = opportunities.reduce((sum, opp) => sum + (opp.value || 0), 0);
-    const averageDealSize = opportunities.length > 0 ? total / opportunities.length : 0;
+    // For coach niche, include both 'won' and 'paid' statuses for won opportunities
+    const wonStatusFilter = niche === 'coach' ? ['won', 'paid'] : ['won'];
+    const wonOpportunities = allOpportunities.filter(opp => wonStatusFilter.includes(opp.status));
 
-    // Calculate monthly revenue
+    const total = wonOpportunities.reduce((sum, opp) => sum + (opp.value || 0), 0);
+    const averageDealSize = wonOpportunities.length > 0 ? total / wonOpportunities.length : 0;
+
+    // Calculate monthly revenue from won opportunities
     const thisMonth = new Date();
     thisMonth.setDate(1);
-    const monthlyRevenue = opportunities
+    const monthlyRevenue = wonOpportunities
       .filter(opp => new Date(opp.created_at) >= thisMonth)
       .reduce((sum, opp) => sum + (opp.value || 0), 0);
 
-    // Calculate growth rate (simplified - compare to last month)
+    // Calculate growth rate (month-over-month revenue growth)
     const lastMonth = new Date(thisMonth);
     lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const lastMonthRevenue = opportunities
+    const lastMonthRevenue = wonOpportunities
       .filter(opp => {
         const oppDate = new Date(opp.created_at);
         return oppDate >= lastMonth && oppDate < thisMonth;
       })
       .reduce((sum, opp) => sum + (opp.value || 0), 0);
 
-    const growthRate = lastMonthRevenue > 0 ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
+    // Calculate growth rate: if no previous revenue, show 100% growth (or handle as new business)
+    let growthRate = 0;
+    if (lastMonthRevenue > 0) {
+      growthRate = ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100;
+    } else if (monthlyRevenue > 0) {
+      // If there was no revenue last month but there is this month, it's new business
+      growthRate = 100; // Or could be set to a special value like "New Business"
+    }
 
     // Generate monthly data for charts
-    const byMonth = this.generateMonthlyRevenueData(opportunities);
+    const byMonth = this.generateMonthlyRevenueData(wonOpportunities);
 
     return {
       revenue: {

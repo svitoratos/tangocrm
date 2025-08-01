@@ -488,7 +488,11 @@ export const RealTimeAnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({
               className="space-y-6"
             >
               {/* Key Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className={`grid gap-6 ${
+                activeNiche === 'creator' || activeNiche === 'freelancer'
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' // 3 columns for creator and freelancer
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' // 4 columns for other niches
+              }`}>
                 <MetricCard
                   title="Opportunities"
                   value={data?.opportunities?.total || 0}
@@ -516,15 +520,7 @@ export const RealTimeAnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({
                   color="emerald"
                   loading={loading}
                 />
-                <MetricCard
-                  title="Growth Rate"
-                  value={`${data?.revenue?.growthRate || 0}%`}
-                  change={data?.revenue?.growthRate || 0}
-                  icon={TrendingUp}
-                  trend="up"
-                  color="cyan"
-                  loading={loading}
-                />
+
               </div>
 
               {/* Charts Grid */}

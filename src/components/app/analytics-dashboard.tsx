@@ -210,88 +210,40 @@ const MetricCard: React.FC<{
             <p className="text-xs text-gray-500">{subtitle}</p>
           )}
           
-          {/* Period Filter Dropdown */}
-          {showPeriodFilter && onPeriodChange && (
-            <div className="mt-auto pt-2">
-              <Select value={period} onValueChange={onPeriodChange}>
-                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
-                  <SelectValue placeholder={getPeriodDisplayText(period)} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="this-month">This Month</SelectItem>
-                  <SelectItem value="this-quarter">This Quarter</SelectItem>
-                  <SelectItem value="ytd">YTD</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
-                </SelectContent>
-              </Select>
+
+          
+          {/* Filter Dropdowns */}
+          {(showRevenueTypeFilter && onRevenueTypeChange) || (showPeriodFilter && onPeriodChange) ? (
+            <div className="mt-auto pt-2 flex gap-2">
+              {/* Revenue Type Filter Dropdown */}
+              {showRevenueTypeFilter && onRevenueTypeChange && (
+                <Select value={revenueType} onValueChange={onRevenueTypeChange}>
+                  <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gross">Gross Revenue</SelectItem>
+                    <SelectItem value="net">Net Revenue</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
               
-              {/* Custom Date Range Selector */}
-              {period === 'custom' && (
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-xs text-gray-600">From:</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 w-[80px] justify-start text-left font-normal text-xs"
-                        >
-                          {fromDate ? format(fromDate, "MM/dd") : "Date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={fromDate}
-                          onSelect={setFromDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <Label className="text-xs text-gray-600">To:</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 w-[80px] justify-start text-left font-normal text-xs"
-                        >
-                          {toDate ? format(toDate, "MM/dd") : "Date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={toDate}
-                          onSelect={setToDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
+              {/* Period Filter Dropdown */}
+              {showPeriodFilter && onPeriodChange && (
+                <Select value={period} onValueChange={onPeriodChange}>
+                  <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="this-month">Month</SelectItem>
+                    <SelectItem value="this-quarter">Quarter</SelectItem>
+                    <SelectItem value="this-year">YTD</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
               )}
             </div>
-          )}
-          
-          {/* Revenue Type Filter Dropdown */}
-          {showRevenueTypeFilter && onRevenueTypeChange && (
-            <div className="mt-auto pt-2">
-              <Select value={revenueType} onValueChange={onRevenueTypeChange}>
-                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gross">Gross Revenue</SelectItem>
-                  <SelectItem value="net">Net Revenue</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          ) : null}
         </div>
       </Card>
     </motion.div>
@@ -1722,9 +1674,33 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
         setCalculatedGrossRevenue(grossRevenue);
         setCalculatedNetRevenue(netRevenue);
 
-        // Growth Rate: percent of won (and paid for coach) out of all
-        const totalOpportunities = opportunities.length;
-        const growthRate = totalOpportunities > 0 ? (wonOpportunities.length / totalOpportunities) * 100 : 0;
+        // Growth Rate: month-over-month revenue growth
+        const thisMonth = new Date();
+        thisMonth.setDate(1);
+        const lastMonth = new Date(thisMonth);
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        
+        const thisMonthRevenue = wonOpportunities
+          .filter((opp: any) => {
+            const oppDate = new Date(opp.created_at);
+            return oppDate >= thisMonth;
+          })
+          .reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
+        
+        const lastMonthRevenue = wonOpportunities
+          .filter((opp: any) => {
+            const oppDate = new Date(opp.created_at);
+            return oppDate >= lastMonth && oppDate < thisMonth;
+          })
+          .reduce((sum: number, opp: any) => sum + (opp.value || 0), 0);
+
+        let growthRate = 0;
+        if (lastMonthRevenue > 0) {
+          growthRate = ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100;
+        } else if (thisMonthRevenue > 0) {
+          // If there was no revenue last month but there is this month, it's new business
+          growthRate = 100;
+        }
         setCalculatedGrowthRate(growthRate);
       } catch (error) {
         setCalculatedGrowthRate(0);
@@ -2415,7 +2391,11 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               className="space-y-6"
             >
               {/* Key Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className={`grid gap-6 ${
+                activeNiche === 'creator' || activeNiche === 'freelancer'
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' // 3 columns for creator and freelancer
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' // 4 columns for other niches
+              }`}>
                 {activeNiche === 'creator' ? (
                   <>
                     <MetricCard
@@ -2447,15 +2427,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       showRevenueTypeFilter={true}
                       revenueType={revenueDisplayType}
                       onRevenueTypeChange={setRevenueDisplayType}
-                    />
-                    <MetricCard
-                      title="Rev Growth Rate"
-                      value={growthType === 'revenue' ? `${calculatedGrowthRate.toFixed(1)}%` : `${contacts.length > 0 ? 100 : 0}%`}
-                      change={calculatedGrowthRate}
-                      icon={Target}
-                      trend="up"
-                      color="cyan"
-                      gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
                       showPeriodFilter={true}
                       period={growthPeriod}
                       onPeriodChange={handleGrowthPeriodChange}
@@ -2501,6 +2472,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       showRevenueTypeFilter={true}
                       revenueType={revenueDisplayType}
                       onRevenueTypeChange={setRevenueDisplayType}
+                      showPeriodFilter={true}
+                      period={growthPeriod}
+                      onPeriodChange={handleGrowthPeriodChange}
                     />
                   </>
                 ) : activeNiche === 'podcaster' ? (
@@ -2543,6 +2517,9 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       showRevenueTypeFilter={true}
                       revenueType={revenueDisplayType}
                       onRevenueTypeChange={setRevenueDisplayType}
+                      showPeriodFilter={true}
+                      period={growthPeriod}
+                      onPeriodChange={handleGrowthPeriodChange}
                     />
                   </>
                 ) : activeNiche === 'freelancer' ? (
@@ -2577,15 +2554,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       showRevenueTypeFilter={true}
                       revenueType={revenueDisplayType}
                       onRevenueTypeChange={setRevenueDisplayType}
-                    />
-                    <MetricCard
-                      title="Rev Growth Rate"
-                      value={growthType === 'revenue' ? `${calculatedGrowthRate.toFixed(1)}%` : `${contacts.length > 0 ? 100 : 0}%`}
-                      change={calculatedGrowthRate}
-                      icon={Target}
-                      trend="up"
-                      color="cyan"
-                      gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
                       showPeriodFilter={true}
                       period={growthPeriod}
                       onPeriodChange={handleGrowthPeriodChange}
@@ -2619,18 +2587,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="purple"
                       gradient="bg-gradient-to-br from-purple-50 to-purple-100"
-                    />
-                    <MetricCard
-                      title="Rev Growth Rate"
-                      value={growthType === 'revenue' ? `${calculatedGrowthRate.toFixed(1)}%` : `${contacts.length > 0 ? 100 : 0}%`}
-                      change={calculatedGrowthRate}
-                      icon={Target}
-                      trend="up"
-                      color="cyan"
-                      gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
-                      showPeriodFilter={true}
-                      period={growthPeriod}
-                      onPeriodChange={handleGrowthPeriodChange}
                     />
                   </>
                 )}
