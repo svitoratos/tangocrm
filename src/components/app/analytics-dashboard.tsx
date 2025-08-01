@@ -775,8 +775,7 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
           { id: 'negotiation', name: 'Negotiation', color: '#8b5cf6' },
           { id: 'agreement', name: 'Agreement in Place', color: '#ef4444' },
           { id: 'scheduled', name: 'Scheduled', color: '#06b6d4' },
-          { id: 'recorded', name: 'Recorded', color: '#10b981' },
-          { id: 'paid', name: 'Paid/Won', color: '#7c3aed' },
+          { id: 'recorded', name: 'Recorded/Won', color: '#10b981' },
           { id: 'archived', name: 'Closed/Lost', color: '#6b7280' }
         ];
       case 'freelancer':
@@ -833,7 +832,7 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
         'qualification': 'conversation',
         'proposal': 'agreement',
         'negotiation': 'negotiation',
-        'won': 'paid',
+        'won': 'recorded',
         'lost': 'archived'
       },
       freelancer: {
@@ -1532,6 +1531,12 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [freelancerOpportunitiesPeriod, setFreelancerOpportunitiesPeriod] = useState('this-quarter');
   const [freelancerClientsPeriod, setFreelancerClientsPeriod] = useState('this-quarter');
   const [freelancerRevenuePeriod, setFreelancerRevenuePeriod] = useState('this-quarter');
+  
+  // Growth rate filter state (matching dashboard)
+  const [growthPeriod, setGrowthPeriod] = useState('this-quarter');
+  const [growthType, setGrowthType] = useState('revenue');
+  const [isCustomDateModalOpen, setIsCustomDateModalOpen] = useState(false);
+  const [activePeriodType, setActivePeriodType] = useState<'revenue' | 'growth'>('revenue');
 
 
 
@@ -1616,6 +1621,19 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [calculatedGrowthRate, setCalculatedGrowthRate] = useState<number>(0);
   const [calculatedClientGrowthRate, setCalculatedClientGrowthRate] = useState<number>(0);
 
+  // Growth rate handlers (matching dashboard)
+  const handleGrowthPeriodChange = (period: string) => {
+    if (period === 'custom') {
+      setActivePeriodType('growth');
+      setIsCustomDateModalOpen(true);
+    } else {
+      setGrowthPeriod(period);
+    }
+  };
+
+  const handleGrowthTypeChange = (type: string) => {
+    setGrowthType(type);
+  };
 
   // Add state for chart and stage breakdown
   const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; value: number }[]>([]);
@@ -1633,29 +1651,29 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   }, [activeNiche, refreshAnalytics]);
 
-  // Refresh data when component becomes visible (e.g., when navigating back to analytics)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && refreshAnalytics) {
-        refreshAnalytics();
-      }
-    };
+  // Disabled visibility-based refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (!document.hidden && refreshAnalytics) {
+  //       refreshAnalytics();
+  //     }
+  //   };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [refreshAnalytics]);
+  //   document.addEventListener('visibilitychange', handleVisibilityChange);
+  //   return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  // }, [refreshAnalytics]);
 
-  // Refresh data when user returns to the analytics dashboard (e.g., after updating data)
-  useEffect(() => {
-    const handleFocus = () => {
-      if (refreshAnalytics) {
-        refreshAnalytics();
-      }
-    };
+  // Disabled focus-based refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const handleFocus = () => {
+  //     if (refreshAnalytics) {
+  //       refreshAnalytics();
+  //     }
+  //   };
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [refreshAnalytics]);
+  //   window.addEventListener('focus', handleFocus);
+  //   return () => window.removeEventListener('focus', handleFocus);
+  // }, [refreshAnalytics]);
 
   // Calculate revenue and growth rate from opportunities (dashboard logic)
   useEffect(() => {
@@ -2432,12 +2450,15 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Rev Growth Rate"
-                      value={`${calculatedGrowthRate.toFixed(1)}%`}
+                      value={growthType === 'revenue' ? `${calculatedGrowthRate.toFixed(1)}%` : `${contacts.length > 0 ? 100 : 0}%`}
                       change={calculatedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showPeriodFilter={true}
+                      period={growthPeriod}
+                      onPeriodChange={handleGrowthPeriodChange}
                     />
                   </>
                 ) : activeNiche === 'coach' ? (
@@ -2553,15 +2574,21 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="emerald"
                       gradient="bg-gradient-to-br from-emerald-50 to-emerald-100"
+                      showRevenueTypeFilter={true}
+                      revenueType={revenueDisplayType}
+                      onRevenueTypeChange={setRevenueDisplayType}
                     />
                     <MetricCard
                       title="Rev Growth Rate"
-                      value={`${calculatedGrowthRate.toFixed(1)}%`}
+                      value={growthType === 'revenue' ? `${calculatedGrowthRate.toFixed(1)}%` : `${contacts.length > 0 ? 100 : 0}%`}
                       change={calculatedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showPeriodFilter={true}
+                      period={growthPeriod}
+                      onPeriodChange={handleGrowthPeriodChange}
                     />
                   </>
                 ) : (
@@ -2595,12 +2622,15 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     />
                     <MetricCard
                       title="Rev Growth Rate"
-                      value={`${calculatedGrowthRate.toFixed(1)}%`}
+                      value={growthType === 'revenue' ? `${calculatedGrowthRate.toFixed(1)}%` : `${contacts.length > 0 ? 100 : 0}%`}
                       change={calculatedGrowthRate}
                       icon={Target}
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
+                      showPeriodFilter={true}
+                      period={growthPeriod}
+                      onPeriodChange={handleGrowthPeriodChange}
                     />
                   </>
                 )}
@@ -2752,7 +2782,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
+                  <h1 className="text-2xl font-bold text-foreground">Contact Management</h1>
                   <p className="text-sm text-muted-foreground">
                     Manage your {activeNiche} contacts and clients
                   </p>
@@ -3155,7 +3185,7 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
+                  <h1 className="text-2xl font-bold text-foreground">Contact Management</h1>
                   <p className="text-sm text-muted-foreground">
                     Manage your {activeNiche} contacts and clients
                   </p>

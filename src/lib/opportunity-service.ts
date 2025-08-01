@@ -302,7 +302,6 @@ export function mapStatusToDatabase(status: string, niche?: string): 'prospectin
       'agreement': 'proposal',
       'scheduled': 'proposal',
       'recorded': 'won',
-      'paid': 'won',
       'archived': 'lost'
     },
     freelancer: {

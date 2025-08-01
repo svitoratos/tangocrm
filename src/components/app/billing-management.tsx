@@ -9,7 +9,7 @@ import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { useStripe } from '@/hooks/use-stripe';
 import { useUser } from '@clerk/nextjs';
-import { ContactFormModal } from './contact-form-modal';
+import { CancellationFormModal } from './cancellation-form-modal';
 import { CreditCard, Loader2, AlertTriangle, Info, Calendar, Mail } from 'lucide-react';
 
 export const BillingManagement = () => {
@@ -285,7 +285,7 @@ Thank you.`;
       </Card>
 
       {/* Contact Form Modal */}
-      <ContactFormModal
+      <CancellationFormModal
         isOpen={showContactModal}
         onClose={() => setShowContactModal(false)}
         prefillSubject="Cancellation Request"

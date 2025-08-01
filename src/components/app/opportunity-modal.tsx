@@ -642,7 +642,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
               'qualification': 'conversation',
               'proposal': 'agreement',
               'negotiation': 'negotiation',
-              'won': 'paid',
+              'won': 'recorded',
               'lost': 'archived'
             },
             freelancer: {
@@ -2377,8 +2377,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                         <SelectItem value="negotiation">Negotiation</SelectItem>
                         <SelectItem value="agreement">Agreement in Place</SelectItem>
                         <SelectItem value="scheduled">Scheduled</SelectItem>
-                        <SelectItem value="recorded">Recorded</SelectItem>
-                        <SelectItem value="paid">Paid/Won</SelectItem>
+                        <SelectItem value="recorded">Recorded/Won</SelectItem>
                         <SelectItem value="archived">Closed/Lost</SelectItem>
                       </>
                     ) : userNiche === 'freelancer' ? (

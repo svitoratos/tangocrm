@@ -410,7 +410,16 @@ export async function POST(request: NextRequest) {
                 console.log(`Updated existing client ${existingClient.id} status to 'client'`);
               }
             } else {
-              // Create new client
+              // Create new client with niche-specific notes
+              let clientNotes = `Created from won opportunity: ${body.title}`;
+              if (body.niche === 'podcaster') {
+                const opportunityType = body.customFields.type || body.type || 'podcast';
+                clientNotes = `Created from recorded/won ${opportunityType} opportunity: ${body.title}`;
+                if (body.customFields.guestOrSponsorName) {
+                  clientNotes += ` (${body.customFields.guestOrSponsorName})`;
+                }
+              }
+              
               const { data: newClient, error: clientCreateError } = await supabaseAdmin
                 .from('clients')
                 .insert({
@@ -419,7 +428,7 @@ export async function POST(request: NextRequest) {
                   email: contactEmail,
                   company: body.customFields.companyName,
                   status: 'client',
-                  notes: `Created from won opportunity: ${body.title}`,
+                  notes: clientNotes,
                   tags: ['from-opportunity'],
                   niche: body.niche || 'creator'
                 })
@@ -752,7 +761,7 @@ export async function PUT(request: NextRequest) {
               let clientNotes = `Created from won opportunity: ${body.title}`;
               if (body.niche === 'podcaster') {
                 const opportunityType = body.customFields.type || body.type || 'podcast';
-                clientNotes = `Created from won ${opportunityType} opportunity: ${body.title}`;
+                clientNotes = `Created from recorded/won ${opportunityType} opportunity: ${body.title}`;
                 if (body.customFields.guestOrSponsorName) {
                   clientNotes += ` (${body.customFields.guestOrSponsorName})`;
                 }

@@ -237,12 +237,17 @@ export const userOperations = {
 
 // Client operations
 export const clientOperations = {
-  async getAll(userId: string): Promise<Client[]> {
-    const { data, error } = await supabase
+  async getAll(userId: string, niche?: string): Promise<Client[]> {
+    let query = supabase
       .from('clients')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+    
+    if (niche) {
+      query = query.eq('niche', niche)
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false })
     
     if (error) {
       console.error('Error getting clients:', error)
@@ -252,13 +257,18 @@ export const clientOperations = {
     return data || []
   },
 
-  async getById(id: string, userId: string): Promise<Client | null> {
-    const { data, error } = await supabase
+  async getById(id: string, userId: string, niche?: string): Promise<Client | null> {
+    let query = supabase
       .from('clients')
       .select('*')
       .eq('id', id)
       .eq('user_id', userId)
-      .single()
+    
+    if (niche) {
+      query = query.eq('niche', niche)
+    }
+    
+    const { data, error } = await query.single()
     
     if (error) {
       console.error('Error getting client:', error)
@@ -283,14 +293,18 @@ export const clientOperations = {
     return data
   },
 
-  async update(id: string, userId: string, updates: Partial<Client>): Promise<Client | null> {
-    const { data, error } = await supabase
+  async update(id: string, userId: string, updates: Partial<Client>, niche?: string): Promise<Client | null> {
+    let query = supabase
       .from('clients')
       .update(updates)
       .eq('id', id)
       .eq('user_id', userId)
-      .select()
-      .single()
+    
+    if (niche) {
+      query = query.eq('niche', niche)
+    }
+    
+    const { data, error } = await query.select().single()
     
     if (error) {
       console.error('Error updating client:', error)
@@ -300,12 +314,18 @@ export const clientOperations = {
     return data
   },
 
-  async delete(id: string, userId: string): Promise<boolean> {
-    const { error } = await supabase
+  async delete(id: string, userId: string, niche?: string): Promise<boolean> {
+    let query = supabase
       .from('clients')
       .delete()
       .eq('id', id)
       .eq('user_id', userId)
+    
+    if (niche) {
+      query = query.eq('niche', niche)
+    }
+    
+    const { error } = await query
     
     if (error) {
       console.error('Error deleting client:', error)

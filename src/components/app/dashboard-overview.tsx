@@ -48,7 +48,8 @@ import {
   Crown,
   Brain,
   CalendarCheck,
-  Edit
+  Edit,
+  User
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -65,6 +66,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { format, isToday, isValid } from 'date-fns'
 import OpportunityModal from './opportunity-modal'
 import { EventCreationModal } from './event-creation-modal'
+import ContactFormModal from './contact-form-modal'
 import { DateUtils } from '@/lib/date-utils'
 import { fetchClients } from '@/lib/client-service'
 import { useRevenueType } from '@/contexts/RevenueTypeContext'
@@ -610,6 +612,14 @@ export default function DashboardOverview({
   const [isCustomDateModalOpen, setIsCustomDateModalOpen] = useState(false);
   const [activePeriodType, setActivePeriodType] = useState<'revenue' | 'growth'>('revenue');
   
+  // Client conversion modal state
+  const [showClientConversionModal, setShowClientConversionModal] = useState(false);
+  const [convertedOpportunity, setConvertedOpportunity] = useState<any>(null);
+  
+  // Contact form state
+  const [showContactFormModal, setShowContactFormModal] = useState(false);
+  const [contactFormInitialData, setContactFormInitialData] = useState<any>(null);
+  
   const [completedTasks, setCompletedTasks] = useState<string[]>([])
   const [todaysTasks, setTodaysTasks] = useState<TaskItem[]>([]);
   const [todaysMeetings, setTodaysMeetings] = useState<any[]>([]);
@@ -1111,36 +1121,36 @@ export default function DashboardOverview({
     return revenueDisplayType === 'gross' ? totalGrossRevenue : totalNetRevenue;
   }, [revenueDisplayType, totalGrossRevenue, totalNetRevenue]);
 
-  // Refresh data when component becomes visible (e.g., when navigating back to dashboard)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadMetricsData();
-      }
-    };
+  // Disabled visibility-based refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (!document.hidden) {
+  //       loadMetricsData();
+  //     }
+  //   };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [activeNiche]);
+  //   document.addEventListener('visibilitychange', handleVisibilityChange);
+  //   return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  // }, [activeNiche]);
 
-  // Add refresh mechanism - reload data every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadMetricsData();
-    }, 30000); // Refresh every 30 seconds
+  // Disabled auto-refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     loadMetricsData();
+  //   }, 30000); // Refresh every 30 seconds
 
-    return () => clearInterval(interval);
-  }, [activeNiche]);
+  //   return () => clearInterval(interval);
+  // }, [activeNiche]);
 
-  // Refresh data when user returns to the dashboard (e.g., after updating an opportunity)
-  useEffect(() => {
-    const handleFocus = () => {
-      loadMetricsData();
-    };
+  // Disabled focus-based refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const handleFocus = () => {
+  //     loadMetricsData();
+  //   };
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [activeNiche]);
+  //   window.addEventListener('focus', handleFocus);
+  //   return () => window.removeEventListener('focus', handleFocus);
+  // }, [activeNiche]);
 
   const handleTaskComplete = async (taskId: string) => {
     // Check if this is a calendar event task
@@ -1887,6 +1897,38 @@ export default function DashboardOverview({
     setGrowthType(type);
   };
 
+  const handleSaveContact = async (formData: any) => {
+    try {
+      console.log('🔍 Saving contact with data:', formData);
+      
+      // Remove address and value fields as they're not in the database schema
+      const { address, value, ...clientData } = formData;
+      
+      const response = await fetch('/api/clients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...clientData, niche: activeNiche }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 API Error Response:', errorText);
+        throw new Error(`Failed to create client: ${response.status} ${errorText}`);
+      }
+
+      const newClient = await response.json();
+      console.log('🔍 Successfully created client:', newClient);
+      
+      // Show success message
+      alert(`Successfully created client: ${formData.name}`);
+    } catch (error) {
+      console.error('Error creating client:', error);
+      throw error; // Re-throw so the modal can handle it
+    }
+  };
+
   const getCreatorMetrics = () => {
     return [
       { 
@@ -2533,12 +2575,26 @@ export default function DashboardOverview({
               title: comprehensiveData.title,
               description: comprehensiveData.description,
               value: comprehensiveData.value,
-              status: comprehensiveData.status === 'outreach' ? 'prospecting' : 
-                     comprehensiveData.status === 'awaiting' ? 'qualification' : 
-                     comprehensiveData.status === 'contract' ? 'proposal' : 
-                     comprehensiveData.status === 'negotiation' ? 'negotiation' : 
-                     comprehensiveData.status === 'paid' ? 'won' : 
-                     comprehensiveData.status === 'archived' ? 'lost' : 'prospecting',
+              status: (() => {
+                // Use the same mapping logic as the opportunity service
+                if (activeNiche === 'podcaster') {
+                  return comprehensiveData.status === 'outreach' ? 'prospecting' : 
+                         comprehensiveData.status === 'awaiting' ? 'prospecting' : 
+                         comprehensiveData.status === 'conversation' ? 'qualification' : 
+                         comprehensiveData.status === 'negotiation' ? 'negotiation' : 
+                         comprehensiveData.status === 'agreement' ? 'proposal' : 
+                         comprehensiveData.status === 'scheduled' ? 'proposal' : 
+                         comprehensiveData.status === 'recorded' ? 'won' : 
+                         comprehensiveData.status === 'archived' ? 'lost' : 'prospecting';
+                } else {
+                  return comprehensiveData.status === 'outreach' ? 'prospecting' : 
+                         comprehensiveData.status === 'awaiting' ? 'qualification' : 
+                         comprehensiveData.status === 'contract' ? 'proposal' : 
+                         comprehensiveData.status === 'negotiation' ? 'negotiation' : 
+                         comprehensiveData.status === 'paid' ? 'won' : 
+                         comprehensiveData.status === 'archived' ? 'lost' : 'prospecting';
+                }
+              })(),
               type: comprehensiveData.type,
               probability: comprehensiveData.probability,
               expected_close_date: comprehensiveData.expected_close_date,
@@ -2566,6 +2622,19 @@ export default function DashboardOverview({
             
             const savedOpportunity = await response.json();
             console.log('Dashboard - Successfully saved opportunity:', savedOpportunity);
+            
+            // Check if this is a client conversion stage
+            const clientConversionStages = activeNiche === 'podcaster' ? ['paid', 'active', 'recorded'] : ['paid', 'active'];
+            if (clientConversionStages.includes(comprehensiveData.status)) {
+              console.log('Dashboard - Triggering client conversion modal for new opportunity:', savedOpportunity.title);
+              setConvertedOpportunity({
+                id: savedOpportunity.id,
+                clientName: comprehensiveData.guestOrSponsorName || comprehensiveData.brandName || comprehensiveData.clientName || comprehensiveData.companyName || savedOpportunity.title,
+                stageId: comprehensiveData.status,
+                customFields: comprehensiveData.customFields
+              });
+              setShowClientConversionModal(true);
+            }
             
             // Close the modal
             setIsOpportunityModalOpen(false);
@@ -3385,6 +3454,99 @@ export default function DashboardOverview({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Client Conversion Notification Modal */}
+      <Dialog open={showClientConversionModal} onOpenChange={setShowClientConversionModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-green-600" />
+              </div>
+              Convert to Client
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-4">
+                Great news! You've moved <strong>{convertedOpportunity?.clientName}</strong> to the <strong>{convertedOpportunity?.stageId === 'recorded' ? 'Recorded/Won' : convertedOpportunity?.stageId}</strong> stage.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Would you like to add them as a client in your contacts?
+              </p>
+              {convertedOpportunity?.stageId === 'recorded' && activeNiche === 'podcaster' && (
+                <p className="text-xs text-blue-600 mt-2">
+                  💡 This opportunity will remain in the Recorded/Won stage for revenue tracking
+                </p>
+              )}
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 text-xs">💡</span>
+                </div>
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-1">Benefits of adding as a client:</p>
+                  <ul className="text-xs space-y-1">
+                    <li>• Track their contact information</li>
+                    <li>• Add notes and follow-up reminders</li>
+                    <li>• Link to future opportunities</li>
+                    <li>• Generate client reports</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button 
+                onClick={() => {
+                  // Close the conversion modal
+                  setShowClientConversionModal(false);
+                  setConvertedOpportunity(null);
+                  
+                  // Pre-populate contact form with opportunity data
+                  const contactData = {
+                    name: (convertedOpportunity?.customFields?.contactName || convertedOpportunity?.clientName || '').trim(),
+                    email: (convertedOpportunity?.customFields?.contactEmail || '').trim(),
+                    phone: (convertedOpportunity?.customFields?.contactPhone || '').trim(),
+                    company: (convertedOpportunity?.customFields?.companyName || '').trim(),
+                    status: 'client' as 'client',
+                    notes: `Created from ${activeNiche === 'podcaster' ? 'recorded/won' : 'won'} opportunity: ${(convertedOpportunity?.customFields?.contactName || convertedOpportunity?.clientName || '').trim()}`
+                  };
+                  
+                  setContactFormInitialData(contactData);
+                  
+                  // Show the contact form modal
+                  setShowContactFormModal(true);
+                }}
+                className="flex-1"
+              >
+                Add as Client
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowClientConversionModal(false);
+                  setConvertedOpportunity(null);
+                }}
+              >
+                Maybe Later
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Contact Form Modal */}
+      <ContactFormModal
+        open={showContactFormModal}
+        onOpenChange={setShowContactFormModal}
+        initialData={contactFormInitialData}
+        onSave={handleSaveContact}
+        title="Add New Contact"
+        activeNiche={activeNiche}
+      />
     </motion.div>
   )
 }

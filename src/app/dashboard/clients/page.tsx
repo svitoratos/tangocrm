@@ -27,13 +27,7 @@ import {
   Archive,
   User
 } from 'lucide-react';
-import { 
-  fetchClients, 
-  createClient, 
-  updateClient, 
-  deleteClient, 
-  type Client 
-} from '@/lib/client-service';
+import { type Client } from '@/lib/client-service';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -129,16 +123,41 @@ function ClientsPageWithSearchParams() {
   const loadClients = async () => {
     try {
       setLoading(true);
-      abortControllerRef.current?.abort();
-      abortControllerRef.current = new AbortController();
       
-      const data = await fetchClients(activeNiche);
+      // Create a new AbortController for this request
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+      
+      const response = await fetch(`/api/clients?niche=${activeNiche}`, {
+        credentials: 'include',
+        signal: abortController.signal
+      });
+      
+      // Check if this request was aborted
+      if (abortController.signal.aborted) {
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch clients: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Check again if this request was aborted before setting state
+      if (abortController.signal.aborted) {
+        return;
+      }
+      
       setContacts(data);
       setFilteredContacts(data);
     } catch (error) {
-      console.error('Error loading clients:', error);
-      setContacts([]);
-      setFilteredContacts([]);
+      // Only log error if it's not an abort error
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error loading clients:', error);
+        setContacts([]);
+        setFilteredContacts([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -191,9 +210,17 @@ function ClientsPageWithSearchParams() {
   };
 
   const handleDeleteContact = async (id: string) => {
-            if (window.confirm('Tango CRM says: Are you sure you want to delete this contact?')) {
+    if (window.confirm('Tango CRM says: Are you sure you want to delete this contact?')) {
       try {
-        await deleteClient(id);
+        const response = await fetch(`/api/clients?id=${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to delete client: ${response.status}`);
+        }
+        
         await loadClients();
       } catch (error) {
         console.error('Error deleting contact:', error);
@@ -203,7 +230,19 @@ function ClientsPageWithSearchParams() {
 
   const handleArchiveContact = async (contact: Client) => {
     try {
-      await updateClient(contact.id, { status: 'inactive' });
+      const response = await fetch(`/api/clients/${contact.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'inactive' })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to archive client: ${response.status}`);
+      }
+      
       await loadClients();
     } catch (error) {
       console.error('Error archiving contact:', error);
@@ -212,17 +251,37 @@ function ClientsPageWithSearchParams() {
 
   const handleSaveContact = async () => {
     try {
-      const saveData = {
-        ...formData,
-        status: formData.status
-      };
-
+      // Remove address and value fields as they're not in the database schema
+      const { address, value, ...clientData } = formData;
+      
       if (selectedContact) {
         // Update existing contact
-        await updateClient(selectedContact.id, saveData);
+        const response = await fetch(`/api/clients`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ id: selectedContact.id, ...clientData, niche: activeNiche })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to update client: ${response.status}`);
+        }
       } else {
         // Create new contact
-        await createClient(saveData, activeNiche);
+        const response = await fetch('/api/clients', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ ...clientData, niche: activeNiche })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to create client: ${response.status}`);
+        }
       }
       
       await loadClients();
@@ -495,7 +554,7 @@ function ClientsPageWithSearchParams() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Contacts</h1>
+          <h1 className="text-2xl font-bold text-foreground">Contact Management</h1>
           <p className="text-sm text-muted-foreground">
             Manage your {activeNiche} contacts and clients
           </p>

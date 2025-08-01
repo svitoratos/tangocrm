@@ -373,30 +373,30 @@ function MainDashboardWithSearchParams() {
     }
   }, [searchParams, refreshPaymentStatus]);
 
-  // Add periodic refresh to catch any missed updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Only refresh if we're not already loading and user is active
-      if (!paymentStatusLoading && document.visibilityState === 'visible') {
-        refreshPaymentStatus();
-      }
-    }, 30000); // Refresh every 30 seconds
+  // Disabled auto-refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     // Only refresh if we're not already loading and user is active
+  //     if (!paymentStatusLoading && document.visibilityState === 'visible') {
+  //       refreshPaymentStatus();
+  //     }
+  //   }, 30000); // Refresh every 30 seconds
 
-    return () => clearInterval(interval);
-  }, [refreshPaymentStatus, paymentStatusLoading]);
+  //   return () => clearInterval(interval);
+  // }, [refreshPaymentStatus, paymentStatusLoading]);
 
-  // Force refresh when user becomes visible (returns to tab)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && !paymentStatusLoading) {
-        console.log('🔧 User returned to tab, refreshing payment status...');
-        refreshPaymentStatus();
-      }
-    };
+  // Disabled visibility-based refresh to prevent frequent API calls
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.visibilityState === 'visible' && !paymentStatusLoading) {
+  //       console.log('🔧 User returned to tab, refreshing payment status...');
+  //       refreshPaymentStatus();
+  //     }
+  //   };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [refreshPaymentStatus, paymentStatusLoading]);
+  //   document.addEventListener('visibilitychange', handleVisibilityChange);
+  //   return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  // }, [refreshPaymentStatus, paymentStatusLoading]);
 
   const checkOnboardingStatus = async () => {
     // Skip onboarding check for development - allow direct access

@@ -26,6 +26,9 @@ import {
   FreelancerOpportunityCard 
 } from './opportunity-cards';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import ContactFormModal from './contact-form-modal';
 import { 
   mapFormDataToOpportunity,
   mapStatusToDatabase,
@@ -102,9 +105,8 @@ function getNicheStages(niche?: string): PipelineStage[] {
         { id: 'negotiation', name: 'Negotiation', color: STAGE_COLORS[3], opportunities: [], order: 4 },
         { id: 'agreement', name: 'Agreement in Place', color: STAGE_COLORS[4], opportunities: [], order: 5 },
         { id: 'scheduled', name: 'Scheduled', color: '#06b6d4', opportunities: [], order: 6 },
-        { id: 'recorded', name: 'Recorded', color: '#10b981', opportunities: [], order: 7 },
-        { id: 'paid', name: 'Paid/Won', color: '#7c3aed', opportunities: [], order: 8 },
-        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 9 }
+        { id: 'recorded', name: 'Recorded/Won', color: '#10b981', opportunities: [], order: 7 },
+        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 8 }
       ];
     case 'freelancer':
       return [
@@ -158,7 +160,7 @@ function mapDatabaseStatusToStageId(dbStatus: string, niche: string): string {
       'qualification': 'conversation',
       'proposal': 'agreement',
       'negotiation': 'negotiation',
-      'won': 'paid',
+      'won': 'recorded',
       'lost': 'archived'
     },
     freelancer: {
@@ -209,13 +211,18 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
   const [showClientConversionModal, setShowClientConversionModal] = useState(false);
   const [convertedOpportunity, setConvertedOpportunity] = useState<Opportunity | null>(null);
+  
+  // Contact form state
+  const [showContactFormModal, setShowContactFormModal] = useState(false);
+  const [contactFormInitialData, setContactFormInitialData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStage, setSelectedStage] = useState("all");
   const [addOpportunityStage, setAddOpportunityStage] = useState<string | null>(null);
 
   // Stages that should trigger client conversion notification
   // Note: 'completed' stage should keep opportunities in place for tracking
-  const clientConversionStages = ['paid', 'active'];
+  const clientConversionStages = activeNiche === 'podcaster' ? ['paid', 'active', 'recorded'] : ['paid', 'active'];
+  console.log('CRM Pipeline - Client conversion stages for', activeNiche, ':', clientConversionStages);
 
   // Load opportunities from database when activeNiche changes
   useEffect(() => {
@@ -365,6 +372,13 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
     loadOpportunities();
   }, [activeNiche]);
 
+  // Debug: Monitor client conversion modal state
+  useEffect(() => {
+    console.log('🔍 showClientConversionModal state changed:', showClientConversionModal);
+    if (showClientConversionModal) {
+      console.log('🔍 convertedOpportunity:', convertedOpportunity);
+    }
+  }, [showClientConversionModal, convertedOpportunity]);
 
   const filteredStages = useMemo(() => {
     let filtered = stages;
@@ -523,9 +537,20 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
         );
 
         // Check if moving to a client conversion stage
+        console.log('Drag and drop - Checking client conversion stages:', {
+          targetStageId,
+          clientConversionStages,
+          activeNiche,
+          isIncluded: clientConversionStages.includes(targetStageId)
+        });
         if (clientConversionStages.includes(targetStageId)) {
+          console.log('Drag and drop - Triggering client conversion modal for:', draggedItem.clientName);
+          console.log('Drag and drop - Dragged item data:', draggedItem);
           setConvertedOpportunity(draggedItem);
           setShowClientConversionModal(true);
+          console.log('Drag and drop - Set showClientConversionModal to true');
+        } else {
+          console.log('Drag and drop - Not a client conversion stage');
         }
       } catch (error) {
         console.error('Error updating opportunity status:', error);
@@ -840,8 +865,15 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
       const movedToTriggerStage = clientConversionStages.includes(originalStageId);
       
       // Show notification if stage changed to a trigger stage
+      console.log('Opportunity save - Checking client conversion:', {
+        stageChanged,
+        movedToTriggerStage,
+        originalStageId,
+        clientConversionStages,
+        activeNiche
+      });
       if (stageChanged && movedToTriggerStage) {
-        console.log('Triggering client conversion modal for:', savedOpportunity.title, 'stage:', originalStageId);
+        console.log('Opportunity save - Triggering client conversion modal for:', savedOpportunity.title, 'stage:', originalStageId);
         const uiOpportunity = uiOpportunities.find(opp => opp.id === savedOpportunity.id);
         if (uiOpportunity) {
           setConvertedOpportunity(uiOpportunity);
@@ -860,6 +892,38 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
       setIsLoading(false);
     }
   }, [selectedOpportunity, handleModalClose, clientConversionStages, activeNiche]);
+
+  const handleSaveContact = async (formData: any) => {
+    try {
+      console.log('🔍 Saving contact with data:', formData);
+      
+      // Remove address and value fields as they're not in the database schema
+      const { address, value, ...clientData } = formData;
+      
+      const response = await fetch('/api/clients', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...clientData, niche: activeNiche }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 API Error Response:', errorText);
+        throw new Error(`Failed to create client: ${response.status} ${errorText}`);
+      }
+
+      const newClient = await response.json();
+      console.log('🔍 Successfully created client:', newClient);
+      
+      // Show success message
+      alert(`Successfully created client: ${formData.name}`);
+    } catch (error) {
+      console.error('Error creating client:', error);
+      throw error; // Re-throw so the modal can handle it
+    }
+  };
 
   const renderOpportunityCard = useCallback((opportunity: Opportunity, stage: PipelineStage, isDraggable = false, isExpandable = false) => {
     const commonProps = {
@@ -1526,6 +1590,11 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
                   💡 This opportunity will remain in the Completed stage for revenue tracking
                 </p>
               )}
+              {convertedOpportunity?.stageId === 'recorded' && activeNiche === 'podcaster' && (
+                <p className="text-xs text-blue-600 mt-2">
+                  💡 This opportunity will remain in the Recorded/Won stage for revenue tracking
+                </p>
+              )}
             </div>
             
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -1548,10 +1617,29 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             <div className="flex gap-2 pt-2">
               <Button 
                 onClick={() => {
+                  console.log('🔍 Add as Client clicked - convertedOpportunity:', convertedOpportunity);
+                  console.log('🔍 convertedOpportunity.customFields:', convertedOpportunity?.customFields);
+                  console.log('🔍 convertedOpportunity.clientName:', convertedOpportunity?.clientName);
+                  
+                  // Close the conversion modal
                   setShowClientConversionModal(false);
                   setConvertedOpportunity(null);
-                  // Navigate to clients page with pre-filled data
-                  router.push(`/dashboard?section=clients&addClient=true&name=${encodeURIComponent(convertedOpportunity?.clientName || '')}&email=${encodeURIComponent(convertedOpportunity?.customFields?.email || '')}&status=active`);
+                  
+                  // Pre-populate contact form with opportunity data
+                  const contactData = {
+                    name: (convertedOpportunity?.customFields?.contactName || convertedOpportunity?.clientName || '').trim(),
+                    email: (convertedOpportunity?.customFields?.contactEmail || '').trim(),
+                    phone: (convertedOpportunity?.customFields?.contactPhone || '').trim(),
+                    company: (convertedOpportunity?.customFields?.companyName || '').trim(),
+                    status: 'client' as 'client',
+                    notes: `Created from ${activeNiche === 'podcaster' ? 'recorded/won' : 'won'} opportunity: ${(convertedOpportunity?.customFields?.contactName || convertedOpportunity?.clientName || '').trim()}`
+                  };
+                  
+                  console.log('🔍 Setting contactFormInitialData to:', contactData);
+                  setContactFormInitialData(contactData);
+                  
+                  // Show the contact form modal
+                  setShowContactFormModal(true);
                 }}
                 className="flex-1"
               >
@@ -1570,6 +1658,16 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Contact Form Modal */}
+      <ContactFormModal
+        open={showContactFormModal}
+        onOpenChange={setShowContactFormModal}
+        initialData={contactFormInitialData}
+        onSave={handleSaveContact}
+        title="Add New Contact"
+        activeNiche={activeNiche}
+      />
     </div>
   );
 }

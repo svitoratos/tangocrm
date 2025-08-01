@@ -69,6 +69,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          niche: string
           name: string
           email: string | null
           company: string | null
@@ -84,6 +85,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
+          niche: string
           name: string
           email?: string | null
           company?: string | null
@@ -99,6 +101,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
+          niche?: string
           name?: string
           email?: string | null
           company?: string | null

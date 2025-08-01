@@ -1,201 +1,344 @@
 "use client";
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Send, Check } from "lucide-react";
 
-interface ContactFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  prefillSubject?: string;
-  prefillMessage?: string;
-  prefillEmail?: string;
-  title?: string;
-  description?: string;
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  address: string;
+  value: string;
+  status: 'lead' | 'client' | 'guest' | 'inactive';
+  notes: string;
+  // Niche-specific fields
+  podcastName?: string; // For podcaster niche
+  episodeNumber?: string; // For podcaster niche
+  coachingProgram?: string; // For coach niche
+  sessionCount?: string; // For coach niche
+  projectType?: string; // For freelancer niche
+  hourlyRate?: string; // For freelancer niche
+  brandName?: string; // For creator niche
+  collaborationType?: string; // For creator niche
 }
 
-export const ContactFormModal: React.FC<ContactFormModalProps> = ({
-  isOpen,
-  onClose,
-  prefillSubject = "",
-  prefillMessage = "",
-  prefillEmail = "",
-  title = "Contact Us",
-  description = "Send us a message and we'll get back to you soon."
-}) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: prefillEmail,
-    company: "",
-    subject: prefillSubject,
-    message: prefillMessage,
+interface ContactFormModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialData?: Partial<ContactFormData>;
+  onSave: (data: ContactFormData) => Promise<void>;
+  title?: string;
+  activeNiche?: string;
+}
+
+export default function ContactFormModal({
+  open,
+  onOpenChange,
+  initialData = {},
+  onSave,
+  title = "Add New Contact",
+  activeNiche = 'creator'
+}: ContactFormModalProps) {
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    address: '',
+    value: '',
+    status: 'client',
+    notes: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  // Update form data when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        ...initialData
+      }));
+    }
+  }, [initialData]);
+
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      alert('Name is required');
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      await onSave(formData);
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        address: '',
+        value: '',
+        status: 'client',
+        notes: ''
       });
-
-      if (response.ok) {
-        setIsSubmitted(true);
-        // Reset form after showing success
-        setTimeout(() => {
-          setIsSubmitted(false);
-          setFormData({ 
-            name: "", 
-            email: prefillEmail, 
-            company: "", 
-            subject: prefillSubject, 
-            message: prefillMessage 
-          });
-          onClose();
-        }, 3000);
-      } else {
-        const errorData = await response.json();
-        console.error('Contact form error:', errorData);
-        alert('Failed to send message. Please try again.');
-      }
+      onOpenChange(false);
     } catch (error) {
-      console.error('Contact form error:', error);
-      alert('Failed to send message. Please try again.');
+      console.error('Error saving contact:', error);
+      alert('Failed to save contact. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+  const handleCancel = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      company: '',
+      address: '',
+      value: '',
+      status: 'client',
+      notes: ''
+    });
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         
-        {isSubmitted ? (
-          <div className="text-center py-8">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-              <Check className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Message Sent!</h3>
-            <p className="text-sm text-gray-600">
-              Thank you for reaching out. We'll get back to you within 24 hours.
-            </p>
+        <div className="space-y-3">
+          <div>
+            <Label>Name *</Label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter contact name"
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Your name"
-                required
-              />
-            </div>
 
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="email">Email *</Label>
+              <Label>Email</Label>
               <Input
-                id="email"
-                name="email"
                 type="email"
                 value={formData.email}
-                onChange={handleInputChange}
-                placeholder="your.email@example.com"
-                required
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="Enter email"
               />
             </div>
-
             <div>
-              <Label htmlFor="company">Company (Optional)</Label>
+              <Label>Phone</Label>
               <Input
-                id="company"
-                name="company"
-                type="text"
-                value={formData.company}
-                onChange={handleInputChange}
-                placeholder="Your company"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="Enter phone"
               />
             </div>
+          </div>
 
+          <div>
+            <Label>Company</Label>
+            <Input
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              placeholder="Enter company name"
+            />
+          </div>
+
+          <div>
+            <Label>Address</Label>
+            <Input
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="Enter address"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="subject">Subject *</Label>
+              <Label>Value</Label>
               <Input
-                id="subject"
-                name="subject"
-                type="text"
-                value={formData.subject}
-                onChange={handleInputChange}
-                placeholder="What's this about?"
-                required
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                placeholder="e.g., $5000"
               />
             </div>
-
             <div>
-              <Label htmlFor="message">Message *</Label>
+              <Label>Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value as any })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                                  <SelectContent>
+                    {activeNiche === 'podcaster' && (
+                      <>
+                        <SelectItem value="lead">Lead</SelectItem>
+                        <SelectItem value="guest">Guest</SelectItem>
+                        <SelectItem value="client">Client</SelectItem>
+                        <SelectItem value="inactive">Archived</SelectItem>
+                      </>
+                    )}
+                    {activeNiche === 'coach' && (
+                      <>
+                        <SelectItem value="lead">Lead</SelectItem>
+                        <SelectItem value="prospect">Prospect</SelectItem>
+                        <SelectItem value="client">Client</SelectItem>
+                        <SelectItem value="inactive">Archived</SelectItem>
+                      </>
+                    )}
+                    {activeNiche === 'freelancer' && (
+                      <>
+                        <SelectItem value="lead">Lead</SelectItem>
+                        <SelectItem value="prospect">Prospect</SelectItem>
+                        <SelectItem value="client">Client</SelectItem>
+                        <SelectItem value="inactive">Archived</SelectItem>
+                      </>
+                    )}
+                    {activeNiche === 'creator' && (
+                      <>
+                        <SelectItem value="lead">Lead</SelectItem>
+                        <SelectItem value="brand">Brand</SelectItem>
+                        <SelectItem value="client">Client</SelectItem>
+                        <SelectItem value="inactive">Archived</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+                      <div>
+              <Label>Notes</Label>
               <Textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleInputChange}
-                placeholder="Tell us more..."
-                rows={4}
-                required
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Add any notes about this contact"
+                rows={2}
               />
             </div>
 
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        )}
+            {/* Niche-specific fields */}
+            {activeNiche === 'podcaster' && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Podcast Name</Label>
+                    <Input
+                      value={formData.podcastName || ''}
+                      onChange={(e) => setFormData({ ...formData, podcastName: e.target.value })}
+                      placeholder="Guest's podcast name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Episode Number</Label>
+                    <Input
+                      value={formData.episodeNumber || ''}
+                      onChange={(e) => setFormData({ ...formData, episodeNumber: e.target.value })}
+                      placeholder="e.g., #123"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeNiche === 'coach' && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Coaching Program</Label>
+                    <Input
+                      value={formData.coachingProgram || ''}
+                      onChange={(e) => setFormData({ ...formData, coachingProgram: e.target.value })}
+                      placeholder="Program name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Session Count</Label>
+                    <Input
+                      value={formData.sessionCount || ''}
+                      onChange={(e) => setFormData({ ...formData, sessionCount: e.target.value })}
+                      placeholder="e.g., 12 sessions"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeNiche === 'freelancer' && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Project Type</Label>
+                    <Input
+                      value={formData.projectType || ''}
+                      onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
+                      placeholder="e.g., Web Development"
+                    />
+                  </div>
+                  <div>
+                    <Label>Hourly Rate</Label>
+                    <Input
+                      value={formData.hourlyRate || ''}
+                      onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
+                      placeholder="e.g., $75/hour"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeNiche === 'creator' && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Brand Name</Label>
+                    <Input
+                      value={formData.brandName || ''}
+                      onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                      placeholder="Brand/company name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Collaboration Type</Label>
+                    <Input
+                      value={formData.collaborationType || ''}
+                      onChange={(e) => setFormData({ ...formData, collaborationType: e.target.value })}
+                      placeholder="e.g., Sponsored Post"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+          <div className="flex gap-2 pt-2">
+            <Button onClick={handleSave} className="flex-1" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Create Contact'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
-}; 
+} 

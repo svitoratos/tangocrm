@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Local storage key for clients
-const CLIENTS_KEY = 'tango-clients';
+import { clientOperations } from '@/lib/database';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export interface Client {
   id: string;
@@ -15,7 +14,6 @@ export interface Client {
   tags?: string[];
   created_at: string;
   updated_at: string;
-  niche: string;
 }
 
 // GET /api/clients
@@ -24,53 +22,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const niche = searchParams.get('niche');
     
-    // Simulate database fetch
-    let clients: Client[] = [
-      {
-        id: '1',
-        user_id: 'local-user',
-        name: 'Nike Inc',
-        email: 'partnerships@nike.com',
-        company: 'Nike',
-        status: 'client',
-        notes: 'Great collaboration partner, repeat client',
-        tags: ['sportswear', 'major-brand', 'repeat-client'],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        niche: 'creator'
-      },
-      {
-        id: '2',
-        user_id: 'local-user',
-        name: 'Tech Startup LLC',
-        email: 'founder@techstartup.com',
-        company: 'Tech Startup LLC',
-        status: 'lead',
-        notes: 'Interested in coaching program, discovery call scheduled',
-        tags: ['tech', 'startup', 'potential-client'],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        niche: 'coach'
-      },
-      {
-        id: '3',
-        user_id: 'local-user',
-        name: 'Podcast Sponsor Co',
-        email: 'sponsor@podcastco.com',
-        company: 'Podcast Sponsor Co',
-        status: 'lead',
-        notes: 'Reached out about podcast sponsorship',
-        tags: ['podcast', 'sponsorship', 'new-lead'],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        niche: 'podcaster'
-      }
-    ];
+    // Get the correct user_id for database operations
+    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
     
-    // Filter by niche if provided
-    const filtered = niche ? clients.filter(client => client.niche === niche) : clients;
+    // Get clients using database operations with niche filtering
+    const clients = await clientOperations.getAll(correctUserId, niche || undefined);
     
-    return NextResponse.json(filtered);
+    console.log('🔍 Fetched clients from database:', clients.length, 'for niche:', niche);
+    
+    return NextResponse.json(clients);
   } catch (error) {
     console.error('Error fetching clients:', error);
     return NextResponse.json(
@@ -85,20 +45,42 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const newClient: Client = {
-      id: Math.random().toString(36).substr(2, 9),
-      user_id: 'local-user',
+    // Get the correct user_id for database operations
+    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    
+    // Try to get user by email if provided
+    if (body.email) {
+      const { data: userDataByEmail } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', body.email)
+        .single();
+      
+      if (userDataByEmail) {
+        correctUserId = userDataByEmail.id;
+      }
+    }
+    
+    // Create client using database operations
+    const newClient = await clientOperations.create({
+      user_id: correctUserId,
+      niche: body.niche || 'creator', // Default to creator if not specified
       name: body.name || 'New Client',
       email: body.email,
       phone: body.phone,
       company: body.company,
-      status: body.status || 'lead',
+      website: null,
+      social_media: null,
+      status: body.status || 'client',
       notes: body.notes,
-      tags: body.tags || [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      niche: body.niche || 'creator'
-    };
+      tags: body.tags || []
+    });
+    
+    if (!newClient) {
+      throw new Error('Failed to create client in database');
+    }
+    
+    console.log('🔍 Created client in database:', newClient);
     
     return NextResponse.json(newClient, { status: 201 });
   } catch (error) {
@@ -123,17 +105,62 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const updatedClient = {
-      id,
-      ...updateData,
-      updated_at: new Date().toISOString()
-    };
+    // Get the correct user_id for database operations
+    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    
+    // Update client using database operations with niche filtering
+    const updatedClient = await clientOperations.update(id, correctUserId, updateData, updateData.niche);
+    
+    if (!updatedClient) {
+      throw new Error('Failed to update client in database');
+    }
+    
+    console.log('🔍 Updated client in database:', updatedClient);
     
     return NextResponse.json(updatedClient);
   } catch (error) {
     console.error('Error updating client:', error);
     return NextResponse.json(
       { error: 'Failed to update client' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/clients
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Client ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    // Get the correct user_id for database operations
+    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    
+    // Get the niche from the client before deleting
+    const client = await clientOperations.getById(id, correctUserId);
+    const clientNiche = client?.niche;
+    
+    // Delete client using database operations with niche filtering
+    const deletedClient = await clientOperations.delete(id, correctUserId, clientNiche);
+    
+    if (!deletedClient) {
+      throw new Error('Failed to delete client from database');
+    }
+    
+    console.log('🔍 Deleted client from database:', deletedClient);
+    
+    return NextResponse.json({ success: true, deletedClient });
+  } catch (error) {
+    console.error('Error deleting client:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete client' },
       { status: 500 }
     );
   }
