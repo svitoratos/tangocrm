@@ -466,7 +466,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
             'qualification': 'conversation',
             'proposal': 'agreement',
             'negotiation': 'negotiation',
-            'won': 'published',
+            'won': 'paid',
             'lost': 'archived'
           },
           freelancer: {
@@ -642,7 +642,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
               'qualification': 'conversation',
               'proposal': 'agreement',
               'negotiation': 'negotiation',
-              'won': 'published',
+              'won': 'paid',
               'lost': 'archived'
             },
             freelancer: {
@@ -2366,10 +2366,8 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                         <SelectItem value="follow-up">Follow-Up</SelectItem>
                         <SelectItem value="negotiation">Negotiation</SelectItem>
                         <SelectItem value="signed">Signed Client</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="active">Active Program</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="archived">Archived / Lost</SelectItem>
+                        <SelectItem value="paid">Paid/Won</SelectItem>
+                        <SelectItem value="archived">Closed/Lost</SelectItem>
                       </>
                     ) : userNiche === 'podcaster' ? (
                       <>
@@ -2380,9 +2378,8 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                         <SelectItem value="agreement">Agreement in Place</SelectItem>
                         <SelectItem value="scheduled">Scheduled</SelectItem>
                         <SelectItem value="recorded">Recorded</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="archived">Archived / Lost</SelectItem>
+                        <SelectItem value="paid">Paid/Won</SelectItem>
+                        <SelectItem value="archived">Closed/Lost</SelectItem>
                       </>
                     ) : userNiche === 'freelancer' ? (
                       <>
@@ -2394,8 +2391,8 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                         <SelectItem value="contract">Contract Signed</SelectItem>
                         <SelectItem value="progress">Project In Progress</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="archived">Archived / Lost</SelectItem>
+                        <SelectItem value="paid">Paid/Won</SelectItem>
+                        <SelectItem value="archived">Closed/Lost</SelectItem>
                       </>
                     ) : (
                       <>
@@ -2406,8 +2403,8 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
                         <SelectItem value="contract">Contract Signed</SelectItem>
                         <SelectItem value="progress">Content in Progress</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                        <SelectItem value="archived">Archived / Lost</SelectItem>
+                        <SelectItem value="paid">Paid/Won</SelectItem>
+                        <SelectItem value="archived">Closed/Lost</SelectItem>
                       </>
                     )}
                   </SelectContent>

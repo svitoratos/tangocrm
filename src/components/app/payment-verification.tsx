@@ -43,24 +43,12 @@ export const PaymentVerification: React.FC<PaymentVerificationProps> = ({
   }, []);
 
   // Show loading state during SSR and initial client render
-  if (!isClient) {
+  if (!isClient || isLoading || !isAdminLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-600" />
           <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading state while hooks are loading
-  if (isLoading || !isAdminLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-600" />
-          <p className="text-gray-600">Checking your subscription status...</p>
         </div>
       </div>
     );

@@ -126,8 +126,8 @@ export const FreelancerOpportunityCard = ({
       'Contract Signed': 'bg-cyan-100 text-cyan-800 border-cyan-200',
       'Project In Progress': 'bg-green-100 text-green-800 border-green-200',
       'Delivered': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      'Paid': 'bg-violet-100 text-violet-800 border-violet-200',
-      'Archived / Lost': 'bg-gray-100 text-gray-800 border-gray-200'
+      'Paid/Won': 'bg-violet-100 text-violet-800 border-violet-200',
+      'Closed/Lost': 'bg-gray-100 text-gray-800 border-gray-200'
     };
     return colorMap[stageName] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -282,35 +282,7 @@ export const FreelancerOpportunityCard = ({
               </div>
             </div>
 
-            {/* Revenue Calculation Display */}
-            {(opportunity.calculatedGrossRevenue !== undefined || opportunity.calculatedNetRevenue !== undefined) && (
-              <div className="mt-3 space-y-2">
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3 border border-blue-100/50">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-700">Gross Revenue</span>
-                      <span className="text-xs font-semibold text-blue-600">
-                        ${opportunity.calculatedGrossRevenue?.toLocaleString() || '0'}
-                      </span>
-                    </div>
-                    {opportunity.calculatedSplitAmount && opportunity.calculatedSplitAmount > 0 && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-700">Revenue Split</span>
-                        <span className="text-xs font-semibold text-orange-600">
-                          -${opportunity.calculatedSplitAmount?.toLocaleString() || '0'}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between pt-1 border-t border-blue-100/50">
-                      <span className="text-xs font-medium text-gray-700">Net Revenue</span>
-                      <span className="text-xs font-semibold text-purple-600">
-                        ${opportunity.calculatedNetRevenue?.toLocaleString() || '0'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+
             
             {/* Last Activity Display */}
             <div className="mt-3 pt-3 border-t border-gray-100">

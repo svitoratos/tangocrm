@@ -100,18 +100,31 @@ function ClientsPageWithSearchParams() {
   // Load clients from localStorage
   useEffect(() => {
     loadClients();
-    
+  }, [activeNiche]);
+
+  // Handle URL parameters for adding clients (separate effect to avoid conflicts)
+  useEffect(() => {
     // Check for add client parameter from URL
     const addClient = searchParams.get('addClient');
     const name = searchParams.get('name');
     const email = searchParams.get('email');
     
+    console.log('🔍 Clients page URL parameters:', { addClient, name, email });
+    
     if (addClient === 'true') {
+      console.log('🔍 Opening add client modal due to URL parameter');
       setIsModalOpen(true);
       if (name) setFormData(prev => ({ ...prev, name }));
       if (email) setFormData(prev => ({ ...prev, email }));
     }
-  }, [searchParams, activeNiche]);
+  }, [searchParams]);
+
+  // Reset modal state when component mounts (to prevent auto-opening)
+  useEffect(() => {
+    // Ensure modal is closed when component first loads
+    setIsModalOpen(false);
+    setSelectedContact(null);
+  }, []);
 
   const loadClients = async () => {
     try {

@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createBulletproofDateHandler } from '@/lib/date-utils';
+import { fetchClients } from '@/lib/client-service';
 import { 
   Plus, 
   Search, 
@@ -183,6 +184,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTabs, setActiveTabs] = useState<{ [key: string]: string }>({});
+  const [clientsCount, setClientsCount] = useState(0);
   
   // Create bulletproof date handler
   const dateHandler = createBulletproofDateHandler();
@@ -593,6 +595,22 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
   // Load content items on component mount and when niche changes
   useEffect(() => {
     fetchContentItems();
+    
+    // Also fetch clients count for coach niche
+    if (activeNiche === 'coach') {
+      const loadClientsCount = async () => {
+        try {
+          const clients = await fetchClients(activeNiche);
+          setClientsCount(clients.length);
+        } catch (error) {
+          console.error('Failed to fetch clients count:', error);
+          setClientsCount(0);
+        }
+      };
+      loadClientsCount();
+    } else {
+      setClientsCount(0);
+    }
   }, [activeNiche]);
 
   // Debug edit form rendering
@@ -1193,166 +1211,33 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
           )}
 
           {activeNiche === "podcaster" && (
-            <Tabs 
-              value={activeTabs[item.id] || "overview"} 
-              onValueChange={(value) => setActiveTabs(prev => ({ ...prev, [item.id]: value }))}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview" className="flex items-center gap-2 text-xs">
+            <div className="space-y-2 text-sm text-slate-600">
+              {/* Basic episode info without tabs */}
+              {item.guest && (
+                <div className="flex items-center gap-2">
                   <User className="h-3 w-3" />
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger value="script" className="flex items-center gap-2 text-xs">
-                  <FileText className="h-3 w-3" />
-                  Script
-                </TabsTrigger>
-                <TabsTrigger value="activity" className="flex items-center gap-2 text-xs">
-                  <Activity className="h-3 w-3" />
-                  Activity
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="overview" className="mt-2">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
-                    <User className="h-3 w-3" />
-                    Overview
-                  </div>
-                  <div className="space-y-2 text-xs text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <User className="h-3 w-3" />
-                      <span>Guest: {item.guest || 'No guest specified'}</span>
-                    </div>
-                    {item.sponsor && (
-                      <div className="flex items-center gap-2">
-                        <Star className="h-3 w-3" />
-                        <span>Sponsor: </span>
-                        <Badge variant="outline" className="text-xs">{item.sponsor}</Badge>
-                      </div>
-                    )}
-                    {item.duration && (
-                      <div className="flex items-center gap-2">
-                        <Play className="h-3 w-3" />
-                        <span>Duration: {formatDuration(item.duration, item.customDuration)}</span>
-                      </div>
-                    )}
-                    {item.topics && (
-                      <div className="flex items-start gap-2">
-                        <MessageCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <span className="text-xs font-medium text-slate-700">Topics:</span>
-                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                            {item.topics}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                  <span>Guest: {item.guest}</span>
+                </div>
+              )}
+              {item.sponsor && (
+                <div className="flex items-center gap-2">
+                  <Star className="h-3 w-3" />
+                  <span>Sponsor: </span>
+                  <Badge variant="outline" className="text-xs">{item.sponsor}</Badge>
+                </div>
+              )}
+              {item.topics && (
+                <div className="flex items-start gap-2">
+                  <MessageCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-xs font-medium text-slate-700">Topics:</span>
+                    <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                      {item.topics}
+                    </p>
                   </div>
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="script" className="mt-2">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
-                      <FileText className="h-3 w-3" />
-                      Script
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="h-6 w-6 p-0" 
-                      title="Edit Script"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Open edit modal with script focus
-                        setEditFormData({
-                          ...editFormData,
-                          script: item.script || ""
-                        });
-                        setIsDetailModalOpen(true);
-                        setIsEditMode(true);
-                      }}
-                    >
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  {item.script ? (
-                    <div className="bg-slate-50 p-3 rounded border">
-                      <p className="text-xs text-slate-600 font-mono whitespace-pre-wrap line-clamp-6">
-                        {item.script}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-xs text-slate-500">
-                      <FileText className="h-4 w-4 mx-auto mb-2 opacity-50" />
-                      No script available
-                      <br />
-                      <span className="text-xs text-blue-600 cursor-pointer hover:underline" onClick={(e) => {
-                        e.stopPropagation();
-                        setEditFormData({
-                          ...editFormData,
-                          script: ""
-                        });
-                        setIsDetailModalOpen(true);
-                        setIsEditMode(true);
-                      }}>
-                        Click to add script
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="activity" className="mt-2">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
-                    <Activity className="h-3 w-3" />
-                    Activity
-                  </div>
-                  <div className="space-y-2 text-xs text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-3 w-3" />
-                      <span>Created: {new Date(item.created_at || '').toLocaleDateString()}</span>
-                    </div>
-                    {item.updated_at && item.updated_at !== item.created_at && (
-                      <div className="flex items-center gap-2">
-                        <Edit className="h-3 w-3" />
-                        <span>Updated: {new Date(item.updated_at).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Badge className={`${config.stageColors[item.stage]} text-xs`}>
-                        {item.stage}
-                      </Badge>
-                    </div>
-                    {item.notes && (
-                      <div className="flex items-start gap-2">
-                        <MessageCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <span className="text-xs font-medium text-slate-700">Notes:</span>
-                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                            {item.notes}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {(item as any).description && (
-                      <div className="flex items-start gap-2">
-                        <FileText className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <span className="text-xs font-medium text-slate-700">Description:</span>
-                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                            {(item as any).description}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+              )}
+            </div>
           )}
 
           {activeNiche === "freelancer" && (
@@ -2623,7 +2508,7 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-600">Clients</p>
-                      <p className="text-2xl font-bold text-slate-900">47</p>
+                      <p className="text-2xl font-bold text-slate-900">{clientsCount}</p>
                     </div>
                     <Users className="h-8 w-8 text-cyan-600" />
                   </div>

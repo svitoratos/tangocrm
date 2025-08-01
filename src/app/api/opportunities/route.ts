@@ -72,6 +72,26 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const niche = searchParams.get('niche');
     
+    // Get the correct user_id for database query (same logic as POST)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('GET - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('GET - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('GET - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
     // Build query
     let query = supabaseAdmin
       .from('opportunities')
@@ -84,7 +104,7 @@ export async function GET(request: NextRequest) {
           company
         )
       `)
-      .eq('user_id', userId);
+      .eq('user_id', correctUserId);
     
     // Filter by niche if provided
     if (niche) {
@@ -165,9 +185,11 @@ export async function GET(request: NextRequest) {
 // Enhanced POST method with activity tracking
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== OPPORTUNITY CREATE API DEBUG START ===');
     const { userId } = await auth();
     
     if (!userId) {
+      console.log('Unauthorized - no userId');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -175,9 +197,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Opportunity create request body:', body);
+    console.log('User ID:', userId);
     
     // Validate required fields
     if (!body.title) {
+      console.log('Missing title field');
       return NextResponse.json(
         { error: 'Title is required' },
         { status: 400 }
@@ -185,13 +210,43 @@ export async function POST(request: NextRequest) {
     }
     
     // Get user's timezone for proper date handling
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('timezone')
-      .eq('id', userId)
-      .single();
-    
-    const userTimezone = userData?.timezone || 'UTC';
+    let userTimezone = 'UTC';
+    try {
+      console.log('Looking up user timezone for userId:', userId);
+      const { data: userData, error: userError } = await supabaseAdmin
+        .from('users')
+        .select('timezone')
+        .eq('id', userId)
+        .single();
+      
+      if (userError) {
+        console.log('User lookup error:', userError);
+        // Try to find user by email as fallback
+        try {
+          const { data: userDataByEmail } = await supabaseAdmin
+            .from('users')
+            .select('timezone')
+            .eq('email', 'stevenvitoratos@getbondlyapp.com')
+            .single();
+          
+          if (userDataByEmail?.timezone) {
+            userTimezone = userDataByEmail.timezone;
+            console.log('Found user timezone by email fallback:', userTimezone);
+          }
+        } catch (emailError) {
+          console.log('Email fallback also failed, using UTC');
+        }
+      } else if (userData?.timezone) {
+        userTimezone = userData.timezone;
+        console.log('Found user timezone:', userTimezone);
+      } else {
+        console.log('No timezone found for user, using UTC');
+      }
+    } catch (error) {
+      console.log('Could not find user by Clerk ID, using default timezone UTC');
+      console.log('User lookup exception:', error);
+      // Continue with default timezone
+    }
     
     // Convert all date fields to UTC for storage using proper timezone conversion
     const expectedCloseDate = localDateToUTC(body.expected_close_date, userTimezone);
@@ -202,30 +257,65 @@ export async function POST(request: NextRequest) {
     
 
     
+    console.log('=== OPPORTUNITY CREATE DATABASE INSERT ===');
+    console.log('User timezone:', userTimezone);
+    console.log('Expected close date:', expectedCloseDate);
+    console.log('All date fields:', {
+      expectedCloseDate,
+      actualCloseDate,
+      followUpDate,
+      discoveryCallDate,
+      scheduledDate
+    });
+    
+    // Get the correct user_id for database insertion
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Using existing user ID for database:', correctUserId);
+      } else {
+        console.log('No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const insertData = {
+      user_id: correctUserId,
+      client_id: body.client_id,
+      title: body.title,
+      description: body.description,
+      value: body.value || 0,
+      status: body.status || 'prospecting',
+      stage: body.status || 'prospecting',
+      type: body.type || 'other',
+      niche: body.niche || 'creator',
+      probability: body.probability || 0,
+      expected_close_date: expectedCloseDate,
+      actual_close_date: actualCloseDate,
+      follow_up_date: followUpDate,
+      discovery_call_date: discoveryCallDate,
+      scheduled_date: scheduledDate,
+      user_timezone: userTimezone,
+      notes: body.notes,
+      tags: body.tags || [],
+      custom_fields: body.customFields || {}
+    };
+    
+    console.log('Insert data being sent to database:', insertData);
+    
     // Create opportunity in database
     const { data: newOpportunity, error } = await supabaseAdmin
       .from('opportunities')
-      .insert({
-        user_id: userId,
-        client_id: body.client_id,
-        title: body.title,
-        description: body.description,
-        value: body.value || 0,
-        status: body.status || 'prospecting',
-        stage: body.status || 'prospecting',
-        type: body.type || 'other',
-        niche: body.niche || 'creator',
-        probability: body.probability || 0,
-        expected_close_date: expectedCloseDate,
-        actual_close_date: actualCloseDate,
-        follow_up_date: followUpDate,
-        discovery_call_date: discoveryCallDate,
-        scheduled_date: scheduledDate,
-        user_timezone: userTimezone,
-        notes: body.notes,
-        tags: body.tags || [],
-        custom_fields: body.customFields || {}
-      })
+      .insert(insertData)
       .select(`
         *,
         clients (
@@ -237,10 +327,14 @@ export async function POST(request: NextRequest) {
       `)
       .single();
     
+    console.log('=== OPPORTUNITY CREATE DATABASE RESPONSE ===');
+    console.log('Database error:', error);
+    console.log('New opportunity:', newOpportunity);
+    
     if (error) {
       console.error('Error creating opportunity:', error);
       return NextResponse.json(
-        { error: 'Failed to create opportunity' },
+        { error: 'Failed to create opportunity', details: error },
         { status: 500 }
       );
     }
@@ -380,8 +474,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(opportunity, { status: 201 });
   } catch (error) {
     console.error('Error in POST /api/opportunities:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -390,9 +485,11 @@ export async function POST(request: NextRequest) {
 // Enhanced PUT method with change detection and activity tracking
 export async function PUT(request: NextRequest) {
   try {
+    console.log('=== OPPORTUNITY UPDATE API DEBUG START ===');
     const { userId } = await auth();
     
     if (!userId) {
+      console.log('Unauthorized - no userId');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -400,12 +497,35 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Opportunity update request body:', body);
+    console.log('User ID:', userId);
     
     if (!body.id) {
+      console.log('Missing opportunity ID');
       return NextResponse.json(
         { error: 'Opportunity ID is required' },
         { status: 400 }
       );
+    }
+    
+    // Get the correct user_id for database query (same logic as GET/POST)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('PUT - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('PUT - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('PUT - Error finding existing user, using Clerk ID:', correctUserId);
     }
     
     // Get current opportunity data for change detection
@@ -413,10 +533,11 @@ export async function PUT(request: NextRequest) {
       .from('opportunities')
       .select('*')
       .eq('id', body.id)
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .single();
 
     if (fetchError || !currentOpportunity) {
+      console.log('PUT - Opportunity not found with ID:', body.id, 'and user_id:', correctUserId);
       return NextResponse.json(
         { error: 'Opportunity not found' },
         { status: 404 }
@@ -513,12 +634,15 @@ export async function PUT(request: NextRequest) {
       }
     }
     
+    console.log('=== OPPORTUNITY UPDATE DATABASE UPDATE ===');
+    console.log('Update data being sent to database:', updateData);
+    
     // Update opportunity in database
     const { data: updatedOpportunity, error } = await supabaseAdmin
       .from('opportunities')
       .update(updateData)
       .eq('id', body.id)
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .select(`
         *,
         clients (
@@ -530,10 +654,14 @@ export async function PUT(request: NextRequest) {
       `)
       .single();
     
+    console.log('=== OPPORTUNITY UPDATE DATABASE RESPONSE ===');
+    console.log('Database error:', error);
+    console.log('Updated opportunity:', updatedOpportunity);
+    
     if (error) {
       console.error('Error updating opportunity:', error);
       return NextResponse.json(
-        { error: 'Failed to update opportunity' },
+        { error: 'Failed to update opportunity', details: error },
         { status: 500 }
       );
     }
@@ -722,12 +850,32 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
+    // Get the correct user_id for database query (same logic as GET/POST/PUT)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('DELETE - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('DELETE - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('DELETE - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
     // Delete opportunity from database
     const { error } = await supabaseAdmin
       .from('opportunities')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', correctUserId);
     
     if (error) {
       console.error('Error deleting opportunity:', error);

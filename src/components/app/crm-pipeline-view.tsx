@@ -79,8 +79,8 @@ function getNicheStages(niche?: string): PipelineStage[] {
         { id: 'contract', name: 'Contract Signed', color: STAGE_COLORS[4], opportunities: [], order: 5 },
         { id: 'progress', name: 'Content in Progress', color: '#06b6d4', opportunities: [], order: 6 },
         { id: 'delivered', name: 'Delivered', color: '#10b981', opportunities: [], order: 7 },
-        { id: 'paid', name: 'Paid', color: '#059669', opportunities: [], order: 8 },
-        { id: 'archived', name: 'Archived / Lost', color: '#6b7280', opportunities: [], order: 9 }
+        { id: 'paid', name: 'Paid/Won', color: '#059669', opportunities: [], order: 8 },
+        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 9 }
       ];
     case 'coach':
       return [
@@ -91,10 +91,8 @@ function getNicheStages(niche?: string): PipelineStage[] {
         { id: 'follow-up', name: 'Follow-Up', color: STAGE_COLORS[4], opportunities: [], order: 5 },
         { id: 'negotiation', name: 'Negotiation', color: '#06b6d4', opportunities: [], order: 6 },
         { id: 'signed', name: 'Signed Client', color: '#10b981', opportunities: [], order: 7 },
-        { id: 'paid', name: 'Paid', color: '#059669', opportunities: [], order: 8 },
-        { id: 'active', name: 'Active Program', color: '#06b6d4', opportunities: [], order: 9 },
-        { id: 'completed', name: 'Completed', color: '#7c3aed', opportunities: [], order: 10 },
-        { id: 'archived', name: 'Archived / Lost', color: '#6b7280', opportunities: [], order: 11 }
+        { id: 'paid', name: 'Paid/Won', color: '#059669', opportunities: [], order: 8 },
+        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 9 }
       ];
     case 'podcaster':
       return [
@@ -105,9 +103,8 @@ function getNicheStages(niche?: string): PipelineStage[] {
         { id: 'agreement', name: 'Agreement in Place', color: STAGE_COLORS[4], opportunities: [], order: 5 },
         { id: 'scheduled', name: 'Scheduled', color: '#06b6d4', opportunities: [], order: 6 },
         { id: 'recorded', name: 'Recorded', color: '#10b981', opportunities: [], order: 7 },
-        { id: 'published', name: 'Published', color: '#059669', opportunities: [], order: 8 },
-        { id: 'paid', name: 'Paid', color: '#7c3aed', opportunities: [], order: 9 },
-        { id: 'archived', name: 'Archived / Lost', color: '#6b7280', opportunities: [], order: 10 }
+        { id: 'paid', name: 'Paid/Won', color: '#7c3aed', opportunities: [], order: 8 },
+        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 9 }
       ];
     case 'freelancer':
       return [
@@ -119,8 +116,8 @@ function getNicheStages(niche?: string): PipelineStage[] {
         { id: 'contract', name: 'Contract Signed', color: '#06b6d4', opportunities: [], order: 6 },
         { id: 'progress', name: 'Project In Progress', color: '#10b981', opportunities: [], order: 7 },
         { id: 'delivered', name: 'Delivered', color: '#059669', opportunities: [], order: 8 },
-        { id: 'paid', name: 'Paid', color: '#7c3aed', opportunities: [], order: 9 },
-        { id: 'archived', name: 'Archived / Lost', color: '#6b7280', opportunities: [], order: 10 }
+        { id: 'paid', name: 'Paid/Won', color: '#7c3aed', opportunities: [], order: 9 },
+        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 10 }
       ];
     default: // fallback to creator
       return [
@@ -131,8 +128,8 @@ function getNicheStages(niche?: string): PipelineStage[] {
         { id: 'contract', name: 'Contract Signed', color: STAGE_COLORS[4], opportunities: [], order: 5 },
         { id: 'progress', name: 'Content in Progress', color: '#06b6d4', opportunities: [], order: 6 },
         { id: 'delivered', name: 'Delivered', color: '#10b981', opportunities: [], order: 7 },
-        { id: 'paid', name: 'Paid', color: '#059669', opportunities: [], order: 8 },
-        { id: 'archived', name: 'Archived / Lost', color: '#6b7280', opportunities: [], order: 9 }
+        { id: 'paid', name: 'Paid/Won', color: '#059669', opportunities: [], order: 8 },
+        { id: 'archived', name: 'Closed/Lost', color: '#6b7280', opportunities: [], order: 9 }
       ];
   }
 }
@@ -161,7 +158,7 @@ function mapDatabaseStatusToStageId(dbStatus: string, niche: string): string {
       'qualification': 'conversation',
       'proposal': 'agreement',
       'negotiation': 'negotiation',
-      'won': 'published',
+      'won': 'paid',
       'lost': 'archived'
     },
     freelancer: {
@@ -218,7 +215,7 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
 
   // Stages that should trigger client conversion notification
   // Note: 'completed' stage should keep opportunities in place for tracking
-  const clientConversionStages = ['published', 'paid', 'completed', 'active'];
+  const clientConversionStages = ['paid', 'active'];
 
   // Load opportunities from database when activeNiche changes
   useEffect(() => {
@@ -397,8 +394,8 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
   }, [stages]);
 
   const totalValue = useMemo(() => {
-    // Exclude opportunities in 'paid', 'completed', 'published', 'delivered', and 'archived' stages from potential value
-    const excludedStageIds = ['paid', 'completed', 'published', 'delivered', 'archived'];
+    // Exclude opportunities in 'paid', 'completed', 'delivered', and 'archived' stages from potential value
+    const excludedStageIds = ['paid', 'delivered', 'archived'];
     return stages.reduce((total, stage) => {
       if (excludedStageIds.includes(stage.id)) return total;
       return total + stage.opportunities.reduce((stageTotal, opp) => {
@@ -480,19 +477,28 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
         };
         
         // Update the opportunity in the database via API
+        const updateData = {
+          id: draggedItem.id,
+          status: mapStatusToDatabase(targetStageId, activeNiche),
+          niche: activeNiche,
+          notes: JSON.stringify(updatedMetadata)
+        };
+        
+        console.log('CRM Pipeline - Updating opportunity with data:', updateData);
+        
         const response = await fetch(`/api/opportunities`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            id: draggedItem.id,
-            status: mapStatusToDatabase(targetStageId, activeNiche),
-            notes: JSON.stringify(updatedMetadata)
-          }),
+          body: JSON.stringify(updateData),
         });
         
+        console.log('CRM Pipeline - Update response status:', response.status);
+        
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('CRM Pipeline - Update failed:', errorText);
           throw new Error('Failed to update opportunity status');
         }
 

@@ -744,14 +744,14 @@ export const BulletproofCreatorJournal: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm flex items-center justify-center z-50"
             onClick={() => setShowGoalModal(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
+              className="bg-white/90 backdrop-blur-md rounded-lg p-6 w-full max-w-md mx-4 shadow-xl border border-slate-200/50"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">

@@ -89,11 +89,12 @@ export async function POST(request: NextRequest) {
       description: body.description,
       stage: body.stage || 'planning',
       niche: body.niche || 'creator',
+      content_type: body.content_type,
       type: body.type || body.postType,
       platform: body.platform,
       brand: body.brand,
       creation_date: body.creationDate || new Date().toISOString(),
-      post_date: body.postDate || body.publishDate,
+      post_date: body.post_date || body.postDate || body.publishDate,
       hashtags: body.hashtags ? (Array.isArray(body.hashtags) ? body.hashtags : body.hashtags.split(',').map((tag: string) => tag.trim())) : [],
       hook: body.hook,
       notes: body.notes,
@@ -176,6 +177,166 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newContentItem, { status: 201 });
   } catch (error) {
     console.error('Error in content items POST:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/content-items
+export async function PUT(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    
+    if (!body.id) {
+      return NextResponse.json(
+        { error: 'Content item ID is required for update' },
+        { status: 400 }
+      );
+    }
+
+    console.log('=== BACKEND UPDATE API DEBUG ===');
+    console.log('User ID:', userId);
+    console.log('Request body:', body);
+    
+    // Prepare the update data (similar to POST but without user_id)
+    const updateData = {
+      title: body.title || 'Untitled Content',
+      description: body.description,
+      stage: body.stage || 'planning',
+      niche: body.niche || 'creator',
+      content_type: body.content_type,
+      type: body.type || body.postType,
+      platform: body.platform,
+      brand: body.brand,
+      creation_date: body.creation_date || body.creationDate || new Date().toISOString(),
+      post_date: body.post_date || body.postDate || body.publishDate,
+      hashtags: body.hashtags ? (Array.isArray(body.hashtags) ? body.hashtags : body.hashtags.split(',').map((tag: string) => tag.trim())) : [],
+      hook: body.hook,
+      notes: body.notes,
+      views: body.views || 0,
+      likes: body.likes || 0,
+      comments: body.comments || 0,
+      shares: body.shares || 0,
+      saves: body.saves || 0,
+      engagement_rate: body.engagementRate,
+      revenue: body.revenue || 0,
+      // Coach-specific fields
+      program_type: body.programType,
+      custom_program_type: body.customProgramType,
+      length: body.length || body.sessionCount,
+      price: body.price,
+      enrolled: body.enrolled || body.currentEnrollments,
+      milestones: body.milestones || body.progressMilestones,
+      start_date: body.start_date || body.startDate,
+      end_date: body.end_date || body.endDate,
+      enrollment_deadline: body.enrollmentDeadline,
+      client_progress: body.clientProgress,
+      hosting_platform: body.hostingPlatform,
+      // Podcast-specific fields
+      guest: body.guest,
+      sponsor: body.sponsor,
+      duration: body.duration,
+      custom_duration: body.customDuration,
+      topics: body.topics,
+      script: body.script,
+      // Freelancer-specific fields
+      client: body.client || body.clientName,
+      deadline: body.deadline || body.dueDate,
+      budget: body.budget,
+      deliverables: body.deliverables ? (Array.isArray(body.deliverables) ? body.deliverables : body.deliverables.split(',').map((item: string) => item.trim())) : []
+    };
+
+    // Remove undefined values to prevent database errors
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key as keyof typeof updateData] === undefined) {
+        delete updateData[key as keyof typeof updateData];
+      }
+    });
+
+    console.log('=== BACKEND UPDATE DATABASE UPDATE ===');
+    console.log('Update data:', updateData);
+    
+    const { data: updatedContentItem, error } = await supabaseAdmin
+      .from('content_items')
+      .update(updateData)
+      .eq('id', body.id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    console.log('=== BACKEND UPDATE DATABASE RESPONSE ===');
+    console.log('Database error:', error);
+    console.log('Updated content item:', updatedContentItem);
+
+    if (error) {
+      console.error('Error updating content item:', error);
+      return NextResponse.json(
+        { error: 'Failed to update content item', details: error },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(updatedContentItem);
+  } catch (error) {
+    console.error('Error in content items PUT:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/content-items/[id]
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Content item ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Delete the content item
+    const { error } = await supabaseAdmin
+      .from('content_items')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting content item:', error);
+      return NextResponse.json(
+        { error: 'Failed to delete content item' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error in content items DELETE:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

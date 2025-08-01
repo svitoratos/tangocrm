@@ -21,23 +21,45 @@ export class DateUtils {
    * Convert a date to ISO string with timezone handling
    */
   static toISOString(date: Date | null | undefined): string | null {
-    if (!date || !isValid(date)) return null;
-    return date.toISOString();
+    console.log('🔧 toISOString called with:', date);
+    
+    if (!date || !isValid(date)) {
+      console.log('🔧 Returning null - invalid or null date');
+      return null;
+    }
+    
+    const result = date.toISOString();
+    console.log('🔧 toISOString result:', result);
+    return result;
   }
 
   /**
    * Convert a date to user's timezone for display
    */
   static toUserTimezone(date: Date | string | null | undefined, userTimezone: string = 'America/New_York'): Date | null {
-    if (!date) return null;
+    console.log('🔧 toUserTimezone called with:', { date, userTimezone });
+    
+    if (!date) {
+      console.log('🔧 Returning null - no date provided');
+      return null;
+    }
     
     try {
       const dateObj = typeof date === 'string' ? parseISO(date) : date;
-      if (!isValid(dateObj)) return null;
+      console.log('🔧 Parsed dateObj:', dateObj);
+      
+      if (!isValid(dateObj)) {
+        console.log('🔧 Returning null - invalid dateObj');
+        return null;
+      }
       
       // Convert UTC to user's timezone
-      return toZonedTime(dateObj, userTimezone);
-    } catch {
+      const userDate = toZonedTime(dateObj, userTimezone);
+      console.log('🔧 User date result:', userDate);
+      
+      return userDate;
+    } catch (error) {
+      console.log('🔧 Error in toUserTimezone:', error);
       return null;
     }
   }
@@ -46,15 +68,29 @@ export class DateUtils {
    * Convert a date from user's timezone to UTC for storage
    */
   static fromUserTimezoneToUTC(date: Date | string | null | undefined, userTimezone: string = 'America/New_York'): Date | null {
-    if (!date) return null;
+    console.log('🔧 fromUserTimezoneToUTC called with:', { date, userTimezone });
+    
+    if (!date) {
+      console.log('🔧 Returning null - no date provided');
+      return null;
+    }
     
     try {
       const dateObj = typeof date === 'string' ? parseISO(date) : date;
-      if (!isValid(dateObj)) return null;
+      console.log('🔧 Parsed dateObj:', dateObj);
+      
+      if (!isValid(dateObj)) {
+        console.log('🔧 Returning null - invalid dateObj');
+        return null;
+      }
       
       // Convert from user's timezone to UTC
-      return fromZonedTime(dateObj, userTimezone);
-    } catch {
+      const utcDate = fromZonedTime(dateObj, userTimezone);
+      console.log('🔧 UTC date result:', utcDate);
+      
+      return utcDate;
+    } catch (error) {
+      console.log('🔧 Error in fromUserTimezoneToUTC:', error);
       return null;
     }
   }
@@ -93,16 +129,32 @@ export class DateUtils {
    * Format a date for input fields (YYYY-MM-DD) in user's timezone
    */
   static formatForInput(date: Date | string | null | undefined, userTimezone: string = 'America/New_York'): string {
-    if (!date) return '';
+    console.log('🔧 formatForInput called with:', { date, userTimezone });
+    
+    if (!date) {
+      console.log('🔧 Returning empty string - no date provided');
+      return '';
+    }
     
     try {
       const dateObj = typeof date === 'string' ? parseISO(date) : date;
-      if (!isValid(dateObj)) return '';
+      console.log('🔧 Parsed dateObj:', dateObj);
+      
+      if (!isValid(dateObj)) {
+        console.log('🔧 Returning empty string - invalid dateObj');
+        return '';
+      }
       
       // Convert to user's timezone for input
       const userDate = this.toUserTimezone(dateObj, userTimezone);
-      return userDate ? format(userDate, 'yyyy-MM-dd') : '';
-    } catch {
+      console.log('🔧 User date:', userDate);
+      
+      const result = userDate ? format(userDate, 'yyyy-MM-dd') : '';
+      console.log('🔧 Formatted result:', result);
+      
+      return result;
+    } catch (error) {
+      console.log('🔧 Error in formatForInput:', error);
       return '';
     }
   }
@@ -181,17 +233,41 @@ export class DateUtils {
    * Combine date and time strings into a Date object in user's timezone
    */
   static combineDateAndTime(dateString: string, timeString: string, userTimezone: string = 'America/New_York'): Date | null {
-    if (!dateString || !timeString) return null;
+    console.log('🔧 DateUtils.combineDateAndTime called with:', { dateString, timeString, userTimezone });
+    
+    if (!dateString || !timeString) {
+      console.log('🔧 Returning null - missing date or time string');
+      return null;
+    }
     
     try {
+      // Create a date string in the user's timezone
       const combined = `${dateString}T${timeString}`;
-      const localDate = new Date(combined);
+      console.log('🔧 Combined string:', combined);
       
-      if (!isValid(localDate)) return null;
+      // Create a date object for the specific date to get the correct timezone offset
+      const targetDate = new Date(combined);
+      console.log('🔧 Target date created:', targetDate);
       
-      // Convert from user's timezone to UTC for storage
-      return this.fromUserTimezoneToUTC(localDate, userTimezone);
-    } catch {
+      if (!isValid(targetDate)) {
+        console.log('🔧 Returning null - invalid target date');
+        return null;
+      }
+      
+      // Get the timezone offset for the specific date in the user's timezone
+      const userOffset = formatInTimeZone(targetDate, userTimezone, 'xxx');
+      console.log('🔧 User timezone offset for target date:', userOffset);
+      
+      // Create the date in the user's timezone by appending the timezone offset
+      const userDateString = `${combined}${userOffset}`;
+      console.log('🔧 User date string with offset:', userDateString);
+      
+      const utcDate = new Date(userDateString);
+      console.log('🔧 UTC date result:', utcDate);
+      
+      return utcDate;
+    } catch (error) {
+      console.log('🔧 Error in combineDateAndTime:', error);
       return null;
     }
   }
@@ -322,8 +398,11 @@ export class DateUtils {
    */
   static getUserTimezone(): string {
     try {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
-    } catch {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
+      console.log('🔧 getUserTimezone returning:', timezone);
+      return timezone;
+    } catch (error) {
+      console.log('🔧 Error getting timezone, defaulting to America/New_York:', error);
       return 'America/New_York';
     }
   }

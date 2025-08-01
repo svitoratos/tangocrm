@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,10 +15,12 @@ interface EventCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (eventData: any) => void;
+  onDelete?: (eventId: string) => void;
   activeNiche?: string;
   isLoading?: boolean;
   selectedEvent?: any;
   selectedDate?: Date;
+  onDateChange?: (date: Date) => void;
 }
 
 interface EventFormData {
@@ -41,10 +43,12 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   activeNiche = 'creator',
   isLoading = false,
   selectedEvent = null,
-  selectedDate = null
+  selectedDate = null,
+  onDateChange
 }) => {
   const formatTimeToQuarterHour = (date: Date) => {
     const hours = date.getHours();
@@ -68,9 +72,9 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
-    startDate: DateUtils.formatForInput(selectedDate || new Date(), DateUtils.getUserTimezone()),
-    startTime: formatTimeToQuarterHour(selectedDate || new Date()),
-    endTime: formatTimeToQuarterHour(new Date(Date.now() + 60 * 60 * 1000)),
+    startDate: '',
+    startTime: '',
+    endTime: '',
     allDay: false,
     duration: '60',
     type: 'meeting',
@@ -83,16 +87,25 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newTag, setNewTag] = useState('');
+  const formInitializedRef = useRef(false);
 
   // Reset form when modal opens or when selectedEvent changes
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !formInitializedRef.current) {
+      console.log('=== MODAL FORM SETUP DEBUG ===');
+      console.log('selectedEvent:', selectedEvent);
+      console.log('selectedDate:', selectedDate);
+      console.log('isEditing:', selectedEvent && selectedEvent.type === 'calendar');
+      
       if (selectedEvent && selectedEvent.type === 'calendar') {
         // Populate form with existing event data for editing
         const startDate = new Date(selectedEvent.start);
         const endDate = new Date(selectedEvent.end);
         
-        setFormData({
+        console.log('Editing - startDate from event:', startDate);
+        console.log('Editing - endDate from event:', endDate);
+        
+        const formDataForEdit = {
           title: selectedEvent.title || '',
           description: selectedEvent.description || '',
           startDate: DateUtils.formatForInput(startDate, DateUtils.getUserTimezone()),
@@ -106,15 +119,26 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
           clientName: selectedEvent.clientName || '',
           notes: selectedEvent.notes || '',
           tags: selectedEvent.tags || []
-        });
+        };
+        
+        console.log('Editing - formData:', formDataForEdit);
+        setFormData(formDataForEdit);
       } else {
         // Reset form for new event
-        setFormData({
+        const defaultDate = selectedDate || new Date();
+        console.log('Creating - defaultDate:', defaultDate);
+        console.log('Creating - selectedDate:', selectedDate);
+        console.log('Creating - selectedDate type:', typeof selectedDate);
+        console.log('Creating - selectedDate value:', selectedDate);
+        console.log('Creating - defaultDate.toISOString():', defaultDate.toISOString());
+        console.log('Creating - DateUtils.formatForInput result:', DateUtils.formatForInput(defaultDate, DateUtils.getUserTimezone()));
+        
+        const formDataForCreate = {
           title: '',
           description: '',
-          startDate: DateUtils.formatForInput(selectedDate || new Date(), DateUtils.getUserTimezone()),
-          startTime: formatTimeToQuarterHour(selectedDate || new Date()),
-          endTime: formatTimeToQuarterHour(new Date(Date.now() + 60 * 60 * 1000)),
+          startDate: DateUtils.formatForInput(defaultDate, DateUtils.getUserTimezone()),
+          startTime: formatTimeToQuarterHour(defaultDate),
+          endTime: formatTimeToQuarterHour(new Date(defaultDate.getTime() + 60 * 60 * 1000)),
           allDay: false,
           duration: '60',
           type: 'meeting',
@@ -123,15 +147,46 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
           clientName: '',
           notes: '',
           tags: []
-        });
+        };
+        
+        console.log('Creating - formData:', formDataForCreate);
+        setFormData(formDataForCreate);
       }
       setErrors({});
       setNewTag('');
+      formInitializedRef.current = true;
     }
-  }, [isOpen, selectedEvent]);
+  }, [isOpen, selectedEvent, selectedDate]);
+  
+  // Reset the initialization flag when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      formInitializedRef.current = false;
+    }
+  }, [isOpen]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    console.log('🔄 handleInputChange called:', { field, value });
+    console.log('📊 Current formData before update:', formData);
+    
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      console.log('📊 Updated formData:', updated);
+      return updated;
+    });
+    
+    // If date is changed, update parent state
+    if (field === 'startDate' && onDateChange) {
+      console.log('📅 Date changed, updating parent state:', value);
+      try {
+        const newDate = new Date(value);
+        if (!isNaN(newDate.getTime())) {
+          onDateChange(newDate);
+        }
+      } catch (error) {
+        console.error('Error parsing date:', error);
+      }
+    }
     
     // Clear error for this field
     if (errors[field]) {
@@ -188,8 +243,23 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
       return;
     }
 
+    console.log('=== HANDLE SAVE DEBUG ===');
+    console.log('formData:', formData);
+    console.log('formData.startDate:', formData.startDate);
+    console.log('formData.startTime:', formData.startTime);
+    console.log('formData.endTime:', formData.endTime);
+    console.log('Type of formData.startDate:', typeof formData.startDate);
+    console.log('Type of formData.startTime:', typeof formData.startTime);
+
     // Combine date and time for start
+    console.log('🔧 Combining date and time:');
+    console.log('  - formData.startDate:', formData.startDate);
+    console.log('  - formData.startTime:', formData.startTime);
+    console.log('  - User timezone:', DateUtils.getUserTimezone());
+    
     const startDateTime = DateUtils.combineDateAndTime(formData.startDate, formData.startTime, DateUtils.getUserTimezone());
+
+    console.log('🔧 Result startDateTime:', startDateTime);
 
     if (!startDateTime) {
       setErrors({ general: 'Invalid date/time combination' });
@@ -212,6 +282,8 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
       endDateTime = endTimeDateTime;
     }
 
+    console.log('endDateTime:', endDateTime);
+
     const eventData = {
       title: formData.title,
       description: formData.description,
@@ -228,6 +300,8 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
     };
 
     console.log('Event data being passed to onSave:', eventData);
+    console.log('🔧 Final start_date being saved:', eventData.start_date);
+    console.log('🔧 Final end_date being saved:', eventData.end_date);
     onSave(eventData);
   };
 
@@ -400,12 +474,20 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
               <Input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) => handleInputChange('startDate', e.target.value)}
+                onChange={(e) => {
+                  console.log('📅 Date picker changed:', e.target.value);
+                  console.log('📅 Current formData.startDate:', formData.startDate);
+                  handleInputChange('startDate', e.target.value);
+                }}
                 className={`w-40 ${errors.startDate ? 'border-red-500' : ''}`}
               />
               {!formData.allDay && (
                 <>
-                  <Select value={formData.startTime} onValueChange={(value) => handleInputChange('startTime', value)}>
+                  <Select value={formData.startTime} onValueChange={(value) => {
+                    console.log('⏰ Start time picker changed:', value);
+                    console.log('⏰ Current formData.startTime:', formData.startTime);
+                    handleInputChange('startTime', value);
+                  }}>
                     <SelectTrigger className={`w-32 ${errors.startTime ? 'border-red-500' : ''}`}>
                       <SelectValue placeholder={formatTimeForDisplay(formData.startTime)} />
                     </SelectTrigger>
@@ -426,7 +508,11 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
                     </SelectContent>
                   </Select>
                   <span className="text-gray-500">-</span>
-                  <Select value={formData.endTime} onValueChange={(value) => handleInputChange('endTime', value)}>
+                  <Select value={formData.endTime} onValueChange={(value) => {
+                    console.log('⏰ End time picker changed:', value);
+                    console.log('⏰ Current formData.endTime:', formData.endTime);
+                    handleInputChange('endTime', value);
+                  }}>
                     <SelectTrigger className={`w-32 ${errors.endTime ? 'border-red-500' : ''}`}>
                       <SelectValue placeholder={formatTimeForDisplay(formData.endTime)} />
                     </SelectTrigger>
@@ -576,15 +662,34 @@ export const EventCreationModal: React.FC<EventCreationModalProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading 
-              ? (selectedEvent && selectedEvent.type === 'calendar' ? 'Updating...' : 'Creating...') 
-              : (selectedEvent && selectedEvent.type === 'calendar' ? 'Update Event' : 'Create Event')
-            }
-          </Button>
+          <div className="flex justify-between w-full">
+            <div>
+              {selectedEvent && selectedEvent.type === 'calendar' && onDelete && (
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    if (confirm('Tango CRM says: Are you sure you want to delete this event? This action cannot be undone.')) {
+                      onDelete(selectedEvent.id.replace('event-', ''));
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  Delete Event
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={isLoading}>
+                {isLoading 
+                  ? (selectedEvent && selectedEvent.type === 'calendar' ? 'Updating...' : 'Creating...') 
+                  : (selectedEvent && selectedEvent.type === 'calendar' ? 'Update Event' : 'Create Event')
+                }
+              </Button>
+            </div>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

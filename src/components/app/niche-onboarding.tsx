@@ -59,7 +59,7 @@ const NICHE_OPTIONS: NicheOption[] = [
     icon: <Video className="w-8 h-8" />,
     color: "from-purple-500 to-pink-500",
     examples: ["YouTube channels", "TikTok growth", "Brand partnerships", "Course sales"],
-    defaultStages: ["Outreach / Pitched", "Awaiting Response", "In Conversation", "Negotiation", "Contract Signed", "Content in Progress", "Delivered", "Paid", "Archived / Lost"]
+    defaultStages: ["Outreach / Pitched", "Awaiting Response", "In Conversation", "Negotiation", "Contract Signed", "Content in Progress", "Delivered", "Paid/Won", "Closed/Lost"]
   },
   {
     id: "coach",
@@ -68,7 +68,7 @@ const NICHE_OPTIONS: NicheOption[] = [
     icon: <GraduationCap className="w-8 h-8" />,
     color: "from-emerald-500 to-teal-500",
     examples: ["1:1 coaching", "Group programs", "Masterminds", "Speaking engagements"],
-    defaultStages: ["New Lead", "Discovery Call Scheduled", "Discovery Call Completed", "Proposal Sent", "Follow-Up", "Negotiation", "Signed Client", "Paid", "Active Program", "Completed", "Archived / Lost"]
+    defaultStages: ["New Lead", "Discovery Call Scheduled", "Discovery Call Completed", "Proposal Sent", "Follow-Up", "Negotiation", "Signed Client", "Paid/Won", "Closed/Lost"]
   },
   {
     id: "podcaster",
@@ -77,7 +77,7 @@ const NICHE_OPTIONS: NicheOption[] = [
     icon: <Mic className="w-8 h-8" />,
     color: "from-orange-500 to-red-500",
     examples: ["Sponsorship deals", "Premium content", "Live events", "Merchandise"],
-            defaultStages: ["Guest Outreach", "Awaiting Response", "In Conversation", "Negotiation", "Agreement in Place", "Scheduled", "Recorded", "Published", "Paid", "Archived / Lost"]
+            defaultStages: ["Guest Outreach", "Awaiting Response", "In Conversation", "Negotiation", "Agreement in Place", "Scheduled", "Recorded", "Paid/Won", "Closed/Lost"]
   },
   {
     id: "freelancer",
@@ -86,7 +86,7 @@ const NICHE_OPTIONS: NicheOption[] = [
     icon: <Briefcase className="w-8 h-8" />,
     color: "from-blue-500 to-indigo-500",
     examples: ["Client acquisition", "Project management", "Retainer clients", "Agency growth"],
-    defaultStages: ["New Inquiry", "Discovery Call", "Proposal Sent", "Follow-Up", "In Negotiation", "Contract Signed", "Project In Progress", "Delivered", "Paid", "Archived / Lost"]
+    defaultStages: ["New Inquiry", "Discovery Call", "Proposal Sent", "Follow-Up", "In Negotiation", "Contract Signed", "Project In Progress", "Delivered", "Paid/Won", "Closed/Lost"]
   }
 ]
 

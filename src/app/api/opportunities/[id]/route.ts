@@ -35,12 +35,29 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     
-    const updatedOpportunity = {
-      id,
-      ...body,
-      updated_at: new Date().toISOString()
-    };
+    // Forward the request to the main opportunities route
+    // This ensures consistent handling of opportunity updates
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/opportunities`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': request.headers.get('Authorization') || '',
+      },
+      body: JSON.stringify({
+        ...body,
+        id: id
+      })
+    });
     
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return NextResponse.json(
+        { error: 'Failed to update opportunity', details: errorData },
+        { status: response.status }
+      );
+    }
+    
+    const updatedOpportunity = await response.json();
     return NextResponse.json(updatedOpportunity);
   } catch (error) {
     console.error('Error updating opportunity:', error);

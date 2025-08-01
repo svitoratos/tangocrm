@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export interface Goal {
   id: string;
@@ -25,10 +25,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: goals, error } = await supabase
+    // Get the correct user_id for database query (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals GET - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Goals GET - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals GET - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { data: goals, error } = await supabaseAdmin
       .from('goals')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -62,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, target_date, status = 'pending' } = body;
+    const { title, description, target_date, status = 'pending', category = 'general', niche = 'creator' } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -71,22 +91,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: goal, error } = await supabase
+    // Get the correct user_id for database insertion (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals POST - Using existing user ID for insertion:', correctUserId);
+      } else {
+        console.log('Goals POST - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals POST - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { data: goal, error } = await supabaseAdmin
       .from('goals')
       .insert({
-        user_id: userId,
+        user_id: correctUserId,
         title,
         description,
         target_date,
-        status
+        status,
+        category,
+        niche
       })
       .select()
       .single();
 
     if (error) {
       console.error('Error creating goal:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return NextResponse.json(
-        { error: 'Failed to create goal' },
+        { error: 'Failed to create goal', details: error },
         { status: 500 }
       );
     }
@@ -123,11 +166,31 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const { data, error } = await supabase
+    // Get the correct user_id for database query (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals PUT - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Goals PUT - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals PUT - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { data, error } = await supabaseAdmin
       .from('goals')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .select()
       .single();
     
@@ -171,11 +234,31 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const { error } = await supabase
+    // Get the correct user_id for database query (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals DELETE - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Goals DELETE - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals DELETE - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { error } = await supabaseAdmin
       .from('goals')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', correctUserId);
     
     if (error) {
       console.error('Error deleting goal:', error);

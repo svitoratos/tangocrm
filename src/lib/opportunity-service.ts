@@ -256,10 +256,9 @@ export function mapStatusToDatabase(status: string, niche?: string): 'prospectin
     'qualified': 'qualification',
     'proposal_sent': 'proposal',
     'negotiating': 'negotiation',
-    'published': 'won',
-    'paid': 'won',
-    'completed': 'won',
-    'active': 'won',
+          'paid': 'won',
+      'completed': 'won',
+      'active': 'won',
     'declined': 'lost',
     'expired': 'lost'
   };
@@ -303,7 +302,6 @@ export function mapStatusToDatabase(status: string, niche?: string): 'prospectin
       'agreement': 'proposal',
       'scheduled': 'proposal',
       'recorded': 'won',
-      'published': 'won',
       'paid': 'won',
       'archived': 'lost'
     },

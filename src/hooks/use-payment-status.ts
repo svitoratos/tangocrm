@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useUser } from '@clerk/nextjs'
 
 interface PaymentStatus {
@@ -11,22 +11,55 @@ interface PaymentStatus {
   stripeCustomerId: string | null
 }
 
+// Cache for payment status to avoid unnecessary API calls
+let paymentStatusCache: {
+  data: PaymentStatus | null
+  timestamp: number
+  userId: string | null
+} = {
+  data: null,
+  timestamp: 0,
+  userId: null
+}
+
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
 export const usePaymentStatus = () => {
   const { user, isLoaded } = useUser()
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false) // Start as false to avoid loading UI
   const [error, setError] = useState<string | null>(null)
+  const lastCheckRef = useRef<number>(0)
+  const isInitialLoadRef = useRef(true)
 
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!isLoaded || !user) {
-        setIsLoading(false)
         return
       }
 
-      try {
+      const now = Date.now()
+      const userId = user.id
+      
+      // Check if we have valid cached data for this user
+      if (
+        paymentStatusCache.data &&
+        paymentStatusCache.userId === userId &&
+        (now - paymentStatusCache.timestamp) < CACHE_DURATION &&
+        (now - lastCheckRef.current) > 1000 // Prevent multiple calls within 1 second
+      ) {
+        setPaymentStatus(paymentStatusCache.data)
+        return
+      }
+
+      // Only show loading on initial load, not background refreshes
+      if (isInitialLoadRef.current) {
         setIsLoading(true)
+      }
+      
+      try {
         setError(null)
+        lastCheckRef.current = now
 
         // Add cache-busting parameter to ensure fresh data
         const cacheBuster = Date.now();
@@ -37,26 +70,42 @@ export const usePaymentStatus = () => {
         }
 
         const data = await response.json()
-        console.log('🔧 Initial payment status loaded:', data);
+        
+        // Update cache
+        paymentStatusCache = {
+          data,
+          timestamp: now,
+          userId
+        }
+        
         setPaymentStatus(data)
       } catch (err) {
-        console.error('Error checking payment status:', err)
+        // Silently handle errors without showing to user
         setError(err instanceof Error ? err.message : 'Failed to check payment status')
       } finally {
         setIsLoading(false)
+        isInitialLoadRef.current = false
       }
     }
 
     checkPaymentStatus()
   }, [isLoaded, user])
 
-  const refreshPaymentStatus = async () => {
+  const refreshPaymentStatus = async (showLoading = false) => {
     if (!user) return
 
     try {
-      console.log('🔄 Refreshing payment status...');
-      setIsLoading(true)
+      if (showLoading) {
+        setIsLoading(true)
+      }
       setError(null)
+
+      // Clear cache to force fresh data
+      paymentStatusCache = {
+        data: null,
+        timestamp: 0,
+        userId: null
+      }
 
       // Add cache-busting parameter to ensure fresh data
       const cacheBuster = Date.now();
@@ -67,13 +116,46 @@ export const usePaymentStatus = () => {
       }
 
       const data = await response.json()
-      console.log('✅ Payment status refreshed:', data);
+      
+      // Update cache with fresh data
+      paymentStatusCache = {
+        data,
+        timestamp: Date.now(),
+        userId: user.id
+      }
+      
       setPaymentStatus(data)
     } catch (err) {
-      console.error('❌ Error refreshing payment status:', err)
+      // Silently handle errors without showing to user
       setError(err instanceof Error ? err.message : 'Failed to refresh payment status')
     } finally {
-      setIsLoading(false)
+      if (showLoading) {
+        setIsLoading(false)
+      }
+    }
+  }
+
+  const clearCache = () => {
+    paymentStatusCache = {
+      data: null,
+      timestamp: 0,
+      userId: null
+    }
+  }
+
+  const silentRefresh = async () => {
+    if (!user) return
+    
+    const now = Date.now()
+    const userId = user.id
+    
+    // Only refresh if cache is expired
+    if (
+      !paymentStatusCache.data ||
+      paymentStatusCache.userId !== userId ||
+      (now - paymentStatusCache.timestamp) >= CACHE_DURATION
+    ) {
+      await refreshPaymentStatus(false) // false = no loading state
     }
   }
 
@@ -82,6 +164,8 @@ export const usePaymentStatus = () => {
     isLoading,
     error,
     refreshPaymentStatus,
+    clearCache,
+    silentRefresh,
     // Convenience getters
     hasCompletedOnboarding: paymentStatus?.hasCompletedOnboarding ?? false,
     hasActiveSubscription: paymentStatus?.hasActiveSubscription ?? false,

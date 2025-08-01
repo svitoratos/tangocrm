@@ -5,12 +5,14 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSa
 import { Opportunity } from "@/lib/opportunity-service";
 import { EventCreationModal } from "./event-creation-modal";
 import { DateUtils } from "@/lib/date-utils";
+import { useEventRefresh } from "@/contexts/EventRefreshContext";
 import { formatInUserZone } from "@/lib/timezone-utils";
 import { useUser } from "@clerk/nextjs";
 
 // Simple Calendar Component
 export const CalendarComponent = ({ activeNiche = "creator" }) => {
   const { user } = useUser();
+  const { triggerRefresh } = useEventRefresh();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState("month");
   const [events, setEvents] = useState<any[]>([]);
@@ -42,78 +44,147 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
   }, [user]);
 
   // Load events from opportunities and calendar events
-  useEffect(() => {
-    const loadEvents = async () => {
-      console.log('loadEvents called for niche:', activeNiche);
-      try {
-        setLoading(true);
-        
-        // Load opportunities
-        const opportunitiesResponse = await fetch(`/api/opportunities?niche=${activeNiche}`);
-        if (!opportunitiesResponse.ok) {
-          throw new Error('Failed to fetch opportunities');
-        }
-        const opportunities = await opportunitiesResponse.json();
-        const opportunityEvents = opportunities
-          .filter((opp: any) => opp.expected_close_date)
-          .map((opp: any) => {
-            // Convert the stored date to user timezone for display
-            const storedDate = new Date(opp.expected_close_date!);
-            const userTimezone = DateUtils.getUserTimezone();
-            const displayDate = DateUtils.toUserTimezone(storedDate, userTimezone) || storedDate;
-            
-            return {
-              id: `opp-${opp.id}`,
-              title: opp.title,
-              start: displayDate,
-              end: displayDate,
-              color: getStatusColor(opp.status),
-              type: 'opportunity',
-              value: opp.value,
-              status: opp.status
-            };
-          });
-
-        // Load calendar events
-        const calendarResponse = await fetch(`/api/calendar-events?niche=${activeNiche}`);
-        let calendarEvents: any[] = [];
-        
-        if (calendarResponse.ok) {
-          const calendarData = await calendarResponse.json();
-          console.log('Calendar data from API:', calendarData);
-          calendarEvents = calendarData.map((event: any) => {
-            // Convert the stored dates to user timezone for display
-            const storedStartDate = new Date(event.start_time);
-            const storedEndDate = new Date(event.end_time);
-            const userTimezone = DateUtils.getUserTimezone();
-            const displayStartDate = DateUtils.toUserTimezone(storedStartDate, userTimezone) || storedStartDate;
-            const displayEndDate = DateUtils.toUserTimezone(storedEndDate, userTimezone) || storedEndDate;
-            
-            return {
-              id: `event-${event.id}`,
-              title: event.title,
-              start: displayStartDate,
-              end: displayEndDate,
-              color: getEventColor(event.color),
-              type: 'calendar',
-              description: event.description,
-              eventType: event.type
-            };
-          });
-        }
-        
-        // Combine all events
-        const allEvents = [...opportunityEvents, ...calendarEvents];
-        console.log('All events for calendar:', allEvents);
-        setEvents(allEvents);
-      } catch (error) {
-        console.error('Error loading calendar events:', error);
-        setEvents([]);
-      } finally {
-        setLoading(false);
+  const loadEvents = async () => {
+    console.log('loadEvents called for niche:', activeNiche);
+    try {
+      setLoading(true);
+      
+      // Load opportunities
+      const opportunitiesResponse = await fetch(`/api/opportunities?niche=${activeNiche}`);
+      if (!opportunitiesResponse.ok) {
+        throw new Error('Failed to fetch opportunities');
       }
-    };
-    
+      const opportunities = await opportunitiesResponse.json();
+      const opportunityEvents = opportunities
+        .filter((opp: any) => opp.expected_close_date)
+        .map((opp: any) => {
+          // Convert the stored date to user timezone for display
+          const storedDate = new Date(opp.expected_close_date!);
+          const userTimezone = DateUtils.getUserTimezone();
+          const displayDate = DateUtils.toUserTimezone(storedDate, userTimezone) || storedDate;
+          
+          return {
+            id: `opp-${opp.id}`,
+            title: opp.title,
+            start: displayDate,
+            end: displayDate,
+            color: getStatusColor(opp.status),
+            type: 'opportunity',
+            value: opp.value,
+            status: opp.status
+          };
+        });
+
+      // Load calendar events from calendar_events table
+      const calendarResponse = await fetch('/api/calendar-events');
+      let calendarEvents: any[] = [];
+      
+      if (calendarResponse.ok) {
+        const calendarData = await calendarResponse.json();
+        console.log('Calendar data from API:', calendarData);
+        
+        calendarEvents = calendarData.map((event: any) => {
+          // Convert the stored dates to user timezone for display
+          const storedStartDate = new Date(event.start_time);
+          const storedEndDate = new Date(event.end_time);
+          const userTimezone = event.user_timezone || DateUtils.getUserTimezone();
+          const displayStartDate = DateUtils.toUserTimezone(storedStartDate, userTimezone) || storedStartDate;
+          const displayEndDate = DateUtils.toUserTimezone(storedEndDate, userTimezone) || storedEndDate;
+          
+          return {
+            id: `event-${event.id}`,
+            title: event.title,
+            start: displayStartDate,
+            end: displayEndDate,
+            color: 'bg-blue-500', // Default color for calendar events
+            type: 'calendar',
+            description: event.description,
+            eventType: 'meeting' // Default event type
+          };
+        });
+      }
+      
+      // Combine all events
+      const allEvents = [...opportunityEvents, ...calendarEvents];
+      console.log('All events for calendar:', allEvents);
+      setEvents(allEvents);
+    } catch (error) {
+      console.error('Error loading calendar events:', error);
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadEventsWithoutSpinner = async () => {
+    console.log('loadEventsWithoutSpinner called for niche:', activeNiche);
+    try {
+      // Load opportunities
+      const opportunitiesResponse = await fetch(`/api/opportunities?niche=${activeNiche}`);
+      if (!opportunitiesResponse.ok) {
+        throw new Error('Failed to fetch opportunities');
+      }
+      const opportunities = await opportunitiesResponse.json();
+      const opportunityEvents = opportunities
+        .filter((opp: any) => opp.expected_close_date)
+        .map((opp: any) => {
+          // Convert the stored date to user timezone for display
+          const storedDate = new Date(opp.expected_close_date!);
+          const userTimezone = DateUtils.getUserTimezone();
+          const displayDate = DateUtils.toUserTimezone(storedDate, userTimezone) || storedDate;
+          
+          return {
+            id: `opp-${opp.id}`,
+            title: opp.title,
+            start: displayDate,
+            end: displayDate,
+            color: getStatusColor(opp.status),
+            type: 'opportunity',
+            value: opp.value,
+            status: opp.status
+          };
+        });
+
+      // Load calendar events from calendar_events table
+      const calendarResponse = await fetch('/api/calendar-events');
+      let calendarEvents: any[] = [];
+      
+      if (calendarResponse.ok) {
+        const calendarData = await calendarResponse.json();
+        console.log('Calendar data from API:', calendarData);
+        
+        calendarEvents = calendarData.map((event: any) => {
+          // Convert the stored dates to user timezone for display
+          const storedStartDate = new Date(event.start_time);
+          const storedEndDate = new Date(event.end_time);
+          const userTimezone = event.user_timezone || DateUtils.getUserTimezone();
+          const displayStartDate = DateUtils.toUserTimezone(storedStartDate, userTimezone) || storedStartDate;
+          const displayEndDate = DateUtils.toUserTimezone(storedEndDate, userTimezone) || storedEndDate;
+          
+          return {
+            id: `event-${event.id}`,
+            title: event.title,
+            start: displayStartDate,
+            end: displayEndDate,
+            color: 'bg-blue-500', // Default color for calendar events
+            type: 'calendar',
+            description: event.description,
+            eventType: event.event_type || 'meeting'
+          };
+        });
+      }
+      
+      // Combine all events
+      const allEvents = [...opportunityEvents, ...calendarEvents];
+      console.log('All events for calendar:', allEvents);
+      setEvents(allEvents);
+    } catch (error) {
+      console.error('Error loading calendar events:', error);
+      setEvents([]);
+    }
+  };
+
+  useEffect(() => {
     loadEvents();
   }, [activeNiche]);
 
@@ -191,19 +262,19 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
       console.log('New date calculated:', newDate);
 
       if (draggedEvent.type === 'calendar') {
-        // Update calendar event
+        // Update calendar event using content-items API
         const eventId = draggedEvent.id.replace('event-', '');
         console.log('Updating calendar event with ID:', eventId);
         
-        const response = await fetch(`/api/calendar-events`, {
+        const response = await fetch(`/api/content-items`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             id: eventId,
-            start_time: DateUtils.toISOString(newDate),
-            end_time: DateUtils.toISOString(new Date(newDate.getTime() + (draggedEvent.end.getTime() - draggedEvent.start.getTime()))),
+            creation_date: DateUtils.toISOString(newDate),
+            post_date: DateUtils.toISOString(newDate),
           }),
         });
 
@@ -233,16 +304,23 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
         const opportunityId = draggedEvent.id.replace('opp-', '');
         console.log('Updating opportunity with ID:', opportunityId);
         
-        const response = await fetch(`/api/opportunities/${opportunityId}`, {
+        const requestBody = {
+          id: opportunityId,
+          expected_close_date: DateUtils.toISOString(newDate),
+        };
+        
+        console.log('Updating opportunity with request body:', requestBody);
+        
+        const response = await fetch(`/api/opportunities`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            expected_close_date: DateUtils.toISOString(newDate),
-          }),
+          body: JSON.stringify(requestBody),
         });
 
+        console.log('Opportunity update response status:', response.status);
+        
         if (!response.ok) {
           const errorText = await response.text();
           console.error('API Error:', errorText);
@@ -268,24 +346,51 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
     }
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      // Delete from content_items table since that's where we're storing calendar events
+      const response = await fetch(`/api/content-items?id=${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      // Remove the event from the local state
+      setEvents(prevEvents => prevEvents.filter(event => event.id !== `event-${eventId}`));
+      
+      // Trigger refresh for other components (like dashboard)
+      console.log('📅 Calendar: Event deleted, triggering refresh for other components');
+      triggerRefresh();
+      
+      setIsEventModalOpen(false);
+      setSelectedDate(null);
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Failed to delete event. Please try again.');
+    }
+  };
+
   const handleCreateEvent = async (eventData: any) => {
     try {
       const isEditing = selectedEvent && selectedEvent.type === 'calendar';
-      const method = isEditing ? 'PUT' : 'POST';
-      const url = '/api/calendar-events';
       
+      // Use the calendar-events API for proper calendar event handling
       const requestBody: any = {
         title: eventData.title,
-        description: eventData.description,
-        start_time: eventData.start_date || DateUtils.toISOString(eventData.startDate),
-        end_time: eventData.end_date || DateUtils.toISOString(eventData.endDate),
-        type: eventData.type,
-        color: eventData.color,
-        status: eventData.status || 'scheduled',
-        niche: activeNiche,
-        location: eventData.location,
-        notes: eventData.notes,
-        tags: eventData.tags || [],
+        description: eventData.description || '',
+        start_time: eventData.start_date,
+        end_time: eventData.end_date,
+        type: eventData.type || 'meeting',
+        status: 'scheduled',
+        location: eventData.location || '',
+        client_id: eventData.client_id || null,
+        opportunity_id: eventData.opportunity_id || null
       };
 
       // Add event ID for updates
@@ -293,8 +398,8 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
         requestBody.id = selectedEvent.id.replace('event-', '');
       }
 
-      const response = await fetch(url, {
-        method,
+      const response = await fetch('/api/calendar-events', {
+        method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -302,44 +407,26 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Event creation failed:', response.status, errorData);
         throw new Error(isEditing ? 'Failed to update event' : 'Failed to create event');
       }
 
       const savedEvent = await response.json();
-      console.log('Saved event from API:', savedEvent);
+      console.log('📅 Calendar: Saved event from API:', savedEvent);
+      console.log('📅 Calendar: About to reload events...');
       
-      // Update the events list
-      const userTimezone = DateUtils.getUserTimezone();
-      const updatedEvent = {
-        id: `event-${savedEvent.id}`,
-        title: savedEvent.title,
-        start: DateUtils.toUserTimezone(new Date(savedEvent.start_time), userTimezone) || new Date(savedEvent.start_time),
-        end: DateUtils.toUserTimezone(new Date(savedEvent.end_time), userTimezone) || new Date(savedEvent.end_time),
-        color: getEventColor(savedEvent.color),
-        type: 'calendar',
-        description: savedEvent.description,
-        eventType: savedEvent.type
-      };
-      
-      console.log('Updated event for display:', updatedEvent);
+      // Reload all events to ensure we have the latest data (without showing spinner)
+      await loadEventsWithoutSpinner();
+      console.log('📅 Calendar: Events reloaded successfully');
 
-      if (isEditing) {
-        // Update existing event
-        setEvents(prevEvents => {
-          const updated = prevEvents.map(event => 
-            event.id === selectedEvent.id ? updatedEvent : event
-          );
-          console.log('Updated events after editing:', updated);
-          return updated;
-        });
-      } else {
-        // Add new event
-        setEvents(prevEvents => {
-          const updated = [...prevEvents, updatedEvent];
-          console.log('Updated events after adding:', updated);
-          return updated;
-        });
-      }
+      // Trigger refresh for other components (like dashboard)
+      console.log('📅 Calendar: Triggering refresh for other components');
+      triggerRefresh();
+
+      setIsEventModalOpen(false);
+      setSelectedDate(null);
+      setSelectedEvent(null);
 
       setIsEventModalOpen(false);
       setSelectedDate(null);
@@ -351,6 +438,8 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
   };
 
   const handleDateClick = (date: Date) => {
+    console.log('📅 Calendar: Date clicked:', date);
+    console.log('📅 Calendar: Setting selectedDate to:', date);
     setSelectedDate(date);
     
     // Navigate to the month of the selected date if it's different from current month
@@ -413,7 +502,12 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
           💡 Drag events to reschedule
         </div>
         <button
-          onClick={() => setIsEventModalOpen(true)}
+          onClick={() => {
+            console.log('📅 Calendar: Add Event button clicked, setting selectedDate to current date');
+            setSelectedDate(new Date()); // Set to current date/time
+            setSelectedEvent(null);
+            setIsEventModalOpen(true);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           Add Event
@@ -734,6 +828,7 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
           setSelectedEvent(null);
         }}
         onSave={handleCreateEvent}
+        onDelete={handleDeleteEvent}
         activeNiche={activeNiche}
         selectedEvent={selectedEvent}
         selectedDate={selectedDate || undefined}

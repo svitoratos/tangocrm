@@ -25,7 +25,6 @@ export async function GET(request: NextRequest) {
     
     // If email is not in sessionClaims, try to get it from the database
     if (!userEmail) {
-      console.log('🔧 Email not in sessionClaims, trying to get from database...');
       const { data: userByEmail, error: emailError } = await supabase
         .from('users')
         .select('email')
@@ -34,13 +33,9 @@ export async function GET(request: NextRequest) {
       
       if (userByEmail && !emailError) {
         userEmail = userByEmail.email;
-        console.log('🔧 Found email in database:', userEmail);
       } else {
-        console.log('🔧 Could not find email in database for userId:', userId, emailError);
-        
         // Try to find any user with the email we know
         const knownEmail = 'stevenvitoratos@getbondlyapp.com';
-        console.log('🔧 Trying to find user with known email:', knownEmail);
         const { data: userWithKnownEmail, error: knownEmailError } = await supabase
           .from('users')
           .select('*')
@@ -48,24 +43,18 @@ export async function GET(request: NextRequest) {
           .single();
         
         if (userWithKnownEmail && !knownEmailError) {
-          console.log('🔧 Found user with known email:', userWithKnownEmail.id);
           userEmail = knownEmail;
-        } else {
-          console.log('🔧 Could not find user with known email either:', knownEmailError);
         }
       }
     }
     
     const isAdmin = isAdminEmail(userEmail)
-    
-    console.log('🔧 Payment status check for:', userEmail, 'isAdmin:', isAdmin)
 
     // Get user profile from database
     let user = await userOperations.getProfile(userId)
     
     // If user not found by ID, try to find by email (for cases where user exists with different ID)
     if (!user && userEmail) {
-      console.log('🔧 User not found by ID, trying to find by email:', userEmail);
       const { data: userByEmail, error: emailError } = await supabase
         .from('users')
         .select('*')
@@ -73,7 +62,6 @@ export async function GET(request: NextRequest) {
         .single();
       
       if (userByEmail && !emailError) {
-        console.log('🔧 Found user by email:', userByEmail);
         user = userByEmail;
       }
     }
@@ -88,20 +76,13 @@ export async function GET(request: NextRequest) {
         primaryNiche: isAdmin ? 'creator' : null,
         niches: isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : [] // Admins get all niches
       }
-      console.log('🔧 No user profile found, returning:', response)
       return NextResponse.json(response)
     }
 
     // Check if user has completed onboarding
     const hasCompletedOnboarding = isAdmin ? true : (user.onboarding_completed === true)
     
-    console.log('🔧 Onboarding status check:', {
-      userId,
-      isAdmin,
-      onboarding_completed: user.onboarding_completed,
-      hasCompletedOnboarding,
-      userProfile: user
-    })
+
     
     // Check if user has active subscription (admins bypass this)
     // Include 'trialing' as an active status since Stripe uses this for free trials
@@ -116,8 +97,6 @@ export async function GET(request: NextRequest) {
     // Fallback: If user has completed onboarding but no active subscription and has a Stripe customer ID,
     // check Stripe directly to see if there's a subscription
     if (hasCompletedOnboarding && !hasActiveSubscription && user.stripe_customer_id && !isAdmin) {
-      console.log('🔧 Fallback: Checking Stripe directly for customer:', user.stripe_customer_id);
-      
       try {
         // Get customer's subscriptions from Stripe
         const subscriptions = await stripe.subscriptions.list({
@@ -128,7 +107,6 @@ export async function GET(request: NextRequest) {
         
         if (subscriptions.data.length > 0) {
           const subscription = subscriptions.data[0];
-          console.log('🔧 Found subscription in Stripe:', subscription.status);
           
           // Update database with correct subscription status
           await userOperations.updateProfile(userId, {
@@ -141,13 +119,8 @@ export async function GET(request: NextRequest) {
           hasActiveSubscription = subscription.status === 'active' || 
                                  subscription.status === 'trialing' || 
                                  subscription.status === 'past_due';
-          
-          console.log('✅ Updated database with correct subscription status:', subscription.status);
-        } else {
-          console.log('🔧 No active subscriptions found in Stripe for customer:', user.stripe_customer_id);
         }
       } catch (stripeError) {
-        console.error('❌ Error checking Stripe subscriptions:', stripeError);
         // Continue with database values if Stripe check fails
       }
     }
@@ -165,10 +138,8 @@ export async function GET(request: NextRequest) {
       stripeCustomerId: user.stripe_customer_id
     }
     
-    console.log('🔧 User profile found, returning:', response)
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Error checking payment status:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

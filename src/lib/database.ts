@@ -15,8 +15,6 @@ export type Deal = Opportunity
 // User operations
 export const userOperations = {
   async getProfile(userId: string): Promise<User | null> {
-    console.log('🔧 getProfile called for userId:', userId);
-    
     try {
       // First try to get user by ID
       const { data, error } = await supabase
@@ -26,25 +24,19 @@ export const userOperations = {
         .single()
       
       if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-        console.error('❌ Error fetching user profile:', error);
         return null;
       }
       
       if (data) {
-        console.log('✅ getProfile successful by ID:', data);
         return data;
       }
       
       // If not found by ID, try to get by email (for cases where user exists with different ID)
-      console.log('🔧 User not found by ID, checking if we can find by email...');
-      
       // We need to get the email from the current user context
       // For now, we'll return null and let the calling function handle this
-      console.log('🔧 User not found by ID, returning null');
       return null;
       
     } catch (err) {
-      console.error('❌ Exception in getProfile:', err);
       return null;
     }
   },

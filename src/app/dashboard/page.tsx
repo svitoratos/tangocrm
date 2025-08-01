@@ -23,6 +23,7 @@ import { motion } from "framer-motion";
 import { NicheProvider } from "@/contexts/NicheContext";
 import { TimezoneProvider } from "@/contexts/TimezoneContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
+import { EventRefreshProvider } from "@/contexts/EventRefreshContext";
 import { PaymentVerification } from "@/components/app/payment-verification";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
 
@@ -223,7 +224,7 @@ function MainDashboardWithSearchParams() {
   const { user } = useUser();
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
-  const [selectedNiche, setSelectedNiche] = useState("creator");
+  const [selectedNiche, setSelectedNiche] = useState<string>("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Default to expanded on desktop
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -254,6 +255,11 @@ function MainDashboardWithSearchParams() {
     }
   }, [searchParams, subscribedNiches]);
 
+  // Set mounted state and handle localStorage
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Check if user has completed onboarding and set initial niche
   useEffect(() => {
     checkOnboardingStatus();
@@ -261,13 +267,41 @@ function MainDashboardWithSearchParams() {
 
   // Set initial niche based on user's subscriptions
   useEffect(() => {
-    if (!paymentStatusLoading && availableNiches.length > 0) {
-      // If current selected niche is not in available niches, switch to primary niche
-      if (!availableNiches.includes(selectedNiche)) {
-        setSelectedNiche(primaryNiche || availableNiches[0]);
+    if (mounted && !paymentStatusLoading && availableNiches.length > 0) {
+      const localStorageNiche = localStorage.getItem('selectedNiche');
+      
+      // Only set niche if no niche is selected at all
+      if (!selectedNiche) {
+        // Always prioritize localStorage over primaryNiche
+        const preferredNiche = localStorageNiche && availableNiches.includes(localStorageNiche) 
+          ? localStorageNiche 
+          : (primaryNiche || availableNiches[0]);
+        
+        setSelectedNiche(preferredNiche);
+      } else {
+        // If a niche is already selected, only change it if it's not available
+        if (!availableNiches.includes(selectedNiche)) {
+          const fallbackNiche = localStorageNiche && availableNiches.includes(localStorageNiche)
+            ? localStorageNiche
+            : (primaryNiche || availableNiches[0]);
+          
+          setSelectedNiche(fallbackNiche);
+        }
       }
     }
-  }, [availableNiches, selectedNiche, primaryNiche, paymentStatusLoading]);
+  }, [mounted, availableNiches, primaryNiche, paymentStatusLoading, selectedNiche]);
+
+  // Ensure localStorage priority is maintained
+  useEffect(() => {
+    if (mounted && selectedNiche) {
+      const localStorageNiche = localStorage.getItem('selectedNiche');
+      if (localStorageNiche && localStorageNiche !== selectedNiche && availableNiches.includes(localStorageNiche)) {
+        setSelectedNiche(localStorageNiche);
+      }
+    }
+  }, [mounted, selectedNiche, availableNiches]);
+
+
 
   // Auto-fix subscription status for users with niches but inactive subscription
   useEffect(() => {
@@ -280,8 +314,6 @@ function MainDashboardWithSearchParams() {
           
           // If user has niches but inactive subscription, they likely made a payment
           if (!paymentStatus.hasActiveSubscription && paymentStatus.subscriptionStatus === 'inactive' && subscribedNiches.length > 0) {
-            console.log('🔧 Auto-fixing subscription status for user with niches...');
-            
             try {
               const updateResponse = await fetch('/api/user/subscription-status', {
                 method: 'POST',
@@ -295,14 +327,11 @@ function MainDashboardWithSearchParams() {
               });
               
               if (updateResponse.ok) {
-                console.log('✅ Auto-fixed subscription status to active');
                 // Refresh payment status to get updated data
                 refreshPaymentStatus();
-              } else {
-                console.error('❌ Failed to auto-fix subscription status');
               }
             } catch (error) {
-              console.error('❌ Error auto-fixing subscription status:', error);
+              // Silently handle errors
             }
           }
         }
@@ -318,30 +347,22 @@ function MainDashboardWithSearchParams() {
     const upgradedNiche = searchParams.get('niche');
     
     if (upgradeStatus === 'success') {
-      console.log('🎉 Upgrade successful detected!');
-      
       // Force immediate refresh of payment status
-      console.log('🔄 Forcing immediate payment status refresh...');
       refreshPaymentStatus();
       
       // Also refresh after a short delay to ensure database updates are propagated
       setTimeout(() => {
-        console.log('🔄 Delayed payment status refresh...');
         refreshPaymentStatus();
       }, 2000);
       
       // And refresh again after a longer delay
       setTimeout(() => {
-        console.log('🔄 Final payment status refresh...');
         refreshPaymentStatus();
       }, 5000);
       
       // If we have a specific upgraded niche, switch to it
       if (upgradedNiche) {
-        console.log(`🎯 Switching to upgraded niche: ${upgradedNiche}`);
         setSelectedNiche(upgradedNiche);
-      } else {
-        console.log('📋 Upgrade successful - refreshing available niches');
       }
       
       // Clear the URL parameters
@@ -357,7 +378,6 @@ function MainDashboardWithSearchParams() {
     const interval = setInterval(() => {
       // Only refresh if we're not already loading and user is active
       if (!paymentStatusLoading && document.visibilityState === 'visible') {
-        console.log('🔧 Periodic payment status refresh...');
         refreshPaymentStatus();
       }
     }, 30000); // Refresh every 30 seconds
@@ -465,6 +485,11 @@ function MainDashboardWithSearchParams() {
     }
     
     setSelectedNiche(niche);
+    
+    // Save the selected niche to localStorage
+    if (mounted) {
+      localStorage.setItem('selectedNiche', niche);
+    }
     
     // Auto-switch to analytics dashboard for coach niche
     if (niche === 'coach' && activeSection === 'dashboard') {
@@ -658,7 +683,9 @@ export default function ProtectedDashboard() {
           <NicheProvider>
             <TimezoneProvider>
               <AnalyticsProvider>
-                <MainDashboard />
+                <EventRefreshProvider>
+                  <MainDashboard />
+                </EventRefreshProvider>
               </AnalyticsProvider>
             </TimezoneProvider>
           </NicheProvider>

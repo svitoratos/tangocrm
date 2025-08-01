@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { DateUtils } from '@/lib/date-utils';
 
 export interface CalendarEvent {
@@ -10,16 +11,13 @@ export interface CalendarEvent {
   description?: string;
   start_time: string;
   end_time: string;
-  type: 'meeting' | 'content_creation' | 'deadline' | 'reminder' | 'other';
-  color?: string;
+  event_type: 'meeting' | 'content_creation' | 'deadline' | 'reminder' | 'other';
   status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
-  niche: string;
   client_id?: string;
-  deal_id?: string;
+  opportunity_id?: string;
   location?: string;
-  meeting_url?: string;
-  notes?: string;
-  tags?: string[];
+  all_day?: boolean;
+  user_timezone?: string;
   created_at: string;
   updated_at: string;
 }
@@ -140,25 +138,60 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Get user's timezone and correct user ID for proper date handling
+    let userTimezone = 'UTC';
+    let correctUserId = userId;
+    try {
+      const { data: userData } = await supabaseAdmin
+        .from('users')
+        .select('timezone, id')
+        .eq('id', userId)
+        .single();
+
+      if (userData?.timezone) {
+        userTimezone = userData.timezone;
+      }
+      if (userData?.id) {
+        correctUserId = userData.id;
+      }
+    } catch (error) {
+      console.log('Could not find user by Clerk ID, trying to find by email...');
+      // Try to find user by email as fallback
+      try {
+        const { data: userData } = await supabaseAdmin
+          .from('users')
+          .select('timezone, id')
+          .eq('email', 'stevenvitoratos@getbondlyapp.com')
+          .single();
+
+        if (userData?.timezone) {
+          userTimezone = userData.timezone;
+        }
+        if (userData?.id) {
+          correctUserId = userData.id;
+        }
+      } catch (emailError) {
+        console.log('Could not find user by email either, using default timezone UTC and original user ID');
+        // Continue with default timezone and original user ID
+      }
+    }
+
     // Create event in database
     const { data: newEvent, error } = await supabase
       .from('calendar_events')
       .insert({
-        user_id: userId,
+        user_id: correctUserId,
         title: body.title,
         description: body.description,
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),
-        type: body.type || 'meeting',
-        color: body.color || 'blue',
+        event_type: body.type || 'meeting', // Changed from 'type' to 'event_type'
         status: body.status || 'scheduled',
-        niche: body.niche || 'creator',
         client_id: body.client_id,
-        deal_id: body.deal_id,
+        opportunity_id: body.deal_id, // Changed from 'deal_id' to 'opportunity_id'
         location: body.location,
-        meeting_url: body.meeting_url,
-        notes: body.notes,
-        tags: body.tags || []
+        user_timezone: userTimezone
+        // Removed: color, niche, notes, tags, meeting_url (not in schema)
       })
       .select()
       .single();
@@ -166,7 +199,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating calendar event:', error);
       return NextResponse.json(
-        { error: 'Failed to create calendar event' },
+        { error: 'Failed to create calendar event', details: error.message },
         { status: 500 }
       );
     }
@@ -174,8 +207,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newEvent, { status: 201 });
   } catch (error) {
     console.error('Error creating calendar event:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to create calendar event' },
+      { error: 'Failed to create calendar event', details: errorMessage },
       { status: 500 }
     );
   }
@@ -241,6 +275,53 @@ export async function PUT(request: NextRequest) {
     console.error('Error updating calendar event:', error);
     return NextResponse.json(
       { error: 'Failed to update calendar event' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/calendar-events
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { id } = body;
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Calendar event ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    // Delete event from database
+    const { error } = await supabase
+      .from('calendar_events')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error deleting calendar event:', error);
+      return NextResponse.json(
+        { error: 'Failed to delete calendar event' },
+        { status: 500 }
+      );
+    }
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting calendar event:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete calendar event' },
       { status: 500 }
     );
   }

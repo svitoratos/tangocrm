@@ -106,6 +106,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useNiche } from '@/contexts/NicheContext';
 import { createClient, updateClient, deleteClient, Client } from '@/lib/client-service';
 
+
+
 // Enhanced Metric Card with Glassmorphism
 const MetricCard: React.FC<{
   title: string;
@@ -123,9 +125,6 @@ const MetricCard: React.FC<{
   showRevenueTypeFilter?: boolean;
   revenueType?: 'gross' | 'net';
   onRevenueTypeChange?: (type: 'gross' | 'net') => void;
-  showGrowthTypeFilter?: boolean;
-  growthType?: 'revenue' | 'client';
-  onGrowthTypeChange?: (type: 'revenue' | 'client') => void;
 }> = ({ 
   title, 
   value, 
@@ -141,13 +140,27 @@ const MetricCard: React.FC<{
   onPeriodChange,
   showRevenueTypeFilter = false,
   revenueType = 'net',
-  onRevenueTypeChange,
-  showGrowthTypeFilter = false,
-  growthType = 'revenue',
-  onGrowthTypeChange
+  onRevenueTypeChange
 }) => {
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  
+  // Function to get display text for period
+  const getPeriodDisplayText = (periodValue: string) => {
+    switch (periodValue) {
+      case 'this-month':
+        return 'This Month';
+      case 'this-quarter':
+        return 'This Quarter';
+      case 'ytd':
+        return 'YTD';
+      case 'custom':
+        return 'Custom';
+      default:
+        return 'This Quarter';
+    }
+  };
+  
   const colorClasses = {
     emerald: 'from-emerald-500 to-emerald-600',
     orange: 'from-orange-500 to-orange-600',
@@ -202,7 +215,7 @@ const MetricCard: React.FC<{
             <div className="mt-auto pt-2">
               <Select value={period} onValueChange={onPeriodChange}>
                 <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
-                  <SelectValue />
+                  <SelectValue placeholder={getPeriodDisplayText(period)} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="this-month">This Month</SelectItem>
@@ -275,21 +288,6 @@ const MetricCard: React.FC<{
                 <SelectContent>
                   <SelectItem value="gross">Gross Revenue</SelectItem>
                   <SelectItem value="net">Net Revenue</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          {/* Growth Type Filter Dropdown */}
-          {showGrowthTypeFilter && onGrowthTypeChange && (
-            <div className="mt-auto pt-2">
-              <Select value={growthType} onValueChange={onGrowthTypeChange}>
-                <SelectTrigger className="h-8 text-xs bg-white/80 border-gray-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="revenue">Revenue Growth</SelectItem>
-                  <SelectItem value="client">Client Growth</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -557,7 +555,10 @@ const RevenueChart: React.FC<{ data: any[] }> = ({ data }) => {
             })()}
           </div>
           <div className="text-sm text-emerald-500">
-            This {timeframe === 'monthly' ? 'month' : 'quarter'}
+            {timeframe === 'monthly' ? 'This month' : 
+             timeframe === 'quarterly' ? 'This quarter' : 
+             timeframe === 'ytd' ? 'YTD' : 
+             'Custom'}
           </div>
         </div>
       </div>
@@ -763,10 +764,8 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
           { id: 'follow-up', name: 'Follow-Up', color: '#ef4444' },
           { id: 'negotiation', name: 'Negotiation', color: '#06b6d4' },
           { id: 'signed', name: 'Signed Client', color: '#10b981' },
-          { id: 'paid', name: 'Paid', color: '#059669' },
-          { id: 'active', name: 'Active Program', color: '#06b6d4' },
-          { id: 'completed', name: 'Completed', color: '#7c3aed' },
-          { id: 'archived', name: 'Archived / Lost', color: '#6b7280' }
+          { id: 'paid', name: 'Paid/Won', color: '#059669' },
+          { id: 'archived', name: 'Closed/Lost', color: '#6b7280' }
         ];
       case 'podcaster':
         return [
@@ -777,9 +776,8 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
           { id: 'agreement', name: 'Agreement in Place', color: '#ef4444' },
           { id: 'scheduled', name: 'Scheduled', color: '#06b6d4' },
           { id: 'recorded', name: 'Recorded', color: '#10b981' },
-          { id: 'published', name: 'Published', color: '#059669' },
-          { id: 'paid', name: 'Paid', color: '#7c3aed' },
-          { id: 'archived', name: 'Archived / Lost', color: '#6b7280' }
+          { id: 'paid', name: 'Paid/Won', color: '#7c3aed' },
+          { id: 'archived', name: 'Closed/Lost', color: '#6b7280' }
         ];
       case 'freelancer':
         return [
@@ -791,10 +789,10 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
           { id: 'contract', name: 'Contract Signed', color: '#06b6d4' },
           { id: 'progress', name: 'Project In Progress', color: '#10b981' },
           { id: 'delivered', name: 'Delivered', color: '#059669' },
-          { id: 'paid', name: 'Paid', color: '#7c3aed' },
-          { id: 'archived', name: 'Archived / Lost', color: '#6b7280' }
+          { id: 'paid', name: 'Paid/Won', color: '#7c3aed' },
+          { id: 'archived', name: 'Closed/Lost', color: '#6b7280' }
         ];
-      default:
+              default:
         return [
           { id: 'outreach', name: 'Outreach / Pitched', color: '#10b981' },
           { id: 'awaiting', name: 'Awaiting Response', color: '#f97316' },
@@ -803,8 +801,8 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
           { id: 'contract', name: 'Contract Signed', color: '#ef4444' },
           { id: 'progress', name: 'Content in Progress', color: '#06b6d4' },
           { id: 'delivered', name: 'Delivered', color: '#10b981' },
-          { id: 'paid', name: 'Paid', color: '#059669' },
-          { id: 'archived', name: 'Archived / Lost', color: '#6b7280' }
+          { id: 'paid', name: 'Paid/Won', color: '#059669' },
+          { id: 'archived', name: 'Closed/Lost', color: '#6b7280' }
         ];
     }
   };
@@ -835,7 +833,7 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
         'qualification': 'conversation',
         'proposal': 'agreement',
         'negotiation': 'negotiation',
-        'won': 'published',
+        'won': 'paid',
         'lost': 'archived'
       },
       freelancer: {
@@ -904,8 +902,6 @@ const GrowthRateChart: React.FC<{ data: any; activeNiche?: string }> = ({ data, 
       'Proposal Sent': FileText, // Same as Contract Signed
       'Follow-Up': Activity, // Same as Negotiation
       'Signed Client': CheckCircle, // Same as Delivered
-      'Active Program': Activity, // Same as Content in Progress
-      'Completed': CheckCircle, // Same as Paid
       
       // Podcaster niche - use same icons as creator for equivalent stages
       'Guest Outreach': Target, // Same as Outreach
@@ -1537,11 +1533,13 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [freelancerClientsPeriod, setFreelancerClientsPeriod] = useState('this-quarter');
   const [freelancerRevenuePeriod, setFreelancerRevenuePeriod] = useState('this-quarter');
 
+
+
   // Real-time analytics data
   const { data: analyticsData, loading: analyticsLoading, error: analyticsError, refresh: refreshAnalytics } = useAnalytics({
     niche: activeNiche || 'creator',
-    autoRefresh: true,
-    refreshInterval: 30000 // Refresh every 30 seconds
+    autoRefresh: false, // Disabled auto-refresh to prevent continuous page refreshes
+    refreshInterval: 30000
   });
 
   // Track last refresh time
@@ -1623,10 +1621,15 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
   const [revenueByMonth, setRevenueByMonth] = useState<{ month: string; value: number }[]>([]);
   const [opportunitiesForCharts, setOpportunitiesForCharts] = useState<any[]>([]);
 
-  // Trigger refresh when component mounts or niche changes
+  // Trigger refresh when component mounts or niche changes (with debounce)
   useEffect(() => {
     if (refreshAnalytics) {
-      refreshAnalytics();
+      // Add a small delay to prevent rapid refreshes when niche changes
+      const timeoutId = setTimeout(() => {
+        refreshAnalytics();
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [activeNiche, refreshAnalytics]);
 
@@ -1865,10 +1868,14 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   };
 
-  // Load episodes when podcaster niche is active
+  // Load episodes when podcaster niche is active (with debounce)
   useEffect(() => {
     if (activeNiche === 'podcaster') {
-      loadEpisodes();
+      const timeoutId = setTimeout(() => {
+        loadEpisodes();
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [activeNiche]);
 
@@ -1924,10 +1931,14 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
     }
   };
 
-  // Load programs when coach niche is active or when programs section is active
+  // Load programs when coach niche is active or when programs section is active (with debounce)
   useEffect(() => {
     if (activeNiche === 'coach' && (activeSection === 'programs' || activeSection === 'overview')) {
-      loadPrograms();
+      const timeoutId = setTimeout(() => {
+        loadPrograms();
+      }, 200);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [activeNiche, activeSection]);
 
@@ -1948,7 +1959,11 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
       }
     };
 
-    loadBrands();
+    const timeoutId = setTimeout(() => {
+      loadBrands();
+    }, 200);
+    
+    return () => clearTimeout(timeoutId);
   }, [activeNiche, activeSection]);
 
   // Filter contacts based on search query and status filter
@@ -2423,9 +2438,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
-                      showPeriodFilter={true}
-                      period={revenueGrowthPeriod}
-                      onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
                     />
                   </>
                 ) : activeNiche === 'coach' ? (
@@ -2507,9 +2519,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="emerald"
                       gradient="bg-gradient-to-br from-emerald-50 to-emerald-100"
-                      showPeriodFilter={true}
-                      period={revenueGrowthPeriod}
-                      onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
                       showRevenueTypeFilter={true}
                       revenueType={revenueDisplayType}
                       onRevenueTypeChange={setRevenueDisplayType}
@@ -2544,12 +2553,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="emerald"
                       gradient="bg-gradient-to-br from-emerald-50 to-emerald-100"
-                      showPeriodFilter={true}
-                      period={freelancerRevenuePeriod}
-                      onPeriodChange={(period) => setFreelancerRevenuePeriod(period)}
-                      showRevenueTypeFilter={true}
-                      revenueType={revenueDisplayType}
-                      onRevenueTypeChange={setRevenueDisplayType}
                     />
                     <MetricCard
                       title="Rev Growth Rate"
@@ -2559,9 +2562,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                       trend="up"
                       color="cyan"
                       gradient="bg-gradient-to-br from-cyan-50 to-cyan-100"
-                      showPeriodFilter={true}
-                      period={revenueGrowthPeriod}
-                      onPeriodChange={(period) => setRevenueGrowthPeriod(period)}
                     />
                   </>
                 ) : (

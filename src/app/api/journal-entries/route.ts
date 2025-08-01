@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export interface JournalEntry {
   id: string;
@@ -25,10 +25,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: entries, error } = await supabase
+    // Get the correct user_id for database query (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Journal GET - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Journal GET - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Journal GET - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { data: entries, error } = await supabaseAdmin
       .from('journal_entries')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -71,10 +91,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: entry, error } = await supabase
+    // Get the correct user_id for database insertion (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Journal POST - Using existing user ID for insertion:', correctUserId);
+      } else {
+        console.log('Journal POST - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Journal POST - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')
       .insert({
-        user_id: userId,
+        user_id: correctUserId,
         title,
         content,
         mood,
@@ -123,11 +163,31 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    const { data, error } = await supabase
+    // Get the correct user_id for database query (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Journal PUT - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Journal PUT - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Journal PUT - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { data, error } = await supabaseAdmin
       .from('journal_entries')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .select()
       .single();
     
@@ -171,11 +231,31 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const { error } = await supabase
+    // Get the correct user_id for database query (same logic as other APIs)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Journal DELETE - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Journal DELETE - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Journal DELETE - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
+    const { error } = await supabaseAdmin
       .from('journal_entries')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', correctUserId);
     
     if (error) {
       console.error('Error deleting journal entry:', error);

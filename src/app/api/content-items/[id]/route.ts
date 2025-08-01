@@ -53,8 +53,10 @@ export async function PUT(
   try {
     console.log('=== BACKEND API DEBUG START ===');
     const { userId } = await auth();
+    console.log('User ID from auth:', userId);
     
     if (!userId) {
+      console.log('No user ID found, returning 401');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -63,6 +65,9 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
+    
+    console.log('Content item ID to update:', id);
+    console.log('Request body:', body);
     
     console.log('=== BACKEND RECEIVED DATA ===');
     console.log('User ID:', userId);
@@ -95,7 +100,7 @@ export async function PUT(
       platform: body.platform,
       brand: body.brand,
       creation_date: body.creationDate,
-      post_date: body.postDate || body.publishDate,
+      post_date: body.post_date || body.postDate || body.publishDate,
       hashtags: body.hashtags ? (Array.isArray(body.hashtags) ? body.hashtags : body.hashtags.split(',').map((tag: string) => tag.trim())) : [],
       hook: body.hook,
       notes: body.notes,
@@ -152,6 +157,41 @@ export async function PUT(
     console.log('updateData.deadline:', updateData.deadline);
     console.log('updateData.enrollment_deadline:', updateData.enrollment_deadline);
     
+    // First, let's check if the content item exists and belongs to the user
+    console.log('=== BACKEND CHECKING EXISTING ITEM ===');
+    const { data: existingItem, error: fetchError } = await supabaseAdmin
+      .from('content_items')
+      .select('id, user_id, title')
+      .eq('id', id)
+      .single();
+
+    console.log('Existing item check:', { existingItem, fetchError });
+
+    if (fetchError) {
+      console.error('Error fetching content item for update:', fetchError);
+      return NextResponse.json(
+        { error: 'Content item not found' },
+        { status: 404 }
+      );
+    }
+
+    if (!existingItem) {
+      console.log('Content item not found');
+      return NextResponse.json(
+        { error: 'Content item not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingItem.user_id !== userId) {
+      console.log('User ID mismatch:', { itemUserId: existingItem.user_id, currentUserId: userId });
+      return NextResponse.json(
+        { error: 'Unauthorized - content item does not belong to user' },
+        { status: 403 }
+      );
+    }
+
+    console.log('=== BACKEND PERFORMING UPDATE ===');
     const { data: updatedContentItem, error } = await supabaseAdmin
       .from('content_items')
       .update(updateData)
@@ -190,9 +230,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    console.log('=== CONTENT ITEMS DELETE DEBUG ===');
     const { userId } = await auth();
+    console.log('User ID from auth:', userId);
     
     if (!userId) {
+      console.log('No user ID found, returning 401');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -200,6 +243,42 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    console.log('Content item ID to delete:', id);
+
+    // First, let's check if the content item exists and belongs to the user
+    const { data: existingItem, error: fetchError } = await supabaseAdmin
+      .from('content_items')
+      .select('id, user_id, title')
+      .eq('id', id)
+      .single();
+
+    console.log('Existing item check:', { existingItem, fetchError });
+
+    if (fetchError) {
+      console.error('Error fetching content item for deletion:', fetchError);
+      return NextResponse.json(
+        { error: 'Content item not found' },
+        { status: 404 }
+      );
+    }
+
+    if (!existingItem) {
+      console.log('Content item not found');
+      return NextResponse.json(
+        { error: 'Content item not found' },
+        { status: 404 }
+      );
+    }
+
+    if (existingItem.user_id !== userId) {
+      console.log('User ID mismatch:', { itemUserId: existingItem.user_id, currentUserId: userId });
+      return NextResponse.json(
+        { error: 'Unauthorized - content item does not belong to user' },
+        { status: 403 }
+      );
+    }
+
+    console.log('Attempting to delete content item:', id);
 
     const { error } = await supabaseAdmin
       .from('content_items')
@@ -207,19 +286,22 @@ export async function DELETE(
       .eq('id', id)
       .eq('user_id', userId);
 
+    console.log('Delete operation result:', { error });
+
     if (error) {
       console.error('Error deleting content item:', error);
       return NextResponse.json(
-        { error: 'Failed to delete content item' },
+        { error: 'Failed to delete content item', details: error.message },
         { status: 500 }
       );
     }
 
+    console.log('Content item deleted successfully');
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in content items DELETE:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
