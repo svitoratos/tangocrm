@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    const { data: user } = await supabase
+    const { data: dbUser } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .single();
 
-    if (!user || user.email !== 'stevenvitoratos@getbondlyapp.com') {
+    if (!dbUser || dbUser.email !== 'stevenvitoratos@getbondlyapp.com') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
