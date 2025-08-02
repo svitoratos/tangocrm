@@ -1,7 +1,5 @@
 "use client";
 
-import { Metadata } from 'next'
-import { generateMetadata } from '@/lib/metadata'
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,21 +17,6 @@ import { useNotifications } from '@/hooks/use-notifications';
 import { BillingManagement } from '@/components/app/billing-management';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useUser } from '@clerk/nextjs';
-
-export const metadata: Metadata = generateMetadata({
-  title: 'Settings - Tango CRM Account Configuration',
-  description: 'Configure your Tango CRM account settings, profile, notifications, billing, and timezone preferences. Customize your creator business platform experience.',
-  keywords: [
-    'Tango CRM settings',
-    'creator CRM configuration',
-    'CRM platform settings',
-    'creator business settings',
-    'Tango CRM account settings',
-    'creator tools configuration',
-    'CRM platform preferences'
-  ],
-  image: '/settings-og-image.jpg'
-})
 
 function SettingsPage() {
   const { user } = useUser();

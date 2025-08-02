@@ -1,27 +1,10 @@
 "use client";
 
-import { Metadata } from 'next'
-import { generateMetadata } from '@/lib/metadata'
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser, SignedIn, SignedOut } from '@clerk/nextjs';
 import { TangoOnboarding } from '@/components/app/tango-onboarding';
-
-export const metadata: Metadata = generateMetadata({
-  title: 'Onboarding - Set Up Your Tango CRM Account',
-  description: 'Complete your Tango CRM onboarding to customize your creator business dashboard. Set up your niche, goals, and preferences for the perfect CRM experience.',
-  keywords: [
-    'Tango CRM onboarding',
-    'creator CRM setup',
-    'CRM platform configuration',
-    'creator business setup',
-    'Tango CRM account setup',
-    'creator tools onboarding',
-    'CRM platform customization'
-  ],
-  image: '/onboarding-og-image.jpg'
-})
 
 function OnboardingPageContent() {
   const router = useRouter();

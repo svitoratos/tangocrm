@@ -1,24 +1,7 @@
 "use client";
 
-import { Metadata } from 'next'
-import { generateMetadata } from '@/lib/metadata'
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-export const metadata: Metadata = generateMetadata({
-  title: 'Payment Successful - Tango CRM',
-  description: 'Your payment has been processed successfully. Welcome to Tango CRM! You\'ll be redirected to your dashboard to start managing your creator business.',
-  keywords: [
-    'Tango CRM payment success',
-    'creator CRM payment',
-    'CRM platform payment',
-    'creator business payment',
-    'Tango CRM subscription',
-    'creator tools payment',
-    'CRM platform subscription'
-  ],
-  image: '/payment-success-og-image.jpg'
-})
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
