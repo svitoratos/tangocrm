@@ -143,10 +143,10 @@ export const SkeletonCreator = () => {
             </div>
             <div className="text-center p-3 bg-white rounded-lg">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <TrendingUp className="w-4 h-4 text-pink-500" />
-                <span className="text-sm font-medium text-slate-700">Growth</span>
+                <Users className="w-4 h-4 text-pink-500" />
+                <span className="text-sm font-medium text-slate-700">Clients</span>
               </div>
-              <div className="text-lg font-bold text-pink-600">+12%</div>
+              <div className="text-lg font-bold text-pink-600">24</div>
             </div>
           </div>
         </div>
@@ -192,10 +192,10 @@ export const SkeletonCoach = () => {
             </div>
             <div className="text-center p-3 bg-white rounded-lg">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-medium text-slate-700">Growth</span>
+                <DollarSign className="w-4 h-4 text-emerald-500" />
+                <span className="text-sm font-medium text-slate-700">Revenue</span>
               </div>
-              <div className="text-lg font-bold text-emerald-600">+18%</div>
+              <div className="text-lg font-bold text-emerald-600">$15.2K</div>
             </div>
           </div>
         </div>
@@ -330,7 +330,6 @@ const SkeletonPipeline = () => {
                 <TrendingUp className="h-3 w-3 text-emerald-600" />
               </div>
               <div className="text-lg font-bold text-emerald-800">$24.5K</div>
-              <div className="text-xs text-emerald-600">+12% from last month</div>
             </div>
 
             <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-4 rounded-lg">
@@ -339,16 +338,16 @@ const SkeletonPipeline = () => {
                 <Users className="h-3 w-3 text-blue-600" />
               </div>
               <div className="text-lg font-bold text-blue-800">18</div>
-              <div className="text-xs text-blue-600">+3 this week</div>
+              <div className="text-xs text-blue-600">+3 this month</div>
             </div>
 
             <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-4 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-orange-700">Growth Rate</span>
-                <TrendingUp className="h-3 w-3 text-orange-600" />
+                <span className="text-xs font-medium text-orange-700">Opportunities</span>
+                <Target className="h-3 w-3 text-orange-600" />
               </div>
-              <div className="text-lg font-bold text-orange-800">+24%</div>
-              <div className="text-xs text-orange-600">This month</div>
+              <div className="text-lg font-bold text-orange-800">32</div>
+              <div className="text-xs text-orange-600">Active deals</div>
             </div>
           </div>
 

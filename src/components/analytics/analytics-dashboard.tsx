@@ -128,9 +128,7 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.pageViews.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              +12% from last period
-            </p>
+
           </CardContent>
         </Card>
 
@@ -141,9 +139,7 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.uniqueVisitors.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              +8% from last period
-            </p>
+
           </CardContent>
         </Card>
 

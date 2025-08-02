@@ -2482,7 +2482,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     <MetricCard
                       title="Opportunities"
                       value={analyticsData?.opportunities?.total?.toString() || "0"}
-                      change={analyticsData?.opportunities?.conversionRate || 0}
                       icon={Target}
                       trend="up"
                       color="blue"
@@ -2491,7 +2490,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     <MetricCard
                       title="Episodes"
                       value={analyticsData?.podcaster?.episodes?.total?.toString() || "0"}
-                      change={analyticsData?.podcaster?.episodes?.publishedThisMonth || 0}
                       icon={Radio}
                       trend="up"
                       color="purple"
@@ -2500,7 +2498,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     <MetricCard
                       title="Guests"
                       value={analyticsData?.podcaster?.guests?.total?.toString() || "0"}
-                      change={analyticsData?.podcaster?.guests?.newThisMonth || 0}
                       icon={Users}
                       trend="up"
                       color="cyan"
@@ -2509,7 +2506,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                     <MetricCard
                       title="Revenue"
                       value={`$${calculatedRevenue.toLocaleString()}`}
-                      change={analyticsData?.revenue?.growthRate || 0}
                       icon={DollarSign}
                       trend="up"
                       color="emerald"

@@ -2003,7 +2003,7 @@ export default function DashboardOverview({
           { 
             title: 'Opportunities', 
             value: opportunitiesCount.toString(), 
-            change: 0, 
+            change: undefined, 
             icon: Target, 
             trend: 'up' as const, 
             color: 'emerald' as const,
@@ -2012,7 +2012,7 @@ export default function DashboardOverview({
           { 
             title: 'Episodes', 
             value: episodesCount.toString(), 
-            change: 0, 
+            change: undefined, 
             icon: Radio, 
             trend: 'up' as const, 
             color: 'blue' as const,
@@ -2021,7 +2021,7 @@ export default function DashboardOverview({
           { 
             title: 'Guests', 
             value: guestsCount.toString(), 
-            change: 0, 
+            change: undefined, 
             icon: Growth, 
             trend: 'up' as const, 
             color: 'purple' as const,
@@ -2030,7 +2030,7 @@ export default function DashboardOverview({
           { 
             title: 'Revenue', 
             value: `$${totalRevenue.toLocaleString()}`, 
-            change: 0, 
+            change: undefined, 
             icon: DollarSign, 
             trend: 'up' as const, 
             color: 'orange' as const,
