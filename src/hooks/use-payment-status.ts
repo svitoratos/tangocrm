@@ -159,6 +159,50 @@ export const usePaymentStatus = () => {
     }
   }
 
+  // Force refresh after payment success
+  const forceRefreshAfterPayment = async () => {
+    if (!user) return
+    
+    console.log('🔧 Force refreshing payment status after payment success...')
+    
+    // Clear cache immediately
+    clearCache()
+    
+    // Wait a moment for webhook to process
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    try {
+      // Use the force refresh endpoint
+      const response = await fetch('/api/user/force-refresh-payment-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-cache'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update cache with fresh data
+        paymentStatusCache = {
+          data,
+          timestamp: Date.now(),
+          userId: user.id
+        }
+        
+        setPaymentStatus(data);
+        console.log('✅ Force refresh completed successfully');
+      } else {
+        console.error('❌ Force refresh failed, falling back to regular refresh');
+        await refreshPaymentStatus(false);
+      }
+    } catch (error) {
+      console.error('❌ Force refresh error, falling back to regular refresh:', error);
+      await refreshPaymentStatus(false);
+    }
+  }
+
   return {
     paymentStatus,
     isLoading,
@@ -166,6 +210,7 @@ export const usePaymentStatus = () => {
     refreshPaymentStatus,
     clearCache,
     silentRefresh,
+    forceRefreshAfterPayment,
     // Convenience getters
     hasCompletedOnboarding: paymentStatus?.hasCompletedOnboarding ?? false,
     hasActiveSubscription: paymentStatus?.hasActiveSubscription ?? false,

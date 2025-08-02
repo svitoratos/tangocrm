@@ -78,6 +78,17 @@ function OnboardingSuccessContent() {
               if (addNicheResponse.ok) {
                 console.log('✅ Successfully added specific niche:', specificNiche);
                 
+                // Force refresh payment status to ensure sidebar updates
+                try {
+                  await fetch('/api/user/payment-status?t=' + Date.now(), { 
+                    method: 'GET',
+                    cache: 'no-cache'
+                  });
+                  console.log('✅ Forced payment status refresh after niche addition');
+                } catch (refreshError) {
+                  console.error('❌ Error refreshing payment status:', refreshError);
+                }
+                
                 // Special handling for coach niche - immediately switch to coach dashboard
                 if (specificNiche === 'coach') {
                   console.log('🎯 Coach niche added - will redirect to coach dashboard');

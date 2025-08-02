@@ -232,7 +232,7 @@ function MainDashboardWithSearchParams() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   // Get actual subscribed niches from payment status
-  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus } = usePaymentStatus();
+  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus, forceRefreshAfterPayment } = usePaymentStatus();
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches
@@ -341,6 +341,54 @@ function MainDashboardWithSearchParams() {
     autoFixSubscriptionStatus();
   }, [paymentStatusLoading, subscribedNiches.length, refreshPaymentStatus]);
 
+  // Poll for payment status updates after coming from payment success page
+  useEffect(() => {
+    const referrer = document.referrer;
+    const isFromPaymentSuccess = referrer.includes('/payment-success') || referrer.includes('/onboarding/success');
+    
+    if (isFromPaymentSuccess && !paymentStatusLoading) {
+      console.log('🔧 Setting up polling for payment status updates...');
+      
+      // Poll every 3 seconds for up to 30 seconds
+      let pollCount = 0;
+      const maxPolls = 10;
+      
+      const pollInterval = setInterval(async () => {
+        pollCount++;
+        console.log(`🔧 Polling payment status (${pollCount}/${maxPolls})...`);
+        
+        try {
+          const response = await fetch('/api/user/payment-status?t=' + Date.now(), {
+            cache: 'no-cache'
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            // If we have niches and active subscription, stop polling
+            if (data.niches && data.niches.length > 0 && data.hasActiveSubscription) {
+              console.log('✅ Payment status updated successfully, stopping poll');
+              clearInterval(pollInterval);
+              
+              // Force refresh to update the UI
+              forceRefreshAfterPayment();
+            } else if (pollCount >= maxPolls) {
+              console.log('⏰ Max polls reached, stopping');
+              clearInterval(pollInterval);
+            }
+          }
+        } catch (error) {
+          console.error('❌ Polling error:', error);
+          if (pollCount >= maxPolls) {
+            clearInterval(pollInterval);
+          }
+        }
+      }, 3000);
+      
+      return () => clearInterval(pollInterval);
+    }
+  }, [paymentStatusLoading, forceRefreshAfterPayment]);
+
   // Handle upgrade success redirect
   useEffect(() => {
     const upgradeStatus = searchParams.get('upgrade');
@@ -424,9 +472,9 @@ function MainDashboardWithSearchParams() {
     // Check if user just came from payment success page and refresh payment status
     const referrer = document.referrer;
     if (referrer.includes('/payment-success') || referrer.includes('/onboarding/success')) {
-      console.log('🔧 User came from payment success page, refreshing payment status...');
+      console.log('🔧 User came from payment success page, forcing payment status refresh...');
       setTimeout(() => {
-        refreshPaymentStatus();
+        forceRefreshAfterPayment();
       }, 1000); // Small delay to ensure everything is loaded
     }
 

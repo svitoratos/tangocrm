@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
         console.log('🔧 Niches:', session.metadata?.niches);
         console.log('🔧 Customer ID:', session.customer);
         console.log('🔧 Subscription ID:', session.subscription);
+        console.log('🔧 Payment Status:', session.payment_status);
+        console.log('🔧 Amount Total:', session.amount_total);
+        console.log('🔧 Discount Applied:', (session.total_details?.amount_discount || 0) > 0);
         
         // Update user's onboarding status and basic details
         const userId = session.metadata?.clerk_user_id;
@@ -49,21 +52,33 @@ export async function POST(request: NextRequest) {
             userId,
             primaryNiche,
             niches,
-            stripeCustomerId: session.customer
+            stripeCustomerId: session.customer,
+            paymentStatus: session.payment_status,
+            amountTotal: session.amount_total,
+            hasDiscount: (session.total_details?.amount_discount || 0) > 0
           });
           
           // Get user email from session metadata or customer data
           const customerEmail = session.customer_details?.email || session.metadata?.email || '';
           
-          // Only update onboarding status and customer ID here
-          // Don't set subscription_status yet - wait for subscription events
+          // Check if this is a discounted or free payment
+          const isDiscountedPayment = (session.total_details?.amount_discount || 0) > 0;
+          const isFreePayment = session.amount_total === 0;
+          
+          console.log('🔧 Payment analysis:', {
+            isDiscountedPayment,
+            isFreePayment,
+            discountAmount: session.total_details?.amount_discount,
+            totalAmount: session.amount_total
+          });
+          
+          // Update user profile - handle both regular and discounted payments
           const updatedUser = await userOperations.upsertProfile(userId, {
             email: customerEmail,
             onboarding_completed: true,
             primary_niche: primaryNiche,
             niches: niches,
             stripe_customer_id: session.customer as string,
-            // Don't set subscription_status here - let subscription events handle it
             subscription_tier: 'core',
             updated_at: new Date().toISOString()
           });
@@ -86,7 +101,19 @@ export async function POST(request: NextRequest) {
             } catch (subscriptionError) {
               console.error('❌ Error retrieving subscription:', subscriptionError);
             }
+          } else if (isFreePayment || isDiscountedPayment) {
+            // For free or discounted payments without subscription, set status to active
+            console.log('🔧 Setting subscription status to active for free/discounted payment');
+            await userOperations.updateProfile(userId, {
+              subscription_status: 'active',
+              updated_at: new Date().toISOString()
+            });
+            
+            console.log('✅ Webhook: Set subscription status to active for free/discounted payment');
           }
+          
+          // Clear any cached payment status data
+          console.log('🔧 Payment completed successfully - cache should be cleared on next request');
         } else {
           console.error('❌ No user ID found in session metadata');
         }
