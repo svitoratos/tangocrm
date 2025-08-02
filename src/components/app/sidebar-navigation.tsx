@@ -236,10 +236,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     ]
 
     const programLabels: Record<string, { label: string; icon: React.ReactNode }> = {
-      creator: { 
-        label: 'Content Hub', 
-        icon: <Camera size={20} />
-      },
       coach: { 
         label: 'Programs', 
         icon: <GraduationCap size={20} />
@@ -252,7 +248,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
     const programConfig = programLabels[niche] || { label: 'Programs', icon: <Briefcase size={20} /> }
 
-    if (niche === 'freelancer') {
+    if (niche === 'freelancer' || niche === 'creator') {
       return baseItems
     }
 
