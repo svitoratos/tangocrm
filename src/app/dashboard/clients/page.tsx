@@ -385,12 +385,6 @@ function ClientsPageWithSearchParams() {
                         <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      {contact.status !== 'inactive' && (
-                        <DropdownMenuItem onClick={() => handleArchiveContact(contact)}>
-                          <Archive className="w-4 h-4 mr-2" />
-                          Archive
-                        </DropdownMenuItem>
-                      )}
                       <DropdownMenuItem 
                         onClick={() => handleDeleteContact(contact.id)}
                         className="text-red-600"
@@ -509,12 +503,6 @@ function ClientsPageWithSearchParams() {
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        {contact.status !== 'inactive' && (
-                          <DropdownMenuItem onClick={() => handleArchiveContact(contact)}>
-                            <Archive className="w-4 h-4 mr-2" />
-                            Archive
-                          </DropdownMenuItem>
-                        )}
                         <DropdownMenuItem 
                           onClick={() => handleDeleteContact(contact.id)}
                           className="text-red-600"

@@ -637,12 +637,6 @@ const BrandPortfolio: React.FC<{
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
-                          {brand.status !== 'inactive' && (
-                            <DropdownMenuItem onClick={() => onArchiveBrand(brand)}>
-                              <Archive className="mr-2 h-4 w-4" />
-                              Archive
-                            </DropdownMenuItem>
-                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             onClick={() => onDeleteBrand(brand.id)}
@@ -2862,12 +2856,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                                 <Edit className="w-4 h-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
-                              {contact.status !== 'inactive' && (
-                                <DropdownMenuItem onClick={() => handleArchiveContact(contact)}>
-                                  <Archive className="w-4 h-4 mr-2" />
-                                  Archive
-                                </DropdownMenuItem>
-                              )}
                               <DropdownMenuItem 
                                 onClick={() => handleDeleteContact(contact.id)}
                                 className="text-red-600"
@@ -3749,12 +3737,6 @@ const AnalyticsDashboard: React.FC<{ activeNiche?: string }> = ({ activeNiche })
                                 <Edit className="w-4 h-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
-                              {contact.status !== 'inactive' && (
-                                <DropdownMenuItem onClick={() => handleArchiveContact(contact)}>
-                                  <Archive className="w-4 h-4 mr-2" />
-                                  Archive
-                                </DropdownMenuItem>
-                              )}
                               <DropdownMenuItem 
                                 onClick={() => handleDeleteContact(contact.id)}
                                 className="text-red-600"
