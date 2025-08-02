@@ -153,19 +153,10 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   hasCorePlan = () => false,
   isCollapsed = false,
   onToggleCollapse = () => {}
-}) => {
-  const { user } = useUser();
-  
-  // Debug logging for sidebar
-  console.log("🔄 Sidebar rendering with user data:", {
-    userId: user?.id,
-    email: user?.emailAddresses?.[0]?.emailAddress,
-    subscribedNiches,
-    activeNiche,
-    isSubscribed: subscribedNiches.map(niche => ({ niche, subscribed: isSubscribed(niche) }))
-  });
-  
-  // Get user's display name from Clerk
+  }) => {
+    const { user } = useUser();
+    
+    // Get user's display name from Clerk
   const getUserDisplayName = () => {
     if (!user) return 'User';
     
