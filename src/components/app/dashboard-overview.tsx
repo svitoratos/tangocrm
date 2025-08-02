@@ -2239,6 +2239,34 @@ export default function DashboardOverview({
                 >
                   Debug API
                 </Button>
+                <Button size="sm" variant="outline" onClick={async () => { 
+                  try {
+                    const response = await fetch('/api/admin/monitor-user-mismatches', { method: 'GET' });
+                    const data = await response.json();
+                    console.log('🔍 User Mismatch Monitor Results:', data);
+                    alert(`Monitor Results:\nTotal Users: ${data.results.totalUsers}\nMismatches Found: ${data.results.mismatchesFound}\nPotential Issues: ${data.results.potentialIssues}`);
+                  } catch (error) {
+                    console.error('❌ Monitor error:', error);
+                    alert('Monitor failed - check console');
+                  }
+                }} className="text-xs">
+                  Monitor Users
+                </Button>
+                <Button size="sm" variant="outline" onClick={async () => { 
+                  if (confirm('This will fix all user ID mismatches. Continue?')) {
+                    try {
+                      const response = await fetch('/api/admin/fix-user-id-mismatches', { method: 'POST' });
+                      const data = await response.json();
+                      console.log('🔧 User Mismatch Fix Results:', data);
+                      alert(`Fix Results:\nTotal Users: ${data.results.totalUsers}\nMismatches Found: ${data.results.mismatchesFound}\nMismatches Fixed: ${data.results.mismatchesFixed}\nErrors: ${data.results.errors}`);
+                    } catch (error) {
+                      console.error('❌ Fix error:', error);
+                      alert('Fix failed - check console');
+                    }
+                  }
+                }} className="text-xs">
+                  Fix Mismatches
+                </Button>
               </div>
             </div>
           </motion.div>

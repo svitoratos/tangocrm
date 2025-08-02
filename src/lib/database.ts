@@ -79,25 +79,85 @@ export const userOperations = {
             .single()
           
           if (existingByEmail && !emailError) {
-            // User exists by email but with different ID, update the existing record instead of changing ID
-            console.log('🔧 User exists by email, updating existing record...');
-            const { data, error } = await supabase
-              .from('users')
-              .update({
-                ...profile,
-                updated_at: new Date().toISOString()
-              })
-              .eq('email', profile.email)
-              .select()
-              .single()
+            // CRITICAL FIX: User exists by email but with different ID
+            // Instead of updating the existing record, we need to handle this properly
+            console.log('🔧 CRITICAL: User exists by email but with different ID!');
+            console.log('🔧 Existing user ID:', existingByEmail.id);
+            console.log('🔧 Requested user ID:', userId);
+            console.log('🔧 Email:', profile.email);
             
-            if (error) {
-              console.error('❌ Error updating existing user by email:', error);
-              return null
+            // Check if the existing user has more complete data
+            const existingUserScore = this.calculateUserDataScore(existingByEmail);
+            const newUserScore = this.calculateUserDataScore({ id: userId, ...profile });
+            
+            console.log('🔧 Data comparison:', {
+              existingUserScore,
+              newUserScore,
+              existingUserData: {
+                niches: existingByEmail.niches,
+                onboarding_completed: existingByEmail.onboarding_completed,
+                subscription_status: existingByEmail.subscription_status
+              },
+              newUserData: {
+                niches: profile.niches,
+                onboarding_completed: profile.onboarding_completed,
+                subscription_status: profile.subscription_status
+              }
+            });
+            
+            if (existingUserScore >= newUserScore) {
+              // Existing user has better or equal data, update it with any new data
+              console.log('🔧 Updating existing user with new data...');
+              const mergedData = this.mergeUserData(existingByEmail, profile);
+              
+              const { data, error } = await supabase
+                .from('users')
+                .update({
+                  ...mergedData,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingByEmail.id)
+                .select()
+                .single()
+              
+              if (error) {
+                console.error('❌ Error updating existing user by email:', error);
+                return null
+              }
+              
+              console.log('✅ Updated existing user by email:', data);
+              console.log('⚠️ WARNING: User ID mismatch detected and resolved');
+              console.log('⚠️ Frontend is using ID:', userId, 'but database has ID:', existingByEmail.id);
+              return data
+            } else {
+              // New user has better data, we need to be careful about ID conflicts
+              console.log('🔧 New user has better data, but we need to be careful about ID conflicts');
+              console.log('🔧 This is a complex case that needs manual intervention');
+              
+              // For now, update the existing user but log this as a critical issue
+              console.log('⚠️ CRITICAL: User ID mismatch with better new data detected!');
+              console.log('⚠️ This may require manual database intervention');
+              
+              const mergedData = this.mergeUserData(existingByEmail, profile);
+              
+              const { data, error } = await supabase
+                .from('users')
+                .update({
+                  ...mergedData,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingByEmail.id)
+                .select()
+                .single()
+              
+              if (error) {
+                console.error('❌ Error updating existing user by email:', error);
+                return null
+              }
+              
+              console.log('✅ Updated existing user by email:', data);
+              return data
             }
-            
-            console.log('✅ Updated existing user by email:', data);
-            return data
           }
         }
         
@@ -133,6 +193,55 @@ export const userOperations = {
     }
   },
 
+  // Helper method to calculate user data completeness score
+  calculateUserDataScore(user: Partial<User>): number {
+    let score = 0;
+    
+    // Higher score for more complete data
+    if (user.niches && user.niches.length > 0) score += 10;
+    if (user.onboarding_completed) score += 5;
+    if (user.subscription_status === 'active') score += 3;
+    if (user.stripe_customer_id) score += 2;
+    if (user.email) score += 1;
+    
+    return score;
+  },
+
+  // Helper method to merge user data intelligently
+  mergeUserData(existingUser: User, newData: Partial<User>): Partial<User> {
+    const merged: Partial<User> = { ...existingUser };
+    
+    // Merge niches (combine both arrays, remove duplicates)
+    if (newData.niches && newData.niches.length > 0) {
+      const existingNiches = existingUser.niches || [];
+      const newNiches = newData.niches;
+      merged.niches = [...new Set([...existingNiches, ...newNiches])];
+    }
+    
+    // Prefer completed onboarding
+    if (newData.onboarding_completed && !existingUser.onboarding_completed) {
+      merged.onboarding_completed = true;
+    }
+    
+    // Prefer active subscription status
+    if (newData.subscription_status === 'active' && existingUser.subscription_status !== 'active') {
+      merged.subscription_status = 'active';
+    }
+    
+    // Prefer core subscription tier
+    if (newData.subscription_tier === 'core' && existingUser.subscription_tier !== 'core') {
+      merged.subscription_tier = 'core';
+    }
+    
+    // Prefer newer data for other fields
+    if (newData.stripe_customer_id) merged.stripe_customer_id = newData.stripe_customer_id;
+    if (newData.primary_niche) merged.primary_niche = newData.primary_niche;
+    if (newData.email) merged.email = newData.email;
+    if (newData.full_name) merged.full_name = newData.full_name;
+    if (newData.avatar_url) merged.avatar_url = newData.avatar_url;
+    
+    return merged;
+  },
 
 
   async updateNotificationPreferences(userId: string, preferences: any) {
