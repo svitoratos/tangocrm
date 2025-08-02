@@ -1,7 +1,5 @@
 "use client";
 
-import { Metadata } from 'next'
-import { generateMetadata } from '@/lib/metadata'
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,21 +9,6 @@ import { IconMenu2, IconX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from 'next/link';
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid';
-
-export const metadata: Metadata = generateMetadata({
-  title: 'Privacy Policy - Tango CRM Data Protection & Privacy',
-  description: 'Learn how Tango CRM protects your data and privacy. Our comprehensive privacy policy explains how we collect, use, and safeguard your information in our creator CRM platform.',
-  keywords: [
-    'Tango CRM privacy policy',
-    'creator CRM data protection',
-    'CRM platform privacy',
-    'data security creator tools',
-    'GDPR compliance CRM',
-    'creator business privacy',
-    'Tango CRM data protection'
-  ],
-  image: '/privacy-og-image.jpg'
-})
 
 export default function PrivacyPolicy() {
   const lastUpdated = "January 15, 2024";
