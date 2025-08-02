@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
             subscriptionId: subscription.id,
             status: subscription.status,
             created: new Date(subscription.created * 1000).toISOString(),
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
+            currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null
           };
           
           console.log('🔍 Stripe verification:', stripeVerification);
