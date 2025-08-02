@@ -232,7 +232,7 @@ function MainDashboardWithSearchParams() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   // Get actual subscribed niches from payment status
-  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus, forceRefreshAfterPayment } = usePaymentStatus();
+  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus, forceRefreshAfterPayment, clearCache } = usePaymentStatus();
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches

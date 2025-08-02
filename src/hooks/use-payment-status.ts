@@ -41,6 +41,12 @@ export const usePaymentStatus = () => {
       const now = Date.now()
       const userId = user.id
       
+      // Force clear cache for hello@gotangocrm.com to ensure fresh data
+      if (user.emailAddresses?.[0]?.emailAddress === 'hello@gotangocrm.com') {
+        console.log('🔧 Force clearing cache for hello@gotangocrm.com');
+        clearCache();
+      }
+      
       // Check if we have valid cached data for this user
       if (
         paymentStatusCache.data &&

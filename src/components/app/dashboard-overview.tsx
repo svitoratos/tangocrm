@@ -71,6 +71,8 @@ import { DateUtils } from '@/lib/date-utils'
 import { fetchClients } from '@/lib/client-service'
 import { useRevenueType } from '@/contexts/RevenueTypeContext'
 import { useEventRefresh } from '@/contexts/EventRefreshContext'
+import { useUser } from '@clerk/nextjs'
+import { usePaymentStatus } from '@/hooks/use-payment-status'
 
 interface MetricCardProps {
   title: string
@@ -549,6 +551,8 @@ export default function DashboardOverview({
   onNavigate = () => {},
   userName = 'User'
 }: DashboardOverviewProps) {
+  const { user } = useUser();
+  const { niches: subscribedNiches, refreshPaymentStatus, clearCache } = usePaymentStatus();
   const { onEventRefresh, triggerRefresh } = useEventRefresh();
   console.log('DashboardOverview rendered with activeNiche:', activeNiche);
   
@@ -2178,6 +2182,50 @@ export default function DashboardOverview({
       transition={{ duration: 0.5 }}
     >
       <div className="max-w-7xl mx-auto p-6 space-y-8 overflow-hidden">
+        {/* Debug Section for hello@gotangocrm.com */}
+        {user?.emailAddresses?.[0]?.emailAddress === 'hello@gotangocrm.com' && (
+          <motion.div 
+            className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-yellow-800 mb-2">Debug Info for hello@gotangocrm.com</h3>
+                <div className="text-xs text-yellow-700 space-y-1">
+                  <p><strong>Current Niches:</strong> [{subscribedNiches.join(', ')}]</p>
+                  <p><strong>Active Niche:</strong> {activeNiche}</p>
+                  <p><strong>User ID:</strong> {user?.id}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    clearCache();
+                    refreshPaymentStatus();
+                  }}
+                  className="text-xs"
+                >
+                  Refresh Niches
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    window.location.reload();
+                  }}
+                  className="text-xs"
+                >
+                  Reload Page
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Header */}
         <motion.div 
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0"
