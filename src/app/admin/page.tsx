@@ -1,8 +1,25 @@
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import { redirect } from 'next/navigation'
 import { checkRole } from '@/utils/roles'
 import { SearchUsers } from './SearchUsers'
 import { clerkClient } from '@clerk/nextjs/server'
 import { removeRole, setRole } from './_actions'
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Admin Dashboard - Tango CRM Administration',
+  description: 'Tango CRM admin dashboard for managing users, roles, and platform administration. Restricted access for administrators only.',
+  keywords: [
+    'Tango CRM admin',
+    'creator CRM administration',
+    'CRM platform admin',
+    'Tango CRM management',
+    'creator business admin',
+    'CRM platform administration',
+    'Tango CRM user management'
+  ],
+  image: '/admin-og-image.jpg'
+})
 
 export default async function AdminDashboard(params: {
   searchParams: Promise<{ search?: string }>

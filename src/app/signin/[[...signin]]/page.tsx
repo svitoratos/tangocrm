@@ -1,9 +1,26 @@
 "use client";
 
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import { Suspense } from 'react';
 import { SignIn } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 import { StaticDashboardBackground } from "@/components/app/static-dashboard-background";
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Sign In - Tango CRM Creator Platform',
+  description: 'Sign in to your Tango CRM account to access your creator business dashboard, manage clients, track revenue, and grow your creator business.',
+  keywords: [
+    'Tango CRM sign in',
+    'creator CRM login',
+    'CRM platform login',
+    'creator business dashboard',
+    'Tango CRM account',
+    'creator tools login',
+    'CRM platform sign in'
+  ],
+  image: '/signin-og-image.jpg'
+})
 
 function SignInWithSearchParams() {
   const searchParams = useSearchParams();

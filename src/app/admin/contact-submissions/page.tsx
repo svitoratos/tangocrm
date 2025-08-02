@@ -1,6 +1,23 @@
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import { ContactSubmissionsAdmin } from '@/components/app/contact-submissions-admin';
 import { TangoHeader } from '@/components/app/tango-header';
 import { AdminOnly } from '@/components/app/admin-only';
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Contact Submissions - Tango CRM Admin',
+  description: 'View and manage contact form submissions in Tango CRM admin panel. Monitor customer inquiries and support requests for the creator CRM platform.',
+  keywords: [
+    'Tango CRM contact submissions',
+    'creator CRM admin',
+    'CRM platform contact management',
+    'Tango CRM customer inquiries',
+    'creator business admin',
+    'CRM platform submissions',
+    'Tango CRM support requests'
+  ],
+  image: '/admin-contact-og-image.jpg'
+})
 
 export default function ContactSubmissionsPage() {
   return (

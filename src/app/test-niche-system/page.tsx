@@ -1,11 +1,28 @@
 'use client';
 
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import { useState, useEffect } from 'react';
 import { useNicheData } from '@/hooks/useNicheData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Test Niche System - Tango CRM',
+  description: 'Test page for Tango CRM niche system functionality and journal entries. Internal testing page for the creator CRM platform.',
+  keywords: [
+    'Tango CRM test niche system',
+    'creator CRM testing',
+    'CRM platform test',
+    'Tango CRM niche system test',
+    'creator business test',
+    'CRM platform testing',
+    'Tango CRM development'
+  ],
+  image: '/test-niche-system-og-image.jpg'
+})
 
 export default function TestNicheSystem() {
   const { currentNiche, createJournalEntry, getJournalEntries } = useNicheData();

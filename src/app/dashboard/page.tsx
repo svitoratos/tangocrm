@@ -1,5 +1,7 @@
 "use client";
 
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import React, { useState, createContext, useContext, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -26,6 +28,21 @@ import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { EventRefreshProvider } from "@/contexts/EventRefreshContext";
 import { PaymentVerification } from "@/components/app/payment-verification";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Dashboard - Tango CRM Creator Platform',
+  description: 'Manage your creator business with Tango CRM dashboard. Track clients, revenue, content pipeline, and analytics all in one powerful platform for creators, coaches, and freelancers.',
+  keywords: [
+    'Tango CRM dashboard',
+    'creator business dashboard',
+    'CRM platform dashboard',
+    'creator tools dashboard',
+    'Tango CRM overview',
+    'creator business management',
+    'CRM platform overview'
+  ],
+  image: '/dashboard-og-image.jpg'
+})
 
 // Types
 interface AppContextType {

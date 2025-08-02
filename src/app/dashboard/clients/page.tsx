@@ -1,5 +1,7 @@
 "use client";
 
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -34,6 +36,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Clients & Contacts - Tango CRM',
+  description: 'Manage your clients and contacts in Tango CRM. Track leads, clients, and guests with detailed information, notes, and status management for your creator business.',
+  keywords: [
+    'Tango CRM clients',
+    'creator CRM contacts',
+    'CRM platform clients',
+    'creator business contacts',
+    'Tango CRM contact management',
+    'creator tools clients',
+    'CRM platform contacts'
+  ],
+  image: '/clients-og-image.jpg'
+})
 
 interface ContactFormData {
   name: string;

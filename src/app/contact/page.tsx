@@ -1,6 +1,23 @@
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import { TangoContactForm } from '@/components/blocks/contact-forms/tango-contact-form'
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 import { TangoHeader } from '@/components/app/tango-header'
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Contact Tango CRM - Get Support for Your Creator Business',
+  description: 'Get in touch with the Tango CRM team for support, questions, or to learn how our creator CRM platform can transform your business. We typically respond within 24 hours.',
+  keywords: [
+    'contact Tango CRM',
+    'creator CRM support',
+    'Tango CRM help',
+    'creator business support',
+    'CRM platform contact',
+    'Tango CRM customer service',
+    'creator tools support'
+  ],
+  image: '/contact-og-image.jpg'
+})
 
 export default function ContactPage() {
   return (

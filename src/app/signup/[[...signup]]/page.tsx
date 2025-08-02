@@ -1,9 +1,26 @@
 "use client";
 
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import { Suspense } from 'react';
 import { SignUp } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 import { StaticDashboardBackground } from "@/components/app/static-dashboard-background";
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Sign Up - Join Tango CRM Creator Platform',
+  description: 'Join Tango CRM and transform your creator business. Sign up for the leading CRM platform designed for creators, coaches, podcasters, and freelancers.',
+  keywords: [
+    'Tango CRM sign up',
+    'join creator CRM',
+    'CRM platform registration',
+    'creator business signup',
+    'Tango CRM free trial',
+    'creator tools signup',
+    'CRM platform join'
+  ],
+  image: '/signup-og-image.jpg'
+})
 
 function SignUpWithSearchParams() {
   const searchParams = useSearchParams();

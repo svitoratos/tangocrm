@@ -1,5 +1,7 @@
 "use client";
 
+import { Metadata } from 'next'
+import { generateMetadata } from '@/lib/metadata'
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +11,21 @@ import { IconMenu2, IconX } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "motion/react";
 import Link from 'next/link';
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid';
+
+export const metadata: Metadata = generateMetadata({
+  title: 'Terms of Service - Tango CRM Platform Terms & Conditions',
+  description: 'Read Tango CRM\'s terms of service to understand your rights and responsibilities when using our creator CRM platform. Clear terms for creators, coaches, and freelancers.',
+  keywords: [
+    'Tango CRM terms of service',
+    'creator CRM terms',
+    'CRM platform terms',
+    'creator business terms',
+    'Tango CRM conditions',
+    'CRM service agreement',
+    'creator tools terms'
+  ],
+  image: '/terms-og-image.jpg'
+})
 
 export default function TermsOfService() {
   const lastUpdated = "January 15, 2024";
