@@ -11,6 +11,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
+  console.log("🔥 WEBHOOK RECEIVED at:", new Date().toISOString());
+  
   const body = await request.text();
   const headersList = await headers();
   const sig = headersList.get('stripe-signature');
@@ -19,8 +21,9 @@ export async function POST(request: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(body, sig!, endpointSecret);
+    console.log("✅ Webhook verified, event type:", event.type);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    console.error('❌ Webhook signature verification failed:', err);
     return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
   }
 
@@ -30,6 +33,11 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
+        
+        console.log("💳 Processing checkout session:", session.id);
+        console.log("💰 Amount total:", session.amount_total);
+        console.log("🎫 Discount info:", session.total_details?.amount_discount || 0);
+        console.log("📝 About to update database for user:", session.metadata?.clerk_user_id);
         
         // Handle successful checkout
         console.log('🔧 Checkout completed for session:', session.id);
@@ -73,6 +81,7 @@ export async function POST(request: NextRequest) {
           });
           
           // Update user profile - handle both regular and discounted payments
+          console.log('📝 About to update database for user:', userId);
           const updatedUser = await userOperations.upsertProfile(userId, {
             email: customerEmail,
             onboarding_completed: true,
@@ -83,6 +92,7 @@ export async function POST(request: NextRequest) {
             updated_at: new Date().toISOString()
           });
           
+          console.log('✅ Database update completed:', updatedUser);
           console.log('✅ Webhook: User onboarding completed successfully:', updatedUser);
           
           // If there's a subscription ID, fetch its status

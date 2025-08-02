@@ -69,6 +69,7 @@ export const usePaymentStatus = () => {
 
         // Add cache-busting parameter to ensure fresh data
         const cacheBuster = Date.now();
+        console.log('🚀 Fetching payment status with cache buster:', cacheBuster);
         const response = await fetch(`/api/user/payment-status?t=${cacheBuster}`)
         
         if (!response.ok) {
@@ -76,6 +77,8 @@ export const usePaymentStatus = () => {
         }
 
         const data = await response.json()
+        
+        console.log('📊 Payment status data received:', data);
         
         // Update cache
         paymentStatusCache = {

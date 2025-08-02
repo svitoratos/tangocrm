@@ -2221,6 +2221,24 @@ export default function DashboardOverview({
                 >
                   Reload Page
                 </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/debug/user-niches');
+                      const data = await response.json();
+                      console.log('🔍 Debug endpoint response:', data);
+                      alert('Check browser console for debug data');
+                    } catch (error) {
+                      console.error('Debug endpoint error:', error);
+                      alert('Debug endpoint error - check console');
+                    }
+                  }}
+                  className="text-xs"
+                >
+                  Debug API
+                </Button>
               </div>
             </div>
           </motion.div>
