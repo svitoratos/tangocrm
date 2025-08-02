@@ -788,11 +788,8 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
   };
 
   const handleStageClick = (stage: string) => {
-    // Disable detail view navigation for coach and podcaster niches
-    if (activeNiche === "coach" || activeNiche === "podcaster") {
-      return;
-    }
-    router.push(`/dashboard/content-stage/${encodeURIComponent(stage)}?niche=${activeNiche}`);
+    // Detail view navigation removed - no longer needed
+    return;
   };
 
   const handleEditItem = () => {
@@ -1112,12 +1109,8 @@ export const ProgramsContentHub = ({ activeNiche = "creator" }: ProgramsContentH
       if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[data-drag-handle]')) {
         return;
       }
-      // Disable detail view navigation for coach and podcaster niches
-      if (activeNiche === "coach" || activeNiche === "podcaster") {
-        return;
-      }
-      // Navigate to stage detail page instead of opening edit modal
-      router.push(`/dashboard/content-stage/${encodeURIComponent(item.stage)}?niche=${activeNiche}`);
+      // Detail view navigation removed - no longer needed
+      return;
     };
 
     return (
