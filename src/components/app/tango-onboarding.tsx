@@ -41,7 +41,7 @@ type Step = 1 | 2 | 3 | 4;
 
 const roleOptions = [
   { 
-    id: "content-creator", 
+    id: "creator", 
     label: "Content Creator", 
     icon: Video,
     description: "Organize your content, track deals, and grow your creative business — all in one place.",
@@ -72,7 +72,7 @@ const roleOptions = [
 
 // Niche-specific goals
 const NICHE_GOALS = {
-  "content-creator": [
+  "creator": [
     { id: "brand-partnerships", label: "Manage my brand partnerships and sponsorships" },
     { id: "content-pipeline", label: "Organize my content pipeline and calendar" },
     { id: "revenue-tracking", label: "Track revenue from sponsored content and deals" },
@@ -104,7 +104,7 @@ const NICHE_GOALS = {
 
 // Niche-specific features for pricing section
 const NICHE_FEATURES = {
-  "content-creator": [
+  "creator": [
     "Unlimited clients & opportunities",
     "Content planning & scheduling",
     "Goal tracking & analytics",
@@ -136,7 +136,7 @@ const NICHE_FEATURES = {
 
 // Niche-specific "Plus" features
 const NICHE_PLUS_FEATURES = {
-  "content-creator": [
+  "creator": [
     "Journal & reflection tools",
     "Email support",
     "Mobile responsive dashboard"
@@ -335,14 +335,14 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
 
   const getNicheFeatures = () => {
     // If multiple roles selected, use the first one for features
-    const primaryRole = selectedRoles[0] || "content-creator";
-    return NICHE_FEATURES[primaryRole as keyof typeof NICHE_FEATURES] || NICHE_FEATURES["content-creator"];
+    const primaryRole = selectedRoles[0] || "creator";
+    return NICHE_FEATURES[primaryRole as keyof typeof NICHE_FEATURES] || NICHE_FEATURES["creator"];
   };
 
   const getNichePlusFeatures = () => {
     // If multiple roles selected, use the first one for features
-    const primaryRole = selectedRoles[0] || "content-creator";
-    return NICHE_PLUS_FEATURES[primaryRole as keyof typeof NICHE_PLUS_FEATURES] || NICHE_PLUS_FEATURES["content-creator"];
+    const primaryRole = selectedRoles[0] || "creator";
+    return NICHE_PLUS_FEATURES[primaryRole as keyof typeof NICHE_PLUS_FEATURES] || NICHE_PLUS_FEATURES["creator"];
   };
 
   return (
@@ -479,7 +479,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                   <div className={`p-3 rounded-lg ${
-                                    role.id === "content-creator" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
+                                    role.id === "creator" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
                                     role.id === "coach" ? "bg-gradient-to-r from-emerald-500 to-teal-500" :
                                     role.id === "podcaster" ? "bg-gradient-to-r from-orange-500 to-red-500" :
                                     "bg-gradient-to-r from-blue-500 to-indigo-500"
