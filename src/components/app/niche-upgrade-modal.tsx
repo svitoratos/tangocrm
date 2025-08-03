@@ -113,58 +113,6 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
         // Store the selected niche in sessionStorage so we can retrieve it after payment
         sessionStorage.setItem('pendingNicheUpgrade', selectedNiche);
         
-        // Special handling for coach niche - use the specific payment links
-        if (selectedNiche === 'coach') {
-          if (billingCycle === 'monthly') {
-            console.log('🔧 Using specific coach monthly payment link');
-            window.location.href = 'https://buy.stripe.com/5kQ3cw5l086faBieOE2Nq05';
-          } else if (billingCycle === 'yearly') {
-            console.log('🔧 Using specific coach yearly payment link');
-            window.location.href = 'https://buy.stripe.com/00w5kEcNs1HR10IdKA2Nq03';
-          }
-          onClose();
-          return;
-        }
-
-        // Special handling for creator niche - use the specific payment links
-        if (selectedNiche === 'creator') {
-          if (billingCycle === 'monthly') {
-            console.log('🔧 Using specific creator monthly payment link');
-            window.location.href = 'https://buy.stripe.com/fZu14o7t83PZeRy35W2Nq06';
-          } else if (billingCycle === 'yearly') {
-            console.log('🔧 Using specific creator yearly payment link');
-            window.location.href = 'https://buy.stripe.com/7sY6oI6p44U3gZGgWM2Nq07';
-          }
-          onClose();
-          return;
-        }
-
-        // Special handling for podcaster niche - use the specific payment links
-        if (selectedNiche === 'podcaster') {
-          if (billingCycle === 'monthly') {
-            console.log('🔧 Using specific podcaster monthly payment link');
-            window.location.href = 'https://buy.stripe.com/14AcN65l00DNbFm9uk2Nq08';
-          } else if (billingCycle === 'yearly') {
-            console.log('🔧 Using specific podcaster yearly payment link');
-            window.location.href = 'https://buy.stripe.com/28E3cw3cSdqz9xe0XO2Nq09';
-          }
-          onClose();
-          return;
-        }
-
-        // Special handling for freelancer niche - use the specific payment links
-        if (selectedNiche === 'freelancer') {
-          if (billingCycle === 'monthly') {
-            console.log('🔧 Using specific freelancer monthly payment link');
-            window.location.href = 'https://buy.stripe.com/3cI7sMcNs5Y710I21S2Nq0a';
-          } else if (billingCycle === 'yearly') {
-            console.log('🔧 Using specific freelancer yearly payment link');
-            window.location.href = 'https://buy.stripe.com/5kQ9AU6p4cmvfVC35W2Nq0b';
-          }
-          onClose();
-          return;
-        }
-        
         // Use the proper API to create a checkout session with the specific niche
         console.log('🔧 Creating checkout session via API...');
         const response = await fetch('/api/stripe/niche-upgrade', {
