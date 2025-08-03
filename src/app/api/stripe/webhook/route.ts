@@ -50,16 +50,30 @@ export async function POST(request: NextRequest) {
           const isDiscountedPayment = (session.total_details?.amount_discount || 0) > 0;
           const isFreePayment = session.amount_total === 0;
           
-          // Update user profile - handle both regular and discounted payments
-          const updatedUser = await userOperations.upsertProfile(userId, {
-            email: customerEmail,
-            onboarding_completed: true,
-            primary_niche: primaryNiche,
-            niches: niches,
-            stripe_customer_id: session.customer as string,
-            subscription_tier: 'core',
-            updated_at: new Date().toISOString()
-          });
+                  // Get current user profile to preserve existing niches
+        const currentProfile = await userOperations.getProfile(userId);
+        const existingNiches = currentProfile?.niches || [];
+        
+        // Merge existing niches with new niches from session
+        const newNiches = session.metadata?.niches ? JSON.parse(session.metadata.niches) : [primaryNiche];
+        const updatedNiches = [...new Set([...existingNiches, ...newNiches])];
+        
+        console.log('🔧 Webhook: Merging niches:', {
+          existing: existingNiches,
+          new: newNiches,
+          merged: updatedNiches
+        });
+        
+        // Update user profile - handle both regular and discounted payments
+        const updatedUser = await userOperations.upsertProfile(userId, {
+          email: customerEmail,
+          onboarding_completed: true,
+          primary_niche: primaryNiche,
+          niches: updatedNiches,
+          stripe_customer_id: session.customer as string,
+          subscription_tier: 'core',
+          updated_at: new Date().toISOString()
+        });
           
           // If there's a subscription ID, fetch its status
           if (session.subscription) {
