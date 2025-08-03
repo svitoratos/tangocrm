@@ -49,12 +49,27 @@ export const userOperations = {
       const existingUser = await this.getProfile(userId);
       
       if (existingUser) {
-        // User exists, update the profile
-        console.log('🔧 User exists, updating profile...');
+        // User exists, update the profile with niche merging
+        console.log('🔧 User exists, updating profile with niche merging...');
+        
+        // Merge niches if new niches are provided
+        let updatedProfile = { ...profile };
+        if (profile.niches && profile.niches.length > 0) {
+          const existingNiches = existingUser.niches || [];
+          const newNiches = profile.niches;
+          updatedProfile.niches = [...new Set([...existingNiches, ...newNiches])];
+          
+          console.log('🔧 Niche merging:', {
+            existing: existingNiches,
+            new: newNiches,
+            merged: updatedProfile.niches
+          });
+        }
+        
         const { data, error } = await supabase
           .from('users')
           .update({
-            ...profile,
+            ...updatedProfile,
             updated_at: new Date().toISOString()
           })
           .eq('id', userId)
@@ -325,10 +340,28 @@ export const userOperations = {
   },
 
   async updateProfile(userId: string, updates: Partial<User>): Promise<User | null> {
+    // Get current user profile to merge niches if needed
+    const currentProfile = await this.getProfile(userId);
+    
+    let updatedData = { ...updates };
+    
+    // Merge niches if new niches are provided
+    if (updates.niches && updates.niches.length > 0 && currentProfile) {
+      const existingNiches = currentProfile.niches || [];
+      const newNiches = updates.niches;
+      updatedData.niches = [...new Set([...existingNiches, ...newNiches])];
+      
+      console.log('🔧 updateProfile niche merging:', {
+        existing: existingNiches,
+        new: newNiches,
+        merged: updatedData.niches
+      });
+    }
+    
     const { data, error } = await supabase
       .from('users')
       .update({
-        ...updates,
+        ...updatedData,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId)
