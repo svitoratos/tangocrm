@@ -92,7 +92,7 @@ function OnboardingPageWithRetry() {
   React.useEffect(() => {
     if (isLoaded && !isSignedIn) {
       // If user is not signed in after loading, redirect to sign-up
-      router.push('/signup');
+              router.push('https://accounts.gotangocrm.com/sign-up');
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -119,12 +119,12 @@ function OnboardingPageWithRetry() {
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
           <p className="text-gray-600 mb-6">Please sign up to access the onboarding process.</p>
           <div className="flex gap-4 justify-center">
-            <Link href="/sign-up" className="bg-emerald-500 text-white px-6 py-2 rounded-md hover:bg-emerald-600 transition-colors">
+            <Link href="https://accounts.gotangocrm.com/sign-up" className="bg-emerald-500 text-white px-6 py-2 rounded-md hover:bg-emerald-600 transition-colors">
               Sign Up
             </Link>
-            <Link href="/sign-in" className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors">
-              Sign In
-            </Link>
+                          <Link href="https://accounts.gotangocrm.com/sign-in" className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors">
+                Sign In
+              </Link>
             <Link href="/" className="bg-gray-100 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-200 transition-colors">
               Back to Landing
             </Link>

@@ -3,53 +3,43 @@ import Link from 'next/link';
 
 export function WhyTangoComparison() {
   const comparisonData: Array<{
-    feature: string;
     tango: { status: 'yes' | 'no' | 'warning'; text: string };
     traditional: { status: 'yes' | 'no' | 'warning'; text: string };
   }> = [
     {
-      feature: '🎯 Built for creators',
-      tango: { status: 'yes', text: 'Yes' },
+      tango: { status: 'yes', text: '🎯 Built for creators' },
       traditional: { status: 'no', text: 'Sales-focused' }
     },
     {
-      feature: '📹 Track content & campaigns',
-      tango: { status: 'yes', text: 'Built-in' },
+      tango: { status: 'yes', text: '📹 Track content & campaigns' },
       traditional: { status: 'no', text: 'Not supported' }
     },
     {
-      feature: '💼 Manage brand deals',
-      tango: { status: 'yes', text: 'Creator-first pipeline' },
-      traditional: { status: 'warning', text: 'Needs custom setup' }
+      tango: { status: 'yes', text: '💼 Manage brand deals' },
+      traditional: { status: 'no', text: 'Needs custom setup' }
     },
     {
-      feature: '👥 Clients & sponsors in one place',
-      tango: { status: 'yes', text: 'Unified CRM' },
-      traditional: { status: 'warning', text: 'Fragmented tools' }
+      tango: { status: 'yes', text: '👥 Clients & sponsors in one place' },
+      traditional: { status: 'no', text: 'Fragmented tools' }
     },
     {
-      feature: '📅 Visual content calendar',
-      tango: { status: 'yes', text: 'Yes' },
+      tango: { status: 'yes', text: '📅 Visual content calendar' },
       traditional: { status: 'no', text: 'Often missing' }
     },
     {
-      feature: '📈 Track revenue from gigs/deals',
-      tango: { status: 'yes', text: 'Simple dashboard' },
-      traditional: { status: 'warning', text: 'Over-complicated' }
+      tango: { status: 'yes', text: '📈 Track revenue from gigs/deals' },
+      traditional: { status: 'no', text: 'Over-complicated' }
     },
     {
-      feature: '🎨 Clean, intuitive design',
-      tango: { status: 'yes', text: 'Built for creatives' },
+      tango: { status: 'yes', text: '🎨 Clean, intuitive design' },
       traditional: { status: 'no', text: 'Corporate UX' }
     },
+          {
+        tango: { status: 'yes', text: '💸 Transparent pricing' },
+        traditional: { status: 'no', text: 'Confusing tiers & expensive add-ons' }
+      },
     {
-      feature: '💸 Transparent pricing',
-              tango: { status: 'yes', text: '$39.99/month' },
-      traditional: { status: 'no', text: 'Confusing tiers, expensive add-ons, and not built for creators' }
-    },
-    {
-      feature: '🧠 Easy to use, no setup needed',
-      tango: { status: 'yes', text: 'Plug & play' },
+      tango: { status: 'yes', text: '🧠 Easy to use, no setup needed' },
       traditional: { status: 'no', text: 'Steep learning curve' }
     }
   ];
@@ -120,13 +110,10 @@ export function WhyTangoComparison() {
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">
-                      Feature / Experience
-                    </th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-emerald-700 border-b border-slate-200">
+                    <th className="px-4 py-4 text-center text-sm font-semibold text-emerald-700 border-b border-slate-200">
                       Tango CRM
                     </th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700 border-b border-slate-200">
+                    <th className="px-4 py-4 text-center text-sm font-semibold text-slate-700 border-b border-slate-200">
                       Traditional CRMs
                     </th>
                   </tr>
@@ -134,16 +121,13 @@ export function WhyTangoComparison() {
                 <tbody className="divide-y divide-slate-200">
                   {comparisonData.map((row, index) => (
                     <tr key={index} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-slate-800">
-                        {row.feature}
-                      </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(row.tango.status)}`}>
                           {getStatusIcon(row.tango.status)}
                           {row.tango.text}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(row.traditional.status)}`}>
                           {getStatusIcon(row.traditional.status)}
                           {row.traditional.text}
@@ -167,7 +151,7 @@ export function WhyTangoComparison() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  href="/sign-up"
+                  href="https://accounts.gotangocrm.com/sign-up"
                   className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-500 hover:bg-emerald-600 transition-colors"
                 >
                   Join Tango

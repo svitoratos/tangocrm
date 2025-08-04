@@ -14,7 +14,7 @@ export default function SimpleCenteredWithGradient() {
     } else {
       // User needs to sign up first
       // Redirect to Clerk's sign-up page
-      const signUpUrl = `/signup`;
+      const signUpUrl = `https://accounts.gotangocrm.com/sign-up`;
       router.push(signUpUrl);
     }
   };
@@ -27,7 +27,7 @@ export default function SimpleCenteredWithGradient() {
             Ready to Transform Your Business?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg/8 text-pretty text-slate-600">
-            Join thousands of creators, coaches, and freelancers who've streamlined their client relationships.
+            Join thousands of creators, coaches, podcasters, and freelancers who've streamlined their client relationships.
           </p>
           <div className="mt-8 flex items-center justify-center gap-x-6">
             <button

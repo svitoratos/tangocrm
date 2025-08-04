@@ -47,6 +47,12 @@ export default async function AdminDashboard(params: {
           >
             View Contact Submissions
           </a>
+          <a 
+            href="/admin/fix-subscriptions" 
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+          >
+            Fix Subscription IDs
+          </a>
         </div>
       </div>
 

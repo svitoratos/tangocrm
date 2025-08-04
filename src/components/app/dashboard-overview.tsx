@@ -836,8 +836,8 @@ export default function DashboardOverview({
           const contentResponse = await fetch(`/api/content-items?niche=${activeNiche}`);
           if (contentResponse.ok) {
             const contentItems = await contentResponse.json();
-            // Store episodes count and unique guests for use in metrics
-            const episodesCount = contentItems.length;
+            // Only count actual episodes, not all content items
+            const episodesCount = contentItems.filter((item: any) => item.type === 'episode').length;
             const uniqueGuests = new Set(contentItems.filter((item: any) => item.guest).map((item: any) => item.guest)).size;
             // Store these values in state for use in metrics
             setEpisodesCount(episodesCount);
@@ -864,21 +864,9 @@ export default function DashboardOverview({
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
 
-        // Convert opportunities to tasks
-        const opportunityTasks: TaskItem[] = opportunities.slice(0, 2).map((opp: any, index: number) => ({
-          id: `task-opp-${opp.id || index}`,
-          brandName: opp.title,
-          taskType: 'follow-up',
-          description: `Follow up on ${opp.title} opportunity`,
-          dueTime: new Date(Date.now() + (index + 1) * 2 * 60 * 60 * 1000).toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
-            minute: '2-digit',
-            hour12: true 
-          }),
-          priority: 'medium' as const,
-          completed: false,
-          linkedTo: 'crm' as const
-        }));
+        // Don't automatically create tasks from opportunities
+        // Users should manually create tasks when needed
+        const opportunityTasks: TaskItem[] = [];
 
         // Convert calendar events to tasks
         const userTimezone = DateUtils.getUserTimezone();

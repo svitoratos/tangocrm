@@ -16,7 +16,7 @@ export default function AboutPageClient() {
     } else {
       // User needs to sign up first
       // Redirect to Clerk's sign-up page
-      const signUpUrl = `/signup`;
+      const signUpUrl = `https://accounts.gotangocrm.com/sign-up`;
       router.push(signUpUrl);
     }
   };

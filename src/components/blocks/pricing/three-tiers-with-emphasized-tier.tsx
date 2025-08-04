@@ -137,7 +137,7 @@ export default function ThreeTiersWithEmphasizedTier() {
               )}
 
               <Link
-                href="/sign-up"
+                href="https://accounts.gotangocrm.com/sign-up"
                 className="mt-6 block w-full rounded-md bg-emerald-600 px-3 py-2 text-center text-sm/6 font-semibold text-white shadow-xs group-data-featured/tier:bg-white/10 group-data-featured/tier:text-white hover:bg-emerald-500 group-data-featured/tier:hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 group-data-featured/tier:focus-visible:outline-white"
               >
                 {tier.cta}

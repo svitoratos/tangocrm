@@ -113,41 +113,24 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
         // Store the selected niche in sessionStorage so we can retrieve it after payment
         sessionStorage.setItem('pendingNicheUpgrade', selectedNiche);
         
-        // Use the proper API to create a checkout session with the specific niche
-        console.log('🔧 Creating checkout session via API...');
-        const response = await fetch('/api/stripe/niche-upgrade', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            selectedNiche: selectedNiche,
-            billingCycle: billingCycle
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ Created niche upgrade checkout session:', {
-            sessionId: data.sessionId,
-            niche: selectedNiche,
-            billingCycle: billingCycle
-          });
-          
-          // Redirect to Stripe checkout
-          if (data.url) {
-            console.log('🔗 Redirecting to Stripe checkout...');
-            window.location.href = data.url;
-          } else {
-            console.error('❌ No checkout URL received');
-          }
+        // Use direct Stripe payment links based on the selected niche
+        const stripePaymentLinks: Record<string, string> = {
+          'coach': 'https://buy.stripe.com/5kQ3cw5l086faBieOE2Nq05',
+          'creator': 'https://buy.stripe.com/fZu14o7t83PZeRy35W2Nq06',
+          'podcaster': 'https://buy.stripe.com/14AcN65l00DNbFm9uk2Nq08',
+          'freelancer': 'https://buy.stripe.com/3cI7sMcNs5Y710I21S2Nq0a'
+        };
+        
+        const paymentLink = stripePaymentLinks[selectedNiche];
+        
+        if (paymentLink) {
+          console.log('🔗 Redirecting to Stripe payment link for:', selectedNiche);
+          window.location.href = paymentLink;
         } else {
-          console.error('❌ Failed to create checkout session');
-          const errorData = await response.json();
-          console.error('❌ Error details:', errorData);
+          console.error('❌ No payment link found for niche:', selectedNiche);
         }
       } catch (error) {
-        console.error('❌ Error creating niche upgrade checkout:', error);
+        console.error('❌ Error redirecting to payment link:', error);
       }
       
       onClose();

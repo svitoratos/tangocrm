@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
           primary_niche: primaryNiche,
           niches: updatedNiches,
           stripe_customer_id: session.customer as string,
+          stripe_subscription_id: session.subscription as string || null,
           subscription_tier: 'core',
           updated_at: new Date().toISOString()
         });
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
               // Update subscription status based on actual subscription
               await userOperations.updateProfile(userId, {
                 subscription_status: subscription.status,
+                stripe_subscription_id: session.subscription as string,
                 updated_at: new Date().toISOString()
               });
             } catch (subscriptionError) {
@@ -117,6 +119,7 @@ export async function POST(request: NextRequest) {
           if (user) {
             const updatedUser = await userOperations.updateProfile(user.id, {
               subscription_status: subscription.status,
+              stripe_subscription_id: subscription.id,
               updated_at: new Date().toISOString()
             });
             console.log('✅ Webhook: Updated user subscription status to:', subscription.status, 'for user:', user.id);
@@ -143,6 +146,7 @@ export async function POST(request: NextRequest) {
           if (user) {
             const updatedUser = await userOperations.updateProfile(user.id, {
               subscription_status: updatedSubscription.status,
+              stripe_subscription_id: updatedSubscription.id,
               updated_at: new Date().toISOString()
             });
             console.log('✅ Webhook: Updated user subscription status to:', updatedSubscription.status, 'for user:', user.id);
@@ -168,6 +172,7 @@ export async function POST(request: NextRequest) {
           if (user) {
             const updatedUser = await userOperations.updateProfile(user.id, {
               subscription_status: 'canceled',
+              stripe_subscription_id: null, // Clear subscription ID when deleted
               updated_at: new Date().toISOString()
             });
             console.log('✅ Webhook: Updated user subscription status to canceled for user:', user.id);

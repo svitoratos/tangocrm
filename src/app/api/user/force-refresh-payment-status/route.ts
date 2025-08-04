@@ -112,9 +112,10 @@ export async function POST(request: NextRequest) {
           const subscription = subscriptions.data[0];
           console.log('🔧 Found Stripe subscription:', subscription.status);
           
-          // Update database with correct subscription status
+          // Update database with correct subscription status and ID
           await userOperations.updateProfile(userId, {
             subscription_status: subscription.status,
+            stripe_subscription_id: subscription.id,
             updated_at: new Date().toISOString()
           });
           
@@ -127,6 +128,12 @@ export async function POST(request: NextRequest) {
           console.log('✅ Updated subscription status from Stripe:', subscription.status);
         } else {
           console.log('🔧 No active Stripe subscriptions found');
+          // Clear subscription ID if no subscriptions found
+          await userOperations.updateProfile(userId, {
+            subscription_status: 'inactive',
+            stripe_subscription_id: null,
+            updated_at: new Date().toISOString()
+          });
         }
       } catch (stripeError) {
         console.error('❌ Error checking Stripe:', stripeError);

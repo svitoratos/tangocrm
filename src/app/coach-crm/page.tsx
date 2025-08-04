@@ -82,19 +82,19 @@ const testimonials = [
 const faqs = [
   {
     question: 'How does Tango CRM help with client session management?',
-    answer: 'Tango CRM provides comprehensive session management tools including scheduling, automated reminders, session notes, progress tracking, and follow-up management. You can track client progress over time, set session goals, and maintain detailed records of each coaching interaction.'
+    answer: 'Tango CRM helps you organize your coaching business by tracking clients and managing your content planning. You can keep notes about client sessions and manage your coaching programs to stay organized with your practice.'
   },
   {
     question: 'Can I manage different types of coaching programs?',
-    answer: 'Yes! Tango CRM is designed to handle multiple coaching programs simultaneously. Whether you offer 1-on-1 coaching, group programs, workshops, or online courses, you can organize clients by program type, track their progress through different offerings, and manage program-specific workflows.'
+    answer: 'Tango CRM helps you organize your coaching content and programs. You can track different types of coaching offerings and manage your content planning to keep your coaching business organized and on track.'
   },
   {
     question: 'How does Tango CRM support online coaching businesses?',
-    answer: 'Tango CRM is built for the modern coaching business. It includes features for virtual session management, digital client onboarding, online payment processing, and remote client communication. Perfect for coaches who work with clients globally or offer online-only services.'
+    answer: 'Tango CRM is designed to help coaches organize their business regardless of whether they work online or in-person. You can manage your coaching content, track your programs, and keep your coaching practice organized in one place.'
   },
   {
     question: 'Can I track client progress and coaching outcomes?',
-    answer: 'Absolutely! Tango CRM includes robust progress tracking features that help you monitor client goals, track milestones, record session outcomes, and measure coaching effectiveness. You can also generate progress reports for clients and track your coaching business metrics.'
+    answer: 'Tango CRM helps you organize your coaching business by tracking your programs and content. You can keep notes about your coaching sessions and manage your content planning to stay organized with your coaching practice.'
   }
 ]
 
@@ -114,7 +114,7 @@ export default function CoachCRMPage() {
               Manage clients, track sessions, and grow your coaching business with tools designed for the coaching industry.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/sign-up">
+              <Link href="https://accounts.gotangocrm.com/sign-up">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
                   Join Tango
                 </Button>
@@ -235,13 +235,13 @@ export default function CoachCRMPage() {
               </div>
               
               <div className="text-center">
-                                 <Link href="/sign-up">
-                   <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
-                     Join Tango
-                   </Button>
-                 </Link>
+                                                 <Link href="https://accounts.gotangocrm.com/sign-up">
+                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
+                    Join Tango
+                  </Button>
+                </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
-                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 14-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function CoachCRMPage() {
             Join hundreds of coaches who are already using Tango CRM to streamline their practices and grow their businesses.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/sign-up">
+            <Link href="https://accounts.gotangocrm.com/sign-up">
               <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50">
                 Join Tango
               </Button>

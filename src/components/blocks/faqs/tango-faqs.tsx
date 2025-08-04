@@ -8,7 +8,7 @@ const TangoFAQs = [
   {
     question: "What makes Tango different from other CRM platforms?",
     answer:
-      "Tango is specifically designed for creators, coaches, podcasters, and freelancers. Unlike generic CRMs, we offer niche-specific pipelines, templates, and workflows that are tailored to your industry. Our platform includes specialized features like content calendar integration, client session tracking, and automated follow-up sequences that other CRMs simply don't provide.",
+      "Tango is specifically designed for creators, coaches, podcasters, and freelancers. Unlike generic CRMs, we offer niche-specific pipelines, templates, and workflows that are tailored to your industry. Our platform includes specialized features like automated follow-up sequences and niche-specific tools that other CRMs simply don't provide.",
   },
   {
     question: "Can I manage more than one niche inside Tango?",
@@ -18,17 +18,17 @@ const TangoFAQs = [
   {
     question: "How does the pricing work and what's included?",
     answer:
-      "Tango offers transparent, tiered pricing starting at $39.99/month for the Creator plan. All plans include unlimited contacts, custom pipelines, email automation, and mobile access. Higher tiers add features like advanced analytics, team collaboration, and priority support.",
+      "Tango offers simple, transparent pricing at $39.99/month for Tango Core. This includes unlimited clients and opportunities, content planning and organization, goal tracking and analytics, calendar management, journal tools, and mobile responsive access. We focus on providing essential creator business tools without complex tiered pricing.",
   },
   {
     question: "Do I need any technical skills to use Tango?",
     answer:
-      "Nope! Tango is built to be clean, intuitive, and easy to use — whether you're filming videos, coaching clients, or running a podcast. If you can manage a calendar and send an email, you can run your business in Tango.",
+      "Nope! Tango is built to be clean, intuitive, and easy to use — whether you're managing content, organizing your business, or tracking your goals. If you can use a simple app, you can organize your creator business with Tango.",
   },
   {
     question: "What happens when I sign up?",
     answer:
-      "Simple Pricing, No Surprises\n\nYou'll choose a paid plan starting at $39.99/month (or save with annual billing).\nEach plan includes one niche — add more for just $9.99/month each.\n✅ No setup fees\n✅ Cancel anytime\n✅ 15-day satisfaction guarantee — full refund if you're not happy.",
+      "Simple Pricing, No Surprises\n\nYou'll choose a paid plan starting at $39.99/month (or save with annual billing).\nEach plan includes one niche — add more for just $9.99/month each.\n✅ No setup fees\n✅ Cancel anytime\n✅ 14-day satisfaction guarantee — full refund if you're not happy.",
   },
 ];
 

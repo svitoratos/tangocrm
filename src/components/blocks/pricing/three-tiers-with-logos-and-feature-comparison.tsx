@@ -7,7 +7,7 @@ const tiers = [
     name: 'Starter',
     description: 'Everything you need to get started.',
     priceMonthly: '$19',
-    href: '/sign-up',
+    href: 'https://accounts.gotangocrm.com/sign-up',
     highlights: [
       { description: 'Custom domains' },
       { description: 'Edge content delivery' },
@@ -21,7 +21,7 @@ const tiers = [
     name: 'Growth',
     description: 'All the extras for your growing team.',
     priceMonthly: '$49',
-    href: '/sign-up',
+    href: 'https://accounts.gotangocrm.com/sign-up',
     highlights: [
       { description: 'Custom domains' },
       { description: 'Edge content delivery' },
@@ -35,7 +35,7 @@ const tiers = [
     name: 'Scale',
     description: 'Added flexibility at scale.',
     priceMonthly: '$99',
-    href: '/sign-up',
+    href: 'https://accounts.gotangocrm.com/sign-up',
     highlights: [
       { description: 'Custom domains' },
       { description: 'Edge content delivery' },

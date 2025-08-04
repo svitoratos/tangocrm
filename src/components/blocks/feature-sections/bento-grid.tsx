@@ -34,7 +34,7 @@ export function FeaturesSectionBentoGrid() {
     {
       title: "Freelancer Setup",
       description:
-        "Manage project pipelines, client communications, and invoice tracking in one dashboard.",
+        "Manage project pipelines and client communications in one dashboard.",
       skeleton: <SkeletonFreelancer />,
       className: "col-span-1 lg:col-span-3",
     },

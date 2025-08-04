@@ -42,17 +42,25 @@ export default function RootLayout({
         layout: {
           unsafe_disableDevelopmentModeWarnings: true,
         },
+        variables: {
+          colorPrimary: "#10b981",
+          colorText: "#1f2937",
+          colorTextSecondary: "#6b7280",
+          colorBackground: "#ffffff",
+          colorInputBackground: "#ffffff",
+          colorInputText: "#1f2937",
+        },
       }}
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      signInUrl="/signin"
-      signUpUrl="/signup"
+      signInUrl="https://accounts.gotangocrm.com/sign-in"
+      signUpUrl="https://accounts.gotangocrm.com/sign-up"
       signUpFallbackRedirectUrl="/onboarding"
       signInFallbackRedirectUrl="/dashboard"
     >
       <html lang="en" suppressHydrationWarning className={inter.variable}>
         <head>
           <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+          <link rel="apple-touch-icon" sizes="32x32" href="/apple-touch-icon.png" />
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="manifest" href="/site.webmanifest" />

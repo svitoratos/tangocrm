@@ -37,6 +37,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { billingCycle, selectedRoles, selectedGoals, selectedSetupTask } = body;
 
+    console.log('🔧 Checkout request body:', {
+      billingCycle,
+      selectedRoles,
+      selectedGoals,
+      selectedSetupTask
+    });
+
     const primaryRole = selectedRoles[0] || 'content-creator';
 
     // Create test products and prices on the fly for testing
@@ -55,47 +62,26 @@ export async function POST(request: NextRequest) {
       console.log('🔧 Environment:', process.env.NODE_ENV);
       console.log('🔧 App URL:', process.env.NEXT_PUBLIC_APP_URL);
       
-      if (isTestMode) {
-        // Create test price for testing
-        // Map billingCycle to valid Stripe intervals
-        const stripeInterval = billingCycle === 'yearly' ? 'year' : 'month';
-        
-        const testPrice = await stripe.prices.create({
-          unit_amount: 3999, // $39.99
-          currency: 'usd',
-          recurring: {
-            interval: stripeInterval,
-          },
-          product_data: {
-            name: `Tango ${primaryRole} - ${billingCycle} (Test)`,
-          },
-        });
-        
-        priceId = testPrice.id;
-        console.log('Created test price:', priceId);
-      } else {
-        // Use live price IDs
-        const priceIds: Record<string, Record<string, string>> = {
-          'content-creator': {
-            monthly: 'price_1RjmNPIvVfTNGbwuqLvxM7BC', // $39.99/month
-            yearly: 'price_1Ro6qgIvVfTNGbwuZrlckcp7'   // $383.90/year
-          },
-          'coach': {
-            monthly: 'price_1RjmNPIvVfTNGbwuqLvxM7BC', // $39.99/month
-            yearly: 'price_1Ro6qgIvVfTNGbwuZrlckcp7'   // $383.90/year
-          },
-          'podcaster': {
-            monthly: 'price_1RjmNPIvVfTNGbwuqLvxM7BC', // $39.99/month
-            yearly: 'price_1Ro6qgIvVfTNGbwuZrlckcp7'   // $383.90/year
-          },
-          'freelancer': {
-            monthly: 'price_1RjmNPIvVfTNGbwuqLvxM7BC', // $39.99/month
-            yearly: 'price_1Ro6qgIvVfTNGbwuZrlckcp7'   // $383.90/year
-          }
-        };
-
-        priceId = priceIds[primaryRole]?.[billingCycle];
-      }
+      // Create price dynamically for both test and production
+      // Map billingCycle to valid Stripe intervals
+      const stripeInterval = billingCycle === 'yearly' ? 'year' : 'month';
+      
+      // Calculate price based on billing cycle
+      const unitAmount = billingCycle === 'yearly' ? 38390 : 3999; // $383.90/year or $39.99/month
+      
+      const price = await stripe.prices.create({
+        unit_amount: unitAmount,
+        currency: 'usd',
+        recurring: {
+          interval: stripeInterval,
+        },
+        product_data: {
+          name: `Tango ${primaryRole} - ${billingCycle}`,
+        },
+      });
+      
+      priceId = price.id;
+      console.log('Created price:', priceId, 'for', primaryRole, billingCycle);
 
       if (!priceId) {
         return NextResponse.json({ error: 'Invalid pricing configuration' }, { status: 400 });

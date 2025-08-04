@@ -82,19 +82,19 @@ const testimonials = [
 const faqs = [
   {
     question: 'How does Tango CRM help with podcast guest management?',
-    answer: 'Tango CRM provides a complete guest management system where you can track potential guests, manage interview schedules, store contact information, and follow up with guests automatically. You can also categorize guests by expertise, track interview outcomes, and build a database of repeat guests.'
+    answer: 'Tango CRM helps you organize your podcast workflow by tracking episodes and managing basic guest information. You can keep notes about potential guests and manage your content calendar to stay organized with your podcast planning.'
   },
   {
     question: 'Can I track podcast sponsorships and ad revenue?',
-    answer: 'Absolutely! Tango CRM includes specialized sponsorship tracking features that help you manage sponsor relationships, track ad revenue, monitor campaign performance, and ensure timely deliverables. You can also track sponsorship renewals and upsell opportunities.'
+    answer: 'Yes! Tango CRM helps you manage your podcast business by tracking episodes, guests, and content planning. You can organize your podcast workflow, manage guest information, and keep track of your content calendar all in one place.'
   },
   {
     question: 'Is Tango CRM suitable for podcast networks with multiple shows?',
-    answer: 'Yes! Tango CRM is designed to scale with your podcast business. Whether you have one show or a network of podcasts, our platform helps you manage multiple shows, coordinate cross-promotion, and track performance across your entire podcast portfolio.'
+    answer: 'Tango CRM is designed for individual podcast creators and small teams. While you can manage multiple episodes and content planning, it\'s best suited for single shows or small podcast operations rather than large networks with complex coordination needs.'
   },
   {
     question: 'How does Tango CRM integrate with podcast production workflows?',
-    answer: 'Tango CRM helps you manage the entire podcast production process, from initial planning to episode release. Track recording schedules, manage editing deadlines, coordinate with audio engineers, and ensure all team members stay on the same page.'
+    answer: 'Tango CRM helps you stay organized with your podcast content planning. You can track episodes, manage your content calendar, and keep notes about your podcast workflow to ensure you stay on top of your production schedule.'
   }
 ]
 
@@ -114,7 +114,7 @@ export default function PodcasterCRMPage() {
               Manage guests, track sponsorships, and grow your podcast business with tools designed for the audio industry.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/sign-up">
+              <Link href="https://accounts.gotangocrm.com/sign-up">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
                   Join Tango
                 </Button>
@@ -235,13 +235,13 @@ export default function PodcasterCRMPage() {
               </div>
               
               <div className="text-center">
-                                 <Link href="/sign-up">
-                   <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
-                     Join Tango
-                   </Button>
-                 </Link>
+                                                 <Link href="https://accounts.gotangocrm.com/sign-up">
+                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
+                    Join Tango
+                  </Button>
+                </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
-                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 14-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function PodcasterCRMPage() {
             Join hundreds of podcasters who are already using Tango CRM to streamline their workflows and grow their shows.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/sign-up">
+            <Link href="https://accounts.gotangocrm.com/sign-up">
               <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50">
                 Join Tango
               </Button>

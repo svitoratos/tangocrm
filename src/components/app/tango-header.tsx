@@ -61,12 +61,12 @@ const DesktopNav = ({ navItems, hovered, setHovered }: any) => {
       </div>
       <div className="flex items-center space-x-4">
         <SignedOut>
-          <Link href="/signin">
+          <Link href="https://accounts.gotangocrm.com/sign-in">
             <button className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200">
               Sign In
             </button>
           </Link>
-          <Link href="/signup">
+          <Link href="https://accounts.gotangocrm.com/sign-up">
             <button className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200">
               Sign Up
             </button>
@@ -137,7 +137,7 @@ const MobileNav = ({ navItems, open, setOpen }: any) => {
             ))}
             <div className="flex flex-col items-center gap-4 w-full max-w-xs mt-4">
               <SignedOut>
-                <Link href="/signin">
+                <Link href="https://accounts.gotangocrm.com/sign-in">
                   <button 
                     className="w-full text-center py-2 text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200"
                     onClick={() => setOpen(false)}
@@ -145,7 +145,7 @@ const MobileNav = ({ navItems, open, setOpen }: any) => {
                     Sign In
                   </button>
                 </Link>
-                <Link href="/signup">
+                <Link href="https://accounts.gotangocrm.com/sign-up">
                   <button 
                     className="w-full text-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
                     onClick={() => setOpen(false)}

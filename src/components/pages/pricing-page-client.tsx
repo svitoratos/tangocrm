@@ -139,7 +139,7 @@ function PricingContent() {
                   </div>
                 )}
                 
-                <Link href="/sign-up">
+                <Link href="https://accounts.gotangocrm.com/sign-up">
                   <Button 
                     className={`w-full ${
                       plan.popular 
@@ -151,7 +151,7 @@ function PricingContent() {
                   </Button>
                 </Link>
                 <p className="text-xs text-emerald-600 text-center mt-3">
-                  ✅ 15-day satisfaction guarantee — full refund if you're not happy
+                  ✅ 14-day satisfaction guarantee — full refund if you're not happy
                 </p>
               </CardContent>
             </Card>
@@ -171,7 +171,7 @@ function PricingContent() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600">
-              Simply sign up and start using Tango CRM immediately. No credit card required to get started.
+              Simply sign up, choose your niche, and start using Tango CRM right away.
             </p>
               </CardContent>
             </Card>
@@ -204,7 +204,7 @@ function PricingContent() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  We offer a 15-day satisfaction guarantee — full refund if you're not happy. This applies to both monthly and annual subscriptions.
+                  We offer a 14-day satisfaction guarantee — full refund if you're not happy. This applies to both monthly and annual subscriptions.
                 </p>
               </CardContent>
             </Card>

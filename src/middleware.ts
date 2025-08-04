@@ -154,8 +154,8 @@ export default clerkMiddleware(async (auth, req) => {
       console.log('🔧 Middleware: Allowing access to success page');
       return NextResponse.next();
     } else {
-      console.log('🔧 Middleware: Redirecting unauthenticated user to signin');
-      return NextResponse.redirect(new URL('/signin', req.url));
+      console.log('🔧 Middleware: Redirecting unauthenticated user to sign-in');
+      return NextResponse.redirect(new URL('https://accounts.gotangocrm.com/sign-in', req.url));
     }
   }
   
@@ -166,7 +166,7 @@ export default clerkMiddleware(async (auth, req) => {
   
   // If user is not authenticated, redirect to sign-in
   if (!userId) {
-    return NextResponse.redirect(new URL('/signin', req.url));
+    return NextResponse.redirect(new URL('https://accounts.gotangocrm.com/sign-in', req.url));
   }
   
   // Check if route requires admin access

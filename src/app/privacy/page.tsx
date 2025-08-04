@@ -349,13 +349,13 @@ const DesktopNav = ({ navItems, hovered, setHovered }: any) => {
       </div>
       <div className="flex items-center space-x-4">
         <Link 
-          href="/sign-in"
+          href="https://accounts.gotangocrm.com/sign-in"
           className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
         >
           Sign In
         </Link>
         <Link 
-          href="/sign-up"
+          href="https://accounts.gotangocrm.com/sign-up"
           className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
         >
           Sign Up
@@ -408,14 +408,14 @@ const MobileNav = ({ navItems, open, setOpen }: any) => {
               ))}
               <div className="flex flex-col items-center gap-4 w-full max-w-xs mt-4">
                 <Link 
-                  href="/sign-in"
+                  href="https://accounts.gotangocrm.com/sign-in"
                   className="w-full text-center py-2 text-muted-foreground hover:text-foreground font-medium transition-colors duration-200"
                   onClick={() => setOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link 
-                  href="/sign-up"
+                  href="https://accounts.gotangocrm.com/sign-up"
                   className="w-full text-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
                   onClick={() => setOpen(false)}
                 >

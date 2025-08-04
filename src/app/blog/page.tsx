@@ -257,13 +257,13 @@ export default function BlogPage() {
               </div>
               
               <div className="text-center">
-                                 <Link href="/sign-up">
+                                 <Link href="https://accounts.gotangocrm.com/sign-up">
                    <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
                      Join Tango
                    </Button>
                  </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
-                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 14-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function BlogPage() {
           <p className="text-lg text-emerald-100 mb-8 max-w-2xl mx-auto">
             Join thousands of creators who are already using Tango CRM to streamline their workflows and grow their businesses.
           </p>
-                       <Link href="/sign-up">
+                       <Link href="https://accounts.gotangocrm.com/sign-up">
                <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50">
                  Join Tango
                </Button>

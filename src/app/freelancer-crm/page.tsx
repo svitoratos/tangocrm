@@ -82,16 +82,16 @@ const testimonials = [
 const faqs = [
   {
     question: 'How does Tango CRM help with freelance project management?',
-    answer: 'Tango CRM provides comprehensive project management tools including project tracking, deadline management, client communication, file sharing, and progress monitoring. You can track projects from initial proposal through completion, manage multiple projects simultaneously, and ensure nothing falls through the cracks.'
+    answer: 'Tango CRM helps you organize your freelance business by tracking clients and managing your content planning. You can keep notes about your projects and manage your freelance workflow to stay organized with your business.'
   },
 
   {
     question: 'How does Tango CRM support different types of freelancers?',
-    answer: 'Tango CRM is designed to work for all types of freelancers and consultants - from web developers and designers to writers, marketers, consultants, and more. The platform is flexible enough to adapt to your specific workflow while providing the essential tools every freelancer needs to manage their business.'
+    answer: 'Tango CRM is designed to help freelancers organize their business regardless of their specialty. Whether you\'re a designer, writer, developer, or consultant, you can manage your clients, track your projects, and keep your freelance business organized in one place.'
   },
   {
     question: 'Can I manage multiple clients and projects efficiently?',
-    answer: 'Absolutely! Tango CRM is built to handle multiple clients and projects simultaneously. You can organize clients by industry, project type, or any other criteria that makes sense for your business. The platform helps you prioritize work, manage deadlines, and ensure you\'re giving each client the attention they deserve.'
+    answer: 'Tango CRM helps you organize your freelance business by tracking your clients and projects. You can manage your content planning and keep notes about your work to stay organized with multiple clients and projects.'
   }
 ]
 
@@ -111,7 +111,7 @@ export default function FreelancerCRMPage() {
               Manage clients, track projects, and grow your freelance business with tools designed for the gig economy.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/sign-up">
+              <Link href="https://accounts.gotangocrm.com/sign-up">
                 <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
                   Join Tango
                 </Button>
@@ -232,13 +232,13 @@ export default function FreelancerCRMPage() {
               </div>
               
               <div className="text-center">
-                                 <Link href="/sign-up">
-                   <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
-                     Join Tango
-                   </Button>
-                 </Link>
+                                                 <Link href="https://accounts.gotangocrm.com/sign-up">
+                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
+                    Join Tango
+                  </Button>
+                </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
-                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 14-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function FreelancerCRMPage() {
             Join thousands of freelancers who are already using Tango CRM to streamline their workflows and grow their businesses.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/sign-up">
+            <Link href="https://accounts.gotangocrm.com/sign-up">
               <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50">
                 Join Tango
               </Button>

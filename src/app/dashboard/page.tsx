@@ -570,34 +570,25 @@ function MainDashboardWithSearchParams() {
     try {
       setIsLoading(true);
       
-      // Use the proper API to create a checkout session with the specific niche
-      const response = await fetch('/api/stripe/niche-upgrade', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          selectedNiche: nicheId,
-          billingCycle: billingCycle
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Created niche upgrade checkout session:', data);
-        
-        // Redirect to Stripe checkout
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          console.error('❌ No checkout URL received');
-          setError('Failed to create checkout session');
-        }
+      // Store the selected niche in sessionStorage so we can retrieve it after payment
+      sessionStorage.setItem('pendingNicheUpgrade', nicheId);
+      
+      // Use direct Stripe payment links based on the selected niche
+      const stripePaymentLinks: Record<string, string> = {
+        'coach': 'https://buy.stripe.com/5kQ3cw5l086faBieOE2Nq05',
+        'creator': 'https://buy.stripe.com/fZu14o7t83PZeRy35W2Nq06',
+        'podcaster': 'https://buy.stripe.com/14AcN65l00DNbFm9uk2Nq08',
+        'freelancer': 'https://buy.stripe.com/3cI7sMcNs5Y710I21S2Nq0a'
+      };
+      
+      const paymentLink = stripePaymentLinks[nicheId];
+      
+      if (paymentLink) {
+        console.log('🔗 Redirecting to Stripe payment link for:', nicheId);
+        window.location.href = paymentLink;
       } else {
-        console.error('❌ Failed to create checkout session');
-        const errorData = await response.json();
-        console.error('❌ Error details:', errorData);
-        setError('Failed to process upgrade request');
+        console.error('❌ No payment link found for niche:', nicheId);
+        setError('Failed to find payment link for selected niche');
       }
       
       setIsUpgradeModalOpen(false);
@@ -750,10 +741,10 @@ export default function ProtectedDashboard() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
             <p className="text-gray-600 mb-6">Please sign up or sign in to access your dashboard.</p>
             <div className="flex gap-4 justify-center">
-              <Link href="/sign-up" className="bg-emerald-500 text-white px-6 py-2 rounded-md hover:bg-emerald-600 transition-colors">
+              <Link href="https://accounts.gotangocrm.com/sign-up" className="bg-emerald-500 text-white px-6 py-2 rounded-md hover:bg-emerald-600 transition-colors">
                 Sign Up
               </Link>
-              <Link href="/signin" className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors">
+              <Link href="https://accounts.gotangocrm.com/sign-in" className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition-colors">
                 Sign In
               </Link>
             </div>

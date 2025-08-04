@@ -83,11 +83,11 @@ export default function CreatorCRMGuidePage() {
                 A creator CRM platform provides a centralized hub for all your business operations. It helps you:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2">
-                <li>Track brand deals and sponsorship opportunities</li>
-                <li>Manage client relationships and communications</li>
-                <li>Organize content calendars and deliverables</li>
-                <li>Monitor revenue and business growth</li>
-                <li>Automate follow-ups and reminders</li>
+                <li>Track clients and opportunities</li>
+                <li>Manage your content planning and organization</li>
+                <li>Organize your business workflow</li>
+                <li>Keep track of your goals and progress</li>
+                <li>Stay organized with your creator business</li>
               </ul>
             </div>
           </div>
@@ -102,10 +102,10 @@ export default function CreatorCRMGuidePage() {
                 Look for a CRM that can track brand deals from initial contact to completion. This should include:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Deal pipeline management</li>
-                <li>Contract tracking and storage</li>
-                <li>Payment tracking and invoicing</li>
-                <li>Performance metrics and reporting</li>
+                <li>Client and opportunity tracking</li>
+                <li>Basic project organization</li>
+                <li>Content planning and management</li>
+                <li>Goal tracking and progress monitoring</li>
               </ul>
             </div>
 
@@ -128,10 +128,10 @@ export default function CreatorCRMGuidePage() {
                 Your CRM should integrate with your content workflow, helping you:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Schedule content and deliverables</li>
-                <li>Track project deadlines</li>
-                <li>Manage multiple content types</li>
-                <li>Coordinate with team members</li>
+                <li>Organize your content planning</li>
+                <li>Track your content workflow</li>
+                <li>Manage your content organization</li>
+                <li>Keep your content calendar organized</li>
               </ul>
             </div>
 
@@ -141,10 +141,10 @@ export default function CreatorCRMGuidePage() {
                 Comprehensive analytics help you understand your business performance:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Revenue tracking and forecasting</li>
-                <li>Client acquisition and retention metrics</li>
-                <li>Content performance analysis</li>
-                <li>Business growth insights</li>
+                <li>Basic goal tracking and progress monitoring</li>
+                <li>Content organization and planning</li>
+                <li>Business workflow management</li>
+                <li>Simple analytics and insights</li>
               </ul>
             </div>
           </div>
@@ -158,12 +158,12 @@ export default function CreatorCRMGuidePage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-3">Must-Have Features:</h4>
                 <ul className="space-y-2 text-gray-700">
-                  <li>✓ Brand deal tracking</li>
-                  <li>✓ Client management</li>
-                  <li>✓ Content calendar</li>
-                  <li>✓ Revenue tracking</li>
-                  <li>✓ Mobile accessibility</li>
-                  <li>✓ Integration capabilities</li>
+                  <li>✓ Client and opportunity tracking</li>
+                  <li>✓ Content planning and organization</li>
+                  <li>✓ Goal tracking and progress monitoring</li>
+                  <li>✓ Business workflow management</li>
+                  <li>✓ Mobile responsive design</li>
+                  <li>✓ Simple and intuitive interface</li>
                 </ul>
               </div>
               <div>
@@ -193,11 +193,11 @@ export default function CreatorCRMGuidePage() {
                 <h4 className="font-semibold text-gray-900 mb-3">Creator-Specific Features:</h4>
                 <ul className="space-y-2 text-gray-700">
                   <li>• Multi-niche support (Creators, Coaches, Podcasters, Freelancers)</li>
-                  <li>• Brand deal pipeline management</li>
-                  <li>• Sponsorship tracking and analytics</li>
-                  <li>• Content calendar integration</li>
-                  <li>• Revenue split calculations</li>
-                  <li>• Creator-specific templates and workflows</li>
+                  <li>• Client and opportunity tracking</li>
+                  <li>• Content planning and organization</li>
+                  <li>• Goal tracking and progress monitoring</li>
+                  <li>• Business workflow management</li>
+                  <li>• Creator-friendly interface and organization</li>
                 </ul>
               </div>
               <div>
@@ -277,13 +277,13 @@ export default function CreatorCRMGuidePage() {
               </div>
               
               <div className="text-center">
-                                 <Link href="/sign-up">
+                                 <Link href="https://accounts.gotangocrm.com/sign-up">
                    <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
                      Join Tango
                    </Button>
                  </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
-                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 14-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function CreatorCRMGuidePage() {
             Join thousands of creators who are already using Tango CRM to streamline their workflows and grow their businesses.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                           <Link href="/sign-up">
+                           <Link href="https://accounts.gotangocrm.com/sign-up">
                  <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50">
                    Join Tango
                  </Button>

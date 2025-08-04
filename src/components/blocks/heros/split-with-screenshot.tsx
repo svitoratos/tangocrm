@@ -80,7 +80,7 @@ export default function SplitWithScreenshot({ showLoggedInState = false }: Split
               // Not logged in state
               <>
                 <Link 
-                  href="/sign-up"
+                  href="https://accounts.gotangocrm.com/sign-up"
                   className="rounded-md bg-emerald-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 inline-block"
                 >
                   Join Tango
@@ -176,13 +176,13 @@ const DesktopNav = ({ navItems, hovered, setHovered, user, isLoaded, onLogout }:
           // Not logged in state
           <>
             <Link 
-              href="/sign-in"
+              href="https://accounts.gotangocrm.com/sign-in"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               Sign In
             </Link>
             <Link 
-              href="/sign-up"
+              href="https://accounts.gotangocrm.com/sign-up"
               className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
             >
               Sign Up
@@ -262,14 +262,14 @@ const MobileNav = ({ navItems, open, setOpen, user, isLoaded, onLogout }: any) =
                   // Not logged in state
                   <>
                     <Link 
-                      href="/sign-in"
+                      href="https://accounts.gotangocrm.com/sign-in"
                       className="w-full text-center py-2 text-muted-foreground hover:text-foreground font-medium transition-colors duration-200"
                       onClick={() => setOpen(false)}
                     >
                       Sign In
                     </Link>
                     <Link 
-                      href="/sign-up"
+                      href="https://accounts.gotangocrm.com/sign-up"
                       className="w-full text-center rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
                       onClick={() => setOpen(false)}
                     >

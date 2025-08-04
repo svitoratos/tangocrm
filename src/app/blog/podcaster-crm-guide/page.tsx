@@ -83,11 +83,11 @@ export default function PodcasterCRMGuidePage() {
                 A podcaster CRM platform provides a centralized hub for all your podcast operations. It helps you:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2">
-                <li>Track guest relationships and booking schedules</li>
-                <li>Manage sponsorship opportunities and campaigns</li>
-                <li>Organize episode production workflows</li>
-                <li>Monitor podcast performance and growth</li>
-                <li>Automate follow-ups and reminders</li>
+                <li>Track guests and manage your content planning</li>
+                <li>Organize your podcast workflow and episodes</li>
+                <li>Manage your podcast business organization</li>
+                <li>Keep track of your podcast goals and progress</li>
+                <li>Stay organized with your podcast business</li>
               </ul>
             </div>
           </div>
@@ -102,10 +102,10 @@ export default function PodcasterCRMGuidePage() {
                 Look for a CRM that can track potential guests, manage interview schedules, and maintain guest relationships. This should include:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Guest database with contact information</li>
-                <li>Interview scheduling and calendar integration</li>
-                <li>Guest categorization by expertise and industry</li>
-                <li>Follow-up automation and relationship tracking</li>
+                <li>Basic guest information tracking</li>
+                <li>Content planning and organization</li>
+                <li>Episode workflow management</li>
+                <li>Simple guest relationship notes</li>
               </ul>
             </div>
 
@@ -115,10 +115,10 @@ export default function PodcasterCRMGuidePage() {
                 A good podcaster CRM should help you manage sponsor relationships and track revenue:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Sponsor contact and relationship management</li>
-                <li>Sponsorship campaign tracking</li>
-                <li>Ad revenue monitoring and reporting</li>
-                <li>Contract and deliverable management</li>
+                <li>Basic sponsor information tracking</li>
+                <li>Content planning and organization</li>
+                <li>Simple business workflow management</li>
+                <li>Goal tracking and progress monitoring</li>
               </ul>
             </div>
 
@@ -128,10 +128,10 @@ export default function PodcasterCRMGuidePage() {
                 Your CRM should integrate with your production process, helping you:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Plan episode schedules and content calendars</li>
-                <li>Track recording and editing deadlines</li>
-                <li>Manage production team coordination</li>
-                <li>Monitor episode release schedules</li>
+                <li>Organize your episode planning and content calendar</li>
+                <li>Track your podcast workflow and content organization</li>
+                <li>Manage your podcast business organization</li>
+                <li>Keep your podcast content organized</li>
               </ul>
             </div>
 
@@ -141,10 +141,10 @@ export default function PodcasterCRMGuidePage() {
                 Comprehensive analytics help you understand your podcast performance:
               </p>
               <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Listener growth and engagement metrics</li>
-                <li>Episode performance analysis</li>
-                <li>Revenue and sponsorship tracking</li>
-                <li>Audience demographics and insights</li>
+                <li>Basic goal tracking and progress monitoring</li>
+                <li>Content organization and planning</li>
+                <li>Podcast workflow management</li>
+                <li>Simple analytics and insights</li>
               </ul>
             </div>
           </div>
@@ -158,12 +158,12 @@ export default function PodcasterCRMGuidePage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-3">Must-Have Features:</h4>
                 <ul className="space-y-2 text-gray-700">
-                  <li>✓ Guest management system</li>
-                  <li>✓ Sponsorship tracking</li>
-                  <li>✓ Episode production workflow</li>
-                  <li>✓ Analytics and reporting</li>
-                  <li>✓ Calendar integration</li>
-                  <li>✓ Mobile accessibility</li>
+                  <li>✓ Guest and content tracking</li>
+                  <li>✓ Content planning and organization</li>
+                  <li>✓ Goal tracking and progress monitoring</li>
+                  <li>✓ Podcast workflow management</li>
+                  <li>✓ Mobile responsive design</li>
+                  <li>✓ Simple and intuitive interface</li>
                 </ul>
               </div>
               <div>
@@ -192,12 +192,12 @@ export default function PodcasterCRMGuidePage() {
               <div>
                 <h4 className="font-semibold text-gray-900 mb-3">Podcaster-Specific Features:</h4>
                 <ul className="space-y-2 text-gray-700">
-                  <li>• Guest relationship management</li>
-                  <li>• Sponsorship campaign tracking</li>
-                  <li>• Episode production workflow</li>
-                  <li>• Podcast analytics integration</li>
-                  <li>• Multi-show management</li>
-                  <li>• Audio industry templates</li>
+                  <li>• Guest and content tracking</li>
+                  <li>• Content planning and organization</li>
+                  <li>• Goal tracking and progress monitoring</li>
+                  <li>• Podcast workflow management</li>
+                  <li>• Episode organization and planning</li>
+                  <li>• Podcaster-friendly interface and organization</li>
                 </ul>
               </div>
               <div>
@@ -277,13 +277,13 @@ export default function PodcasterCRMGuidePage() {
               </div>
               
               <div className="text-center">
-                                 <Link href="/sign-up">
+                                 <Link href="https://accounts.gotangocrm.com/sign-up">
                    <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 w-full md:w-auto">
                      Join Tango
                    </Button>
                  </Link>
                 <p className="text-sm text-gray-500 mt-4">No setup fees • Cancel anytime</p>
-                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 15-day satisfaction guarantee — full refund if you're not happy</p>
+                <p className="text-sm text-emerald-600 font-medium mt-2">✅ 14-day satisfaction guarantee — full refund if you're not happy</p>
               </div>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function PodcasterCRMGuidePage() {
             Join hundreds of podcasters who are already using Tango CRM to streamline their workflows and grow their shows.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                           <Link href="/sign-up">
+                           <Link href="https://accounts.gotangocrm.com/sign-up">
                  <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50">
                    Join Tango
                  </Button>

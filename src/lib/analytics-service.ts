@@ -494,7 +494,8 @@ class AnalyticsService {
       }
 
       const content = await response.json();
-      const programs = content.filter((item: any) => item.type === 'program');
+      // For coach niche, all content items are considered programs
+      const programs = content;
 
       const totalPrograms = programs.length;
       const activePrograms = programs.filter((item: any) => item.status === 'active').length;
