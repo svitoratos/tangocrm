@@ -21,6 +21,7 @@ interface UseSubscriptionDetailsReturn {
   formatDate: (timestamp: number) => string;
   isYearlySubscription: boolean;
   isMonthlySubscription: boolean;
+  refetch: () => Promise<void>;
 }
 
 export const useSubscriptionDetails = (): UseSubscriptionDetailsReturn => {
@@ -71,6 +72,27 @@ export const useSubscriptionDetails = (): UseSubscriptionDetailsReturn => {
   const isYearlySubscription = subscriptionDetails?.billing_interval === 'year';
   const isMonthlySubscription = subscriptionDetails?.billing_interval === 'month';
 
+  const refetch = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/user/subscription-details');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubscriptionDetails(data.subscription);
+      } else {
+        setError(data.error || 'Failed to fetch subscription details');
+      }
+    } catch (err) {
+      setError('Failed to fetch subscription details');
+      console.error('Error fetching subscription details:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     subscriptionDetails,
     isLoading,
@@ -79,5 +101,6 @@ export const useSubscriptionDetails = (): UseSubscriptionDetailsReturn => {
     formatDate,
     isYearlySubscription,
     isMonthlySubscription,
+    refetch,
   };
 }; 

@@ -29,7 +29,7 @@ import {
 
 export const SubscriptionManagement = () => {
   const { user } = useUser();
-  const { paymentStatus, isLoading: paymentStatusLoading, refetch: refetchPaymentStatus } = usePaymentStatus();
+  const { paymentStatus, isLoading: paymentStatusLoading, refreshPaymentStatus } = usePaymentStatus();
   const {
     subscriptionDetails,
     isLoading: subscriptionLoading,
@@ -51,7 +51,7 @@ export const SubscriptionManagement = () => {
     setIsRefreshing(true);
     try {
       await Promise.all([
-        refetchPaymentStatus(),
+        refreshPaymentStatus(true), // true = show loading state
         refetchSubscription()
       ]);
     } catch (error) {
