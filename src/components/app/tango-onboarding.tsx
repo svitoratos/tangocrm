@@ -240,31 +240,26 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       console.log('Starting trial with billing cycle:', billingCycle);
       console.log('Selected roles:', selectedRoles);
       
-      // Create checkout session with proper return URL
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          billingCycle,
+      // Use pre-configured payment links based on the primary role
+      const primaryRole = selectedRoles[0] || 'creator';
+      const paymentLink = STRIPE_PAYMENT_LINKS[primaryRole as keyof typeof STRIPE_PAYMENT_LINKS]?.[billingCycle as 'monthly' | 'yearly'];
+      
+      if (paymentLink) {
+        console.log('Redirecting to payment link for:', primaryRole, billingCycle);
+        console.log('Payment link:', paymentLink);
+        
+        // Store onboarding data in sessionStorage for after payment
+        sessionStorage.setItem('pendingOnboarding', JSON.stringify({
           selectedRoles,
           selectedGoals,
           selectedSetupTask,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
-      
-      if (url) {
-        // Redirect to Stripe checkout with proper return URL
-        window.location.href = url;
+          billingCycle
+        }));
+        
+        // Redirect to the pre-configured payment link
+        window.location.href = paymentLink;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error(`No payment link found for ${primaryRole} with ${billingCycle} billing`);
       }
     } catch (err) {
       console.error('Payment error:', err);

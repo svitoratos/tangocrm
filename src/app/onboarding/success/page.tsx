@@ -61,6 +61,40 @@ function OnboardingSuccessContent() {
         } else {
           console.log('🔧 No session ID - coming from payment link');
           
+          // Check if we have pending onboarding data from sessionStorage
+          const pendingOnboarding = sessionStorage.getItem('pendingOnboarding');
+          if (pendingOnboarding) {
+            try {
+              const onboardingData = JSON.parse(pendingOnboarding);
+              console.log('🔧 Found pending onboarding data:', onboardingData);
+              
+              // Save onboarding data to the database
+              const onboardingResponse = await fetch('/api/user/onboarding-status', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  onboardingCompleted: true,
+                  primaryNiche: onboardingData.selectedRoles[0] || 'creator',
+                  niches: onboardingData.selectedRoles,
+                  goals: onboardingData.selectedGoals,
+                  setupTask: onboardingData.selectedSetupTask,
+                }),
+              });
+              
+              if (onboardingResponse.ok) {
+                console.log('✅ Successfully saved onboarding data from payment link');
+                // Clear the pending onboarding data
+                sessionStorage.removeItem('pendingOnboarding');
+              } else {
+                console.error('❌ Failed to save onboarding data from payment link');
+              }
+            } catch (error) {
+              console.error('❌ Error processing pending onboarding data:', error);
+            }
+          }
+          
           // Handle specific niche upgrade from the upgrade modal or payment links
           if (specificNiche) {
             console.log('🔧 Adding specific niche from upgrade modal or payment link:', specificNiche);
