@@ -24,7 +24,7 @@ export const metadata: Metadata = generateMetadata({
 const blogPosts = [
   {
     title: 'Complete Guide to Creator CRM Platforms: Choose the Best CRM for Your Creator Business',
-    description: 'Discover the best creator CRM platforms for content creators, influencers, coaches, and freelancers. Learn what features to look for and how to choose the right CRM for your creator business.',
+    description: 'Discover the best creator CRM platforms for content creators, influencers, coaches, podcasters, and freelancers. Learn what features to look for and how to choose the right CRM for your creator business.',
     href: '/blog/creator-crm-guide',
     category: 'Guides',
     readTime: '10 min read',

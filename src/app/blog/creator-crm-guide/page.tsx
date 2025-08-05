@@ -8,12 +8,13 @@ import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 
 export const metadata: Metadata = generateMetadata({
   title: 'Complete Guide to Creator CRM Platforms: Choose the Best CRM for Your Creator Business',
-  description: 'Discover the best creator CRM platforms for content creators, influencers, coaches, and freelancers. Learn what features to look for and how to choose the right CRM for your creator business.',
+  description: 'Discover the best creator CRM platforms for content creators, influencers, coaches, podcasters, and freelancers. Learn what features to look for and how to choose the right CRM for your creator business.',
   keywords: [
     'creator CRM guide',
     'best creator CRM platforms',
     'how to choose creator CRM',
     'CRM for content creators',
+    'CRM for podcasters',
     'influencer CRM comparison',
     'creator business management tools',
     'brand deal management CRM',
@@ -38,7 +39,7 @@ export default function CreatorCRMGuidePage() {
             <span>10 min read</span>
           </div>
           <p className="text-xl text-gray-600 leading-relaxed">
-            As the creator economy continues to grow, more and more content creators, influencers, coaches, and freelancers are realizing they need a proper CRM system to manage their business operations. But with so many options available, how do you choose the right creator CRM platform for your needs?
+            As the creator economy continues to grow, more and more content creators, influencers, coaches, podcasters, and freelancers are realizing they need a proper CRM system to manage their business operations. But with so many options available, how do you choose the right creator CRM platform for your needs?
           </p>
         </header>
 
@@ -58,7 +59,7 @@ export default function CreatorCRMGuidePage() {
         <section id="what-is-creator-crm" className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">What is a Creator CRM Platform?</h2>
           <p className="text-lg text-gray-700 mb-4">
-            A Creator CRM (Customer Relationship Management) platform is a specialized software system designed specifically for content creators, influencers, coaches, and freelancers to manage their business relationships and operations.
+            A Creator CRM (Customer Relationship Management) platform is a specialized software system designed specifically for content creators, influencers, coaches, podcasters, and freelancers to manage their business relationships and operations.
           </p>
           <p className="text-lg text-gray-700 mb-4">
             Unlike traditional CRMs that are built for sales teams and corporations, creator CRM platforms understand the unique workflows and needs of the creator economy. They help you manage brand deals, track client relationships, organize content calendars, and monitor your business growth.

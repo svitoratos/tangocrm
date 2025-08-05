@@ -213,7 +213,7 @@ export const structuredData = {
     '@type': 'WebSite',
     name: siteConfig.name,
     url: siteConfig.url,
-    description: 'The ultimate CRM platform for creators, influencers, coaches, and freelancers',
+    description: 'The ultimate CRM platform for creators, influencers, coaches, podcasters, and freelancers',
     potentialAction: {
       '@type': 'SearchAction',
       target: `${siteConfig.url}/search?q={search_term_string}`,
@@ -229,7 +229,7 @@ export const structuredData = {
         name: 'What is a creator CRM platform?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'A creator CRM platform is a customer relationship management system specifically designed for content creators, influencers, coaches, and freelancers to manage their business operations, track brand deals, and grow their creator business.'
+          text: 'A creator CRM platform is a customer relationship management system specifically designed for content creators, influencers, coaches, podcasters, and freelancers to manage their business operations, track brand deals, and grow their creator business.'
         }
       },
       {

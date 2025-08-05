@@ -9,14 +9,16 @@ import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 
 export const metadata: Metadata = generateMetadata({
   title: 'Creator CRM Platform - The #1 CRM for Content Creators & Influencers',
-  description: 'Tango CRM is the leading creator CRM platform designed specifically for content creators, influencers, coaches, and freelancers. Manage brand deals, track revenue, and grow your creator business.',
+  description: 'Tango CRM is the leading creator CRM platform designed specifically for content creators, influencers, coaches, podcasters, and freelancers. Manage brand deals, track revenue, and grow your creator business.',
   keywords: [
     'creator CRM platform',
     'best creator CRM',
     'influencer CRM platform',
     'content creator CRM',
+    'podcaster CRM platform',
     'CRM for creators',
     'CRM for influencers',
+    'CRM for podcasters',
     'creator business management',
     'influencer management platform',
     'brand deals management',
@@ -82,7 +84,7 @@ const testimonials = [
 const faqs = [
   {
     question: 'What makes Tango CRM different from other CRM platforms?',
-    answer: 'Tango CRM is built specifically for the creator economy. Unlike traditional CRMs designed for sales teams, Tango understands creator workflows, brand deal management, and the unique needs of content creators, influencers, coaches, and freelancers.'
+    answer: 'Tango CRM is built specifically for the creator economy. Unlike traditional CRMs designed for sales teams, Tango understands creator workflows, brand deal management, and the unique needs of content creators, influencers, coaches, podcasters, and freelancers.'
   },
   {
     question: 'Can I manage multiple types of income streams?',
@@ -110,7 +112,7 @@ export default function CreatorCRMPage() {
               The #1 Creator CRM Platform
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Built specifically for content creators, influencers, coaches, and freelancers. 
+              Built specifically for content creators, influencers, coaches, podcasters, and freelancers. 
               Manage brand deals, track revenue, and grow your creator business with tools that actually fit how you work.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
