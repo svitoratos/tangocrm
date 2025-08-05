@@ -3,7 +3,7 @@ import { generateMetadata } from '@/lib/metadata'
 import HomePageClient from '@/components/pages/home-page-client'
 
 export const metadata: Metadata = generateMetadata({
-  title: 'Best Creator CRM Platform for Influencers, Coaches & Freelancers | Tango CRM',
+  title: 'Best Creator CRM Platform for Influencers, Podcasters, Coaches & Freelancers | Tango CRM',
   description: 'Tango CRM is the #1 creator CRM platform for influencers, coaches, podcasters, and freelancers. Manage brand deals, track revenue, organize content, and grow your creator business. Join Tango today!',
   keywords: [
     'creator CRM platform',
