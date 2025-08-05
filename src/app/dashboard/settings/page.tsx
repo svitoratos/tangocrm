@@ -383,6 +383,6 @@ function SettingsPage() {
   );
 }
 
-export default function ProtectedSettings() {
+export default function SettingsPageWrapper() {
   return <SettingsPage />;
 } 
