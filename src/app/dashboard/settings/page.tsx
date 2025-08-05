@@ -9,11 +9,12 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Bell, Save, Loader2, AlertTriangle } from 'lucide-react';
+import { User, Bell, CreditCard, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { TimezonePicker } from '@/components/TimezonePicker';
 import { useTimezone } from '@/hooks/use-timezone';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useNotifications } from '@/hooks/use-notifications';
+import { SubscriptionManagement } from '@/components/app/subscription-management';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useUser } from '@clerk/nextjs';
 
@@ -190,7 +191,7 @@ function SettingsPage() {
       )}
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="w-4 h-4" />
             Profile
@@ -198,6 +199,10 @@ function SettingsPage() {
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="w-4 h-4" />
             Notifications
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            Subscription
           </TabsTrigger>
         </TabsList>
 
@@ -368,6 +373,10 @@ function SettingsPage() {
           </Card>
         </TabsContent>
 
+        {/* Subscription Tab */}
+        <TabsContent value="subscription" className="space-y-6">
+          <SubscriptionManagement />
+        </TabsContent>
 
       </Tabs>
     </div>
