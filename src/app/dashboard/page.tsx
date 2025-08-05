@@ -577,10 +577,10 @@ function MainDashboardWithSearchParams() {
       
       // Use direct Stripe payment links based on the selected niche
       const stripePaymentLinks: Record<string, string> = {
-        'coach': 'https://buy.stripe.com/5kQ3cw5l086faBieOE2Nq05',
-        'creator': 'https://buy.stripe.com/fZu14o7t83PZeRy35W2Nq06',
-        'podcaster': 'https://buy.stripe.com/14AcN65l00DNbFm9uk2Nq08',
-        'freelancer': 'https://buy.stripe.com/3cI7sMcNs5Y710I21S2Nq0a'
+        'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
+        'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
+        'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
+        'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
       };
       
       const paymentLink = stripePaymentLinks[nicheId];
