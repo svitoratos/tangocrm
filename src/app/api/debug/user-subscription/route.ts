@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     // Check Stripe for customer data
     let stripeCustomer = null;
-    let stripeSubscriptions = [];
+    let stripeSubscriptions: any[] = [];
     let stripeError = null;
 
     if (user?.stripe_customer_id) {
