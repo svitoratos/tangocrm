@@ -30,8 +30,8 @@ export const STRIPE_CONFIG = {
 // Payment Links for different niches (Test Mode)
 export const STRIPE_PAYMENT_LINKS = {
   creator: {
-    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    monthly: 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
+    yearly: 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
   },
   coach: {
     monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
