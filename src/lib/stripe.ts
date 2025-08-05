@@ -38,8 +38,8 @@ export const STRIPE_PAYMENT_LINKS = {
     yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
   },
   podcaster: {
-    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    monthly: 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
+    yearly: 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
   },
   freelancer: {
     monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
