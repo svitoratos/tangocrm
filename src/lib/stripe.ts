@@ -34,8 +34,8 @@ export const STRIPE_PAYMENT_LINKS = {
     yearly: 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
   },
   coach: {
-    monthly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
-    yearly: 'https://buy.stripe.com/test_fZueVebJofyHaBi35W2Nq00',
+    monthly: 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
+    yearly: 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
   },
   podcaster: {
     monthly: 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
