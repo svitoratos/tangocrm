@@ -459,8 +459,10 @@ function MainDashboardWithSearchParams() {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
         setSidebarCollapsed(true);
+      } else {
+        // On desktop, keep the sidebar expanded by default
+        setSidebarCollapsed(false);
       }
-      // On desktop, keep the sidebar expanded by default
     };
 
     // Set initial state
@@ -479,7 +481,7 @@ function MainDashboardWithSearchParams() {
     }
 
     return () => window.removeEventListener('resize', handleResize);
-  }, [refreshPaymentStatus]);
+  }, [refreshPaymentStatus, forceRefreshAfterPayment]);
 
   const isSubscribed = (niche: string) => availableNiches.includes(niche);
   
@@ -602,9 +604,19 @@ function MainDashboardWithSearchParams() {
   };
 
   // Show loading state while checking onboarding status or during mounting
-  if (isCheckingOnboarding || !mounted) {
+  if (isCheckingOnboarding || !mounted || !user) {
+    console.log('🔧 Dashboard loading state:', { isCheckingOnboarding, mounted, user: !!user });
     return <LoadingScreen />;
   }
+
+  // Debug log for sidebar state
+  console.log('🔧 Dashboard ready:', { 
+    user: !!user, 
+    mounted, 
+    sidebarCollapsed, 
+    selectedNiche,
+    availableNiches 
+  });
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -617,27 +629,31 @@ function MainDashboardWithSearchParams() {
           {/* Mobile Sidebar Overlay */}
           <MobileSidebarOverlay />
           
-          {/* Sidebar */}
-          <div className={cn(
-            "fixed lg:relative z-50 h-full transition-all duration-300 ease-in-out sidebar-container",
-            "lg:translate-x-0 flex-shrink-0",
-            sidebarCollapsed ? "-translate-x-full" : "translate-x-0"
-          )}>
-            <SidebarNavigation
-              activeItem={activeSection}
-              activeNiche={selectedNiche}
-              onNavigationChange={handleNavigationChange}
-              onNicheChange={handleNicheChange}
-              onAddNiche={handleAddNiche}
-              onSettings={handleSettings}
-              onLogout={handleLogout}
-              subscribedNiches={availableNiches}
-              isSubscribed={isSubscribed}
-              hasCorePlan={hasCorePlan}
-              isCollapsed={sidebarCollapsed}
-              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
-          </div>
+          {/* Sidebar - Always render when user is authenticated */}
+          {user && (
+            <div className={cn(
+              "fixed lg:relative z-50 h-full transition-all duration-300 ease-in-out sidebar-container",
+              "lg:translate-x-0 flex-shrink-0",
+              sidebarCollapsed ? "-translate-x-full" : "translate-x-0",
+              // Ensure sidebar is always visible on desktop
+              "lg:block"
+            )}>
+              <SidebarNavigation
+                activeItem={activeSection}
+                activeNiche={selectedNiche}
+                onNavigationChange={handleNavigationChange}
+                onNicheChange={handleNicheChange}
+                onAddNiche={handleAddNiche}
+                onSettings={handleSettings}
+                onLogout={handleLogout}
+                subscribedNiches={availableNiches}
+                isSubscribed={isSubscribed}
+                hasCorePlan={hasCorePlan}
+                isCollapsed={sidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              />
+            </div>
+          )}
 
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col h-full overflow-hidden">
