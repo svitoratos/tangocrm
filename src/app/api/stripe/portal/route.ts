@@ -147,6 +147,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Before creating portal session, sync subscription data
+    try {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: stripeCustomerId,
+        status: 'all',
+        limit: 1
+      });
+
+      if (subscriptions.data.length > 0) {
+        const subscription = subscriptions.data[0];
+        
+        // Update database with latest subscription info
+        await userOperations.updateProfile(userId, {
+          stripe_subscription_id: subscription.id,
+          subscription_status: subscription.status,
+          updated_at: new Date().toISOString()
+        });
+
+        console.log('✅ Portal API: Synced subscription data before creating portal session');
+      }
+    } catch (syncError) {
+      console.error('⚠️ Portal API: Failed to sync subscription data:', syncError);
+      // Continue with portal creation even if sync fails
+    }
+
     // Create billing portal session with Stripe customer ID
     const session = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,

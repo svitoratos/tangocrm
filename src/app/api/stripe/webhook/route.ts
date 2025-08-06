@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
           const newCustomerId = session.customer as string;
           
           if (oldCustomerId !== newCustomerId) {
-            await logCustomerIdChange(userId, oldCustomerId, newCustomerId);
+            await logCustomerIdChange(userId, oldCustomerId || null, newCustomerId);
           }
           
           // Update user profile
@@ -314,6 +314,91 @@ export async function POST(request: NextRequest) {
           });
           console.log('✅ Webhook: Updated user email for customer:', customer.id);
         }
+        break;
+
+      case 'invoice.payment_succeeded':
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log('🔧 Invoice payment succeeded:', invoice.id);
+        
+        const subscriptionId = typeof (invoice as any).subscription === 'string' ? (invoice as any).subscription : (invoice as any).subscription?.id;
+        if (subscriptionId) {
+          const { data: invoiceUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('stripe_customer_id', invoice.customer)
+            .single();
+            
+          if (invoiceUser) {
+            // Fetch the subscription to get current status
+            try {
+              const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+              
+              await userOperations.updateProfile(invoiceUser.id, {
+                subscription_status: subscription.status,
+                stripe_subscription_id: subscription.id,
+                updated_at: new Date().toISOString()
+              });
+              
+              console.log('✅ Webhook: Updated subscription status after successful payment:', subscription.status, 'for user:', invoiceUser.id);
+            } catch (subscriptionError) {
+              console.error('❌ Error retrieving subscription after payment:', subscriptionError);
+            }
+          } else {
+            console.error('❌ No user found for customer ID in invoice:', invoice.customer);
+          }
+        }
+        break;
+
+      case 'invoice.payment_failed':
+        const failedInvoice = event.data.object as Stripe.Invoice;
+        console.log('🔧 Invoice payment failed:', failedInvoice.id);
+        
+        const failedSubscriptionId = typeof (failedInvoice as any).subscription === 'string' ? (failedInvoice as any).subscription : (failedInvoice as any).subscription?.id;
+        if (failedSubscriptionId) {
+          const { data: failedUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('stripe_customer_id', failedInvoice.customer)
+            .single();
+            
+          if (failedUser) {
+            // Fetch the subscription to get current status (might be past_due)
+            try {
+              const subscription = await stripe.subscriptions.retrieve(failedSubscriptionId);
+              
+              await userOperations.updateProfile(failedUser.id, {
+                subscription_status: subscription.status,
+                updated_at: new Date().toISOString()
+              });
+              
+              console.log('✅ Webhook: Updated subscription status after failed payment:', subscription.status, 'for user:', failedUser.id);
+            } catch (subscriptionError) {
+              console.error('❌ Error retrieving subscription after failed payment:', subscriptionError);
+            }
+          }
+        }
+        break;
+
+      case 'customer.subscription.trial_will_end':
+        const trialSubscription = event.data.object as Stripe.Subscription;
+        console.log('🔧 Subscription trial will end:', trialSubscription.id);
+        
+        const { data: trialUser } = await supabase
+          .from('users')
+          .select('id, email')
+          .eq('stripe_customer_id', trialSubscription.customer)
+          .single();
+          
+        if (trialUser) {
+          // You can add email notification logic here
+          console.log('✅ Webhook: Trial ending notification for user:', trialUser.id);
+        }
+        break;
+
+      case 'payment_method.attached':
+        const paymentMethod = event.data.object as Stripe.PaymentMethod;
+        console.log('🔧 Payment method attached:', paymentMethod.id);
+        // Payment method updates are handled automatically by Stripe
         break;
 
       default:
