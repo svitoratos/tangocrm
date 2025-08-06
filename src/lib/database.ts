@@ -84,15 +84,96 @@ export const userOperations = {
         console.log('✅ updateProfile successful:', data);
         return data
       } else {
-        // CRITICAL FIX: Never update existing users by email
-        // This was causing all new users to be saved with the same email
-        // Instead, always create a new user with the correct Clerk ID
-        console.log('🔧 User doesn\'t exist by ID, creating new user with correct Clerk ID');
-        console.log('🔧 This prevents the email-based user update bug');
-        
-        // Validate that the email matches the user's actual email
+        // User doesn't exist by ID, check if user exists by email
         if (profile.email) {
-          console.log('🔧 Validating email for new user:', profile.email);
+          console.log('🔧 Checking if user exists by email...');
+          const { data: existingByEmail, error: emailError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', profile.email)
+            .single()
+          
+          if (existingByEmail && !emailError) {
+            // CRITICAL FIX: User exists by email but with different ID
+            // Instead of updating the existing record, we need to handle this properly
+            console.log('🔧 CRITICAL: User exists by email but with different ID!');
+            console.log('🔧 Existing user ID:', existingByEmail.id);
+            console.log('🔧 Requested user ID:', userId);
+            console.log('🔧 Email:', profile.email);
+            
+            // Check if the existing user has more complete data
+            const existingUserScore = this.calculateUserDataScore(existingByEmail);
+            const newUserScore = this.calculateUserDataScore({ id: userId, ...profile });
+            
+            console.log('🔧 Data comparison:', {
+              existingUserScore,
+              newUserScore,
+              existingUserData: {
+                niches: existingByEmail.niches,
+                onboarding_completed: existingByEmail.onboarding_completed,
+                subscription_status: existingByEmail.subscription_status
+              },
+              newUserData: {
+                niches: profile.niches,
+                onboarding_completed: profile.onboarding_completed,
+                subscription_status: profile.subscription_status
+              }
+            });
+            
+            if (existingUserScore >= newUserScore) {
+              // Existing user has better or equal data, update it with any new data
+              console.log('🔧 Updating existing user with new data...');
+              const mergedData = this.mergeUserData(existingByEmail, profile);
+              
+              const { data, error } = await supabase
+                .from('users')
+                .update({
+                  ...mergedData,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingByEmail.id)
+                .select()
+                .single()
+              
+              if (error) {
+                console.error('❌ Error updating existing user by email:', error);
+                return null
+              }
+              
+              console.log('✅ Updated existing user by email:', data);
+              console.log('⚠️ WARNING: User ID mismatch detected and resolved');
+              console.log('⚠️ Frontend is using ID:', userId, 'but database has ID:', existingByEmail.id);
+              return data
+            } else {
+              // New user has better data, we need to be careful about ID conflicts
+              console.log('🔧 New user has better data, but we need to be careful about ID conflicts');
+              console.log('🔧 This is a complex case that needs manual intervention');
+              
+              // For now, update the existing user but log this as a critical issue
+              console.log('⚠️ CRITICAL: User ID mismatch with better new data detected!');
+              console.log('⚠️ This may require manual database intervention');
+              
+              const mergedData = this.mergeUserData(existingByEmail, profile);
+              
+              const { data, error } = await supabase
+                .from('users')
+                .update({
+                  ...mergedData,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingByEmail.id)
+                .select()
+                .single()
+              
+              if (error) {
+                console.error('❌ Error updating existing user by email:', error);
+                return null
+              }
+              
+              console.log('✅ Updated existing user by email:', data);
+              return data
+            }
+          }
         }
         
         // User doesn't exist at all, create new profile

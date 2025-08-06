@@ -115,23 +115,6 @@ export async function POST(request: NextRequest) {
       baseUrl
     });
 
-    // CRITICAL FIX: Ensure we use the correct user email and prevent autofill issues
-    const userEmail = user?.emailAddresses[0]?.emailAddress;
-    const userName = user?.firstName && user?.lastName 
-      ? `${user.firstName} ${user.lastName}` 
-      : user?.fullName || '';
-    
-    console.log('🔧 Checkout: User email from Clerk:', userEmail);
-    console.log('🔧 Checkout: User name from Clerk:', userName);
-    
-    if (!userEmail) {
-      console.error('❌ Checkout: No user email found from Clerk');
-      return NextResponse.json(
-        { error: 'User email is required. Please update your profile.' },
-        { status: 400 }
-      );
-    }
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -145,24 +128,16 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl,
       metadata: {
         clerk_user_id: userId,
-        email: userEmail,
-        name: userName,
+        email: user?.emailAddresses[0]?.emailAddress || '',
         niche: primaryRole,
         niches: JSON.stringify(selectedRoles),
         goals: JSON.stringify(selectedGoals),
         setup_task: selectedSetupTask || '',
         billing_cycle: billingCycle,
       },
-      customer_email: userEmail, // Explicitly set the correct email
-      customer_creation: 'always', // Always create a new customer
+      customer_email: user?.emailAddresses[0]?.emailAddress,
       allow_promotion_codes: true,
       billing_address_collection: 'required',
-      // Prevent autofill issues by being explicit about customer data
-      customer_update: {
-        address: 'auto',
-        name: 'auto',
-        shipping: 'auto',
-      },
     });
 
     console.log('Created checkout session:', session.id);
