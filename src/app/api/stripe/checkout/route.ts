@@ -45,6 +45,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sessionId: session.id, url: session.url })
   } catch (error) {
     console.error('❌ Checkout error:', error)
-    return NextResponse.json({ error: 'Checkout creation failed' }, { status: 500 })
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes('No such price')) {
+        return NextResponse.json({ error: 'Invalid price ID - please check your Stripe configuration' }, { status: 400 })
+      }
+      if (error.message.includes('Invalid API key')) {
+        return NextResponse.json({ error: 'Stripe configuration error - please check your API keys' }, { status: 500 })
+      }
+    }
+    
+    return NextResponse.json({ 
+      error: 'Checkout creation failed', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 } 

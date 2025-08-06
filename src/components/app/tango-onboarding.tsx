@@ -24,7 +24,7 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
-// Stripe payment links removed - using simple checkout instead
+import { getPriceId } from '@/lib/stripe-config';
 
 
 interface OnboardingProps {
@@ -250,7 +250,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: 'price_1RjlLtIvVfT8K9K9K9K9K9K9', // Replace with your actual price ID
+          priceId: getPriceId(primaryRole, billingCycle),
           niche: primaryRole,
           niches: selectedRoles,
           successUrl: `${window.location.origin}/payment-success`,
