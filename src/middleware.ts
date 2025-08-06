@@ -175,17 +175,22 @@ export default clerkMiddleware(async (auth, req) => {
   
   // Check if route requires admin access
   if (adminRoutes(req)) {
+    console.log('🔧 Middleware: Admin route detected:', pathname);
     try {
       const { sessionClaims } = await auth();
       
+      console.log('🔧 Middleware: Admin check for email:', sessionClaims?.email);
+      
       if (!isAdminUser(sessionClaims)) {
+        console.log('🔧 Middleware: Admin access denied, redirecting to /');
         // Redirect to home page if user doesn't have admin role
         return NextResponse.redirect(new URL('/', req.url));
       }
       
-      console.log('🔧 Admin access granted for:', sessionClaims?.email);
+      console.log('🔧 Middleware: Admin access granted for:', sessionClaims?.email);
+      return NextResponse.next();
     } catch (error) {
-      console.error('Admin verification error:', error);
+      console.error('🔧 Middleware: Admin verification error:', error);
       return NextResponse.redirect(new URL('/', req.url));
     }
   }
