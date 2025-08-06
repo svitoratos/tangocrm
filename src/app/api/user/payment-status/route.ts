@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
     
     // If user not found by ID, try to find by email (for cases where user exists with different ID)
     if (!user && userEmail) {
+      console.log('🔧 User not found by ID, checking by email:', userEmail);
       const { data: userByEmail, error: emailError } = await supabase
         .from('users')
         .select('*')
@@ -62,21 +63,95 @@ export async function GET(request: NextRequest) {
         .single();
       
       if (userByEmail && !emailError) {
-        user = userByEmail;
+        console.log('🔧 Found user by email with different ID:', userByEmail.id);
+        console.log('🔧 Current Clerk userId:', userId);
+        console.log('🔧 Database user ID:', userByEmail.id);
+        
+        // Check if the user by email has active subscription
+        if (userByEmail.stripe_customer_id && userByEmail.subscription_status) {
+          console.log('🔧 User by email has subscription data, using this user');
+          user = userByEmail;
+        } else {
+          console.log('🔧 User by email has no subscription data, checking if webhook processed recently');
+          // Check if there's a recent webhook update for this email
+          const { data: recentUser, error: recentError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', userEmail)
+            .gte('updated_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Last 5 minutes
+            .single();
+          
+          if (recentUser && !recentError) {
+            console.log('🔧 Found recent user update by email, using this user');
+            user = recentUser;
+          }
+        }
       }
     }
     
     if (!user) {
-      // User doesn't exist in database yet, hasn't completed onboarding
-      const response = {
-        hasCompletedOnboarding: isAdmin, // Admins bypass onboarding
-        hasActiveSubscription: isAdmin, // Admins bypass subscription requirement
-        subscriptionStatus: isAdmin ? 'active' : 'inactive',
-        subscriptionTier: isAdmin ? 'admin' : 'free',
-        primaryNiche: isAdmin ? 'creator' : null,
-        niches: isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : [] // Admins get all niches
+      console.log('🔧 User not found in database, checking Stripe directly for email:', userEmail);
+      
+      // Last resort: Check Stripe directly for this email
+      if (userEmail && !isAdmin) {
+        try {
+          // Search for customers by email in Stripe
+          const customers = await stripe.customers.list({
+            email: userEmail,
+            limit: 1
+          });
+          
+          if (customers.data.length > 0) {
+            const customer = customers.data[0];
+            console.log('🔧 Found customer in Stripe:', customer.id);
+            
+            // Check if customer has active subscriptions
+            const subscriptions = await stripe.subscriptions.list({
+              customer: customer.id,
+              status: 'all',
+              limit: 1
+            });
+            
+            if (subscriptions.data.length > 0) {
+              const subscription = subscriptions.data[0];
+              console.log('🔧 Found active subscription in Stripe:', subscription.status);
+              
+              // User has paid but database record is missing, create it
+              const newUser = await userOperations.upsertProfile(userId, {
+                email: userEmail,
+                onboarding_completed: true,
+                stripe_customer_id: customer.id,
+                stripe_subscription_id: subscription.id,
+                subscription_status: subscription.status,
+                subscription_tier: 'core',
+                primary_niche: 'creator',
+                niches: ['creator'],
+                updated_at: new Date().toISOString()
+              });
+              
+              if (newUser) {
+                console.log('🔧 Created missing user record from Stripe data');
+                user = newUser;
+              }
+            }
+          }
+        } catch (stripeError) {
+          console.error('❌ Error checking Stripe directly:', stripeError);
+        }
       }
-      return NextResponse.json(response)
+      
+      if (!user) {
+        // User doesn't exist in database yet, hasn't completed onboarding
+        const response = {
+          hasCompletedOnboarding: isAdmin, // Admins bypass onboarding
+          hasActiveSubscription: isAdmin, // Admins bypass subscription requirement
+          subscriptionStatus: isAdmin ? 'active' : 'inactive',
+          subscriptionTier: isAdmin ? 'admin' : 'free',
+          primaryNiche: isAdmin ? 'creator' : null,
+          niches: isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : [] // Admins get all niches
+        }
+        return NextResponse.json(response)
+      }
     }
 
     // Check if user has completed onboarding
