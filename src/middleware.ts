@@ -123,14 +123,18 @@ function isAdminUser(sessionClaims: any): boolean {
     return true;
   }
   
-  // Check for admin emails from environment variable
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
+  // Check for admin emails - hardcoded to match admin-config.ts
+  const adminEmails = [
+    "stevenvitoratos@gmail.com", // Your email
+  ];
   const userEmail = sessionClaims?.email;
   
   if (userEmail && adminEmails.includes(userEmail.trim())) {
+    console.log('🔧 Admin access granted by email:', userEmail);
     return true;
   }
   
+  console.log('🔧 Admin access denied for email:', userEmail);
   return false;
 }
 
