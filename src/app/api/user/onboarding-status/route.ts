@@ -105,8 +105,11 @@ export async function POST(request: NextRequest) {
 
     // Update user profile with onboarding status
     console.log('🔧 Calling userOperations.upsertProfile...');
+    const userEmail = user?.emailAddresses[0]?.emailAddress || '';
+    console.log('🔧 Onboarding API: User email from Clerk:', userEmail);
+    
     const updatedUser = await userOperations.upsertProfile(userId, {
-      email: user?.emailAddresses[0]?.emailAddress || '',
+      email: userEmail,
       onboarding_completed: onboardingCompleted,
       primary_niche: primaryNiche,
       niches: updatedNiches,

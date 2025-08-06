@@ -43,8 +43,15 @@ export async function POST(request: NextRequest) {
         
         if (userId) {
           
-          // Get user email from session metadata or customer data
-          const customerEmail = session.customer_details?.email || session.metadata?.email || '';
+                  // Get user email from session metadata or customer data
+        // CRITICAL: Use the email from the session metadata, not from customer details
+        // This ensures we use the actual user's email, not a fallback
+        const customerEmail = session.metadata?.email || session.customer_details?.email || '';
+        
+        console.log('🔧 Webhook: Processing checkout session for user:', userId);
+        console.log('🔧 Webhook: User email from metadata:', session.metadata?.email);
+        console.log('🔧 Webhook: Customer email from details:', session.customer_details?.email);
+        console.log('🔧 Webhook: Final email to use:', customerEmail);
           
           // Check if this is a discounted or free payment
           const isDiscountedPayment = (session.total_details?.amount_discount || 0) > 0;
