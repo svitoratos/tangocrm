@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
+  const [processingStatus, setProcessingStatus] = useState('Processing your payment...');
 
   useEffect(() => {
-    // Immediate redirect without delay for streamlined flow
-    const redirectToOnboardingSuccess = () => {
+    // Wait for webhook to process before redirecting
+    const waitForPaymentProcessing = async () => {
       console.log('🔧 Payment success page loaded');
       console.log('🔧 Referrer:', document.referrer);
       
@@ -19,6 +20,41 @@ export default function PaymentSuccessPage() {
       // Clear the stored niche
       sessionStorage.removeItem('pendingNicheUpgrade');
       
+      // Wait for webhook to process (up to 10 seconds)
+      let attempts = 0;
+      const maxAttempts = 20; // 20 attempts * 500ms = 10 seconds
+      
+      while (attempts < maxAttempts) {
+        try {
+          console.log(`🔧 Checking payment status (attempt ${attempts + 1}/${maxAttempts})`);
+          setProcessingStatus(`Processing your payment... (${attempts + 1}/${maxAttempts})`);
+          
+          const response = await fetch('/api/user/payment-status');
+          if (response.ok) {
+            const { hasActiveSubscription, hasCompletedOnboarding } = await response.json();
+            
+            console.log('🔧 Payment status check:', { hasActiveSubscription, hasCompletedOnboarding });
+            
+            if (hasActiveSubscription) {
+              console.log('🔧 Payment processed successfully, proceeding with redirect');
+              setProcessingStatus('Payment confirmed! Redirecting...');
+              break;
+            }
+          }
+        } catch (error) {
+          console.log('🔧 Payment status check failed:', error);
+        }
+        
+        // Wait 500ms before next attempt
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
+      }
+      
+      if (attempts >= maxAttempts) {
+        console.log('🔧 Payment processing timeout, proceeding anyway');
+      }
+      
+      // Now proceed with the redirect logic
       if (selectedNiche) {
         // If we have a specific niche from the upgrade modal, use it
         console.log('🔧 Using niche from sessionStorage:', selectedNiche);
@@ -55,8 +91,8 @@ export default function PaymentSuccessPage() {
       }
     };
 
-    // Redirect immediately
-    redirectToOnboardingSuccess();
+    // Start the payment processing wait
+    waitForPaymentProcessing();
   }, [router]);
 
   return (
@@ -73,7 +109,7 @@ export default function PaymentSuccessPage() {
           Payment Successful!
         </h2>
         <p className="text-gray-600 mb-6">
-          Redirecting you to your dashboard...
+          {processingStatus}
         </p>
         <div className="animate-pulse">
           <div className="h-2 bg-gray-200 rounded mb-2"></div>
