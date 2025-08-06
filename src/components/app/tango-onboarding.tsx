@@ -247,7 +247,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       console.log('🔧 Billing cycle:', billingCycle);
       console.log('🔧 Available payment links:', STRIPE_PAYMENT_LINKS);
       
-      const paymentLink = STRIPE_PAYMENT_LINKS[primaryRole as keyof typeof STRIPE_PAYMENT_LINKS]?.[billingCycle as 'monthly' | 'yearly'];
+      const paymentLink = STRIPE_PAYMENT_LINKS[primaryRole as keyof typeof STRIPE_PAYMENT_LINKS]?.monthly;
       
       if (paymentLink) {
         console.log('✅ Found payment link for:', primaryRole, billingCycle);
@@ -264,7 +264,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
         // Redirect to the pre-configured payment link
         window.location.href = paymentLink;
       } else {
-        throw new Error(`No payment link found for ${primaryRole} with ${billingCycle} billing`);
+        throw new Error(`No payment link found for ${primaryRole}`);
       }
     } catch (err) {
       console.error('Payment error:', err);
