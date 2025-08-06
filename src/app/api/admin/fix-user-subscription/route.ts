@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { isAdminEmail } from '@/lib/admin-config';
 import { userOperations } from '@/lib/database';
-import { supabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -11,80 +9,118 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
-    
+    const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check if user is admin
-    const userEmail = sessionClaims?.email as string;
-    const isAdmin = isAdminEmail(userEmail);
-
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { targetUserId, subscriptionId } = body;
+    const { targetUserId, targetSubscriptionId } = body;
 
-    if (!targetUserId || !subscriptionId) {
-      return NextResponse.json(
-        { error: 'Missing targetUserId or subscriptionId' },
-        { status: 400 }
-      );
+    // Get user profile from database
+    const user = await userOperations.getProfile(targetUserId || userId);
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    console.log(`🔧 Admin fixing subscription for user ${targetUserId} with subscription ${subscriptionId}`);
+    console.log('🔧 Fix - User data before fix:', {
+      userId: user.id,
+      email: user.email,
+      stripe_customer_id: user.stripe_customer_id,
+      stripe_subscription_id: user.stripe_subscription_id,
+      subscription_status: user.subscription_status
+    });
 
-    try {
-      // Verify the subscription exists in Stripe
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      
-      console.log(`✅ Found subscription in Stripe:`, {
-        id: subscription.id,
-        status: subscription.status,
-        customer: subscription.customer
-      });
+    let fixApplied = false;
+    let fixDetails = '';
 
-      // Update the user's subscription ID in the database
-      const updatedUser = await userOperations.updateProfile(targetUserId, {
-        stripe_subscription_id: subscription.id,
-        subscription_status: subscription.status,
-        updated_at: new Date().toISOString()
-      });
-
-      console.log(`✅ Updated user ${targetUserId} with subscription ${subscription.id}`);
-
-      return NextResponse.json({
-        success: true,
-        message: 'Subscription ID updated successfully',
-        user: updatedUser,
-        subscription: {
-          id: subscription.id,
-          status: subscription.status,
-          customer: subscription.customer
+    // If specific subscription ID is provided, use it
+    if (targetSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(targetSubscriptionId);
+        
+        // Update user profile with correct subscription data
+        await userOperations.updateProfile(user.id, {
+          stripe_subscription_id: subscription.id,
+          subscription_status: subscription.status,
+          updated_at: new Date().toISOString()
+        });
+        
+        fixApplied = true;
+        fixDetails = `Updated subscription ID to ${subscription.id} with status ${subscription.status}`;
+        
+        console.log('✅ Fix applied - Updated with specific subscription ID:', subscription.id);
+      } catch (error) {
+        console.error('❌ Error fixing with specific subscription ID:', error);
+        return NextResponse.json({ error: 'Invalid subscription ID' }, { status: 400 });
+      }
+    }
+    // Otherwise, check Stripe for active subscriptions
+    else if (user.stripe_customer_id) {
+      try {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: user.stripe_customer_id,
+          status: 'all',
+          limit: 10
+        });
+        
+        const activeSubscription = subscriptions.data.find(sub => 
+          sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due'
+        );
+        
+        if (activeSubscription) {
+          // Update user profile with correct subscription data
+          await userOperations.updateProfile(user.id, {
+            stripe_subscription_id: activeSubscription.id,
+            subscription_status: activeSubscription.status,
+            updated_at: new Date().toISOString()
+          });
+          
+          fixApplied = true;
+          fixDetails = `Found active subscription ${activeSubscription.id} with status ${activeSubscription.status}`;
+          
+          console.log('✅ Fix applied - Updated with active subscription:', activeSubscription.id);
+        } else {
+          fixDetails = 'No active subscriptions found in Stripe';
+          console.log('⚠️ No active subscriptions found for customer:', user.stripe_customer_id);
         }
-      });
-
-    } catch (stripeError) {
-      console.error('❌ Error retrieving subscription from Stripe:', stripeError);
-      return NextResponse.json(
-        { error: 'Subscription not found in Stripe' },
-        { status: 404 }
-      );
+      } catch (error) {
+        console.error('❌ Error checking Stripe subscriptions:', error);
+        return NextResponse.json({ error: 'Failed to check Stripe subscriptions' }, { status: 500 });
+      }
     }
+
+    // Get updated user data
+    const updatedUser = await userOperations.getProfile(user.id);
+    
+    console.log('🔧 Fix - User data after fix:', {
+      userId: updatedUser?.id,
+      email: updatedUser?.email,
+      stripe_customer_id: updatedUser?.stripe_customer_id,
+      stripe_subscription_id: updatedUser?.stripe_subscription_id,
+      subscription_status: updatedUser?.subscription_status
+    });
+
+    return NextResponse.json({
+      success: true,
+      fixApplied,
+      fixDetails,
+      user: {
+        id: updatedUser?.id,
+        email: updatedUser?.email,
+        stripe_customer_id: updatedUser?.stripe_customer_id,
+        stripe_subscription_id: updatedUser?.stripe_subscription_id,
+        subscription_status: updatedUser?.subscription_status,
+        onboarding_completed: updatedUser?.onboarding_completed,
+        niches: updatedUser?.niches
+      }
+    });
 
   } catch (error) {
-    console.error('❌ Error in fix-user-subscription:', error);
+    console.error('Error fixing user subscription:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to fix user subscription' },
       { status: 500 }
     );
   }
