@@ -6,6 +6,13 @@ export type Roles = 'admin' | 'user'
 export const checkRole = async (role: Roles) => {
   const { sessionClaims, userId } = await auth()
   
+  console.log('🔧 checkRole called with role:', role);
+  console.log('🔧 sessionClaims:', {
+    email: sessionClaims?.email,
+    metadata: sessionClaims?.metadata,
+    sub: sessionClaims?.sub
+  });
+  
   // Check if user has the role in session claims
   const hasRole = sessionClaims?.metadata?.role === role
   
@@ -18,7 +25,7 @@ export const checkRole = async (role: Roles) => {
     const isAdminByRole = hasRole
     const isAdminByEmail = userEmail ? isAdminEmail(userEmail) : false
     
-    console.log('checkRole admin check:', {
+    console.log('🔧 checkRole admin check:', {
       userEmail,
       hasRole,
       isAdminByRole,
@@ -29,5 +36,6 @@ export const checkRole = async (role: Roles) => {
     return isAdminByRole || isAdminByEmail
   }
   
+  console.log('🔧 checkRole result for non-admin role:', hasRole);
   return hasRole
 } 

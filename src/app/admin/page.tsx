@@ -24,9 +24,17 @@ export const metadata: Metadata = generateMetadata({
 export default async function AdminDashboard(params: {
   searchParams: Promise<{ search?: string }>
 }) {
-  if (!(await checkRole('admin'))) {
+  console.log('🔧 Admin page loading...');
+  
+  const isAdmin = await checkRole('admin');
+  console.log('🔧 Admin check result:', isAdmin);
+  
+  if (!isAdmin) {
+    console.log('🔧 Admin access denied, redirecting to /');
     redirect('/')
   }
+  
+  console.log('🔧 Admin access granted, showing admin page');
 
   const query = (await params.searchParams).search
 
