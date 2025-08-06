@@ -11,7 +11,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔧 Payment status API called');
     const { userId, sessionClaims } = await auth()
+    
+    console.log('🔧 Auth result:', { userId: userId ? 'present' : 'missing', hasSessionClaims: !!sessionClaims });
     
     if (!userId) {
       return NextResponse.json(
@@ -25,26 +28,18 @@ export async function GET(request: NextRequest) {
     
     // If email is not in sessionClaims, try to get it from the database
     if (!userEmail) {
-      const { data: userByEmail, error: emailError } = await supabase
-        .from('users')
-        .select('email')
-        .eq('id', userId)
-        .single();
-      
-      if (userByEmail && !emailError) {
-        userEmail = userByEmail.email;
-      } else {
-        // Try to find any user with the email we know
-        const knownEmail = 'stevenvitoratos@getbondlyapp.com';
-        const { data: userWithKnownEmail, error: knownEmailError } = await supabase
+      try {
+        const { data: userByEmail, error: emailError } = await supabase
           .from('users')
-          .select('*')
-          .eq('email', knownEmail)
+          .select('email')
+          .eq('id', userId)
           .single();
         
-        if (userWithKnownEmail && !knownEmailError) {
-          userEmail = knownEmail;
+        if (userByEmail && !emailError) {
+          userEmail = userByEmail.email;
         }
+      } catch (error) {
+        console.log('🔧 Could not retrieve email from database for user:', userId);
       }
     }
     
@@ -216,8 +211,9 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(response)
   } catch (error) {
+    console.error('❌ Payment status API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
