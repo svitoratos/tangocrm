@@ -127,9 +127,9 @@ const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed 
     console.log('🔧 Current URL:', window.location.href);
     console.log('🔧 Current pathname:', window.location.pathname);
     
-    // Use relative path for navigation to work in both dev and production
-    console.log('🔧 Navigating to relative path: /admin');
-    window.location.href = '/admin';
+    // Try using Next.js router with replace to avoid history issues
+    console.log('🔧 Using router.replace to /admin');
+    router.replace('/admin');
   };
   
   return (
