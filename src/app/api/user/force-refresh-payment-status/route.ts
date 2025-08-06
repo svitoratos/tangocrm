@@ -86,12 +86,11 @@ export async function POST(request: NextRequest) {
     
     // Check if user has active subscription (admins bypass this)
     // Include 'trialing' as an active status since Stripe uses this for free trials
-    // Also allow users with niches to have access even if subscription is canceled (they paid for the niches)
+    // Only allow users with verified active subscription status
     let hasActiveSubscription = isAdmin ? true : (
       user.subscription_status === 'active' || 
       user.subscription_status === 'trialing' ||
-      user.subscription_status === 'past_due' || // Allow past_due as well for grace period
-      (user.niches && user.niches.length > 0 && user.stripe_customer_id) // Users with niches who paid should have access
+      user.subscription_status === 'past_due' // Allow past_due as well for grace period
     )
     
     let subscriptionStatus = user.subscription_status || 'inactive'
