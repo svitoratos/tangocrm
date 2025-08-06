@@ -242,11 +242,16 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       
       // Use pre-configured payment links based on the primary role
       const primaryRole = selectedRoles[0] || 'creator';
+      console.log('🔧 Selected roles:', selectedRoles);
+      console.log('🔧 Primary role:', primaryRole);
+      console.log('🔧 Billing cycle:', billingCycle);
+      console.log('🔧 Available payment links:', STRIPE_PAYMENT_LINKS);
+      
       const paymentLink = STRIPE_PAYMENT_LINKS[primaryRole as keyof typeof STRIPE_PAYMENT_LINKS]?.[billingCycle as 'monthly' | 'yearly'];
       
       if (paymentLink) {
-        console.log('Redirecting to payment link for:', primaryRole, billingCycle);
-        console.log('Payment link:', paymentLink);
+        console.log('✅ Found payment link for:', primaryRole, billingCycle);
+        console.log('🔗 Payment link:', paymentLink);
         
         // Store onboarding data in sessionStorage for after payment
         sessionStorage.setItem('pendingOnboarding', JSON.stringify({
