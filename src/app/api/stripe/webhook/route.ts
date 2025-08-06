@@ -43,15 +43,24 @@ export async function POST(request: NextRequest) {
         
         if (userId) {
           
-                  // Get user email from session metadata or customer data
-        // CRITICAL: Use the email from the session metadata, not from customer details
-        // This ensures we use the actual user's email, not a fallback
+                  // CRITICAL FIX: Prioritize metadata email to prevent autofill issues
+        // The metadata contains the actual user's email from Clerk
         const customerEmail = session.metadata?.email || session.customer_details?.email || '';
+        const customerName = session.metadata?.name || session.customer_details?.name || '';
         
         console.log('🔧 Webhook: Processing checkout session for user:', userId);
         console.log('🔧 Webhook: User email from metadata:', session.metadata?.email);
+        console.log('🔧 Webhook: User name from metadata:', session.metadata?.name);
         console.log('🔧 Webhook: Customer email from details:', session.customer_details?.email);
+        console.log('🔧 Webhook: Customer name from details:', session.customer_details?.name);
         console.log('🔧 Webhook: Final email to use:', customerEmail);
+        console.log('🔧 Webhook: Final name to use:', customerName);
+        
+        // Validate that we have the correct email
+        if (!customerEmail || customerEmail === 'stevenvitoratos@gmail.com') {
+          console.error('❌ Webhook: Invalid or fallback email detected:', customerEmail);
+          console.error('❌ Webhook: This indicates an autofill issue or missing user data');
+        }
           
           // Check if this is a discounted or free payment
           const isDiscountedPayment = (session.total_details?.amount_discount || 0) > 0;
