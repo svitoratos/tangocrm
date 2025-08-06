@@ -108,23 +108,83 @@ export async function POST(request: NextRequest) {
         console.log('🔧 Subscription status:', subscription.status);
         console.log('🔧 Customer ID:', subscription.customer);
         
-        // Update subscription status
+        // Enhanced validation and sync
         if (subscription.customer) {
-          const { data: user } = await supabase
-            .from('users')
-            .select('id')
-            .eq('stripe_customer_id', subscription.customer)
-            .single();
+          try {
+            // 1. Verify customer exists in Stripe
+            const customer = await stripe.customers.retrieve(subscription.customer as string);
+            if (customer.deleted) {
+              console.error('❌ Customer has been deleted:', subscription.customer);
+              break;
+            }
+            console.log('✅ Verified customer exists:', customer.email);
             
-          if (user) {
-            const updatedUser = await userOperations.updateProfile(user.id, {
-              subscription_status: subscription.status,
-              stripe_subscription_id: subscription.id,
-              updated_at: new Date().toISOString()
-            });
-            console.log('✅ Webhook: Updated user subscription status to:', subscription.status, 'for user:', user.id);
-          } else {
-            console.error('❌ No user found for customer ID:', subscription.customer);
+            // 2. Verify subscription belongs to customer
+            if (subscription.customer !== customer.id) {
+              console.error('❌ Subscription does not belong to customer:', subscription.id, subscription.customer);
+              break;
+            }
+            
+            // 3. Find user by customer ID
+            const { data: user } = await supabase
+              .from('users')
+              .select('id, email, stripe_customer_id')
+              .eq('stripe_customer_id', subscription.customer)
+              .single();
+            
+            if (user) {
+              // 4. Check for conflicts
+              if (user.stripe_customer_id && user.stripe_customer_id !== subscription.customer) {
+                console.warn('⚠️  User has different customer ID, updating...');
+                console.log('   Old customer ID:', user.stripe_customer_id);
+                console.log('   New customer ID:', subscription.customer);
+              }
+              
+              // 5. Check if customer ID is used by another user
+              const { data: conflictingUser } = await supabase
+                .from('users')
+                .select('id, email')
+                .eq('stripe_customer_id', subscription.customer)
+                .neq('id', user.id)
+                .single();
+              
+              if (conflictingUser) {
+                console.error('❌ Customer ID already used by another user:', conflictingUser.email);
+                break;
+              }
+              
+              // 6. Update user with validated data
+              const updatedUser = await userOperations.updateProfile(user.id, {
+                subscription_status: subscription.status,
+                stripe_subscription_id: subscription.id,
+                updated_at: new Date().toISOString()
+              });
+              console.log('✅ Webhook: Updated user subscription status to:', subscription.status, 'for user:', user.id);
+            } else {
+              console.error('❌ No user found for customer ID:', subscription.customer);
+              
+              // 7. Try to find user by email as fallback
+              if (!customer.deleted && customer.email) {
+                const { data: userByEmail } = await supabase
+                  .from('users')
+                  .select('id, email, stripe_customer_id')
+                  .eq('email', customer.email)
+                  .single();
+                
+                if (userByEmail) {
+                  console.log('🔧 Found user by email, updating customer ID...');
+                  const updatedUser = await userOperations.updateProfile(userByEmail.id, {
+                    stripe_customer_id: subscription.customer,
+                    subscription_status: subscription.status,
+                    stripe_subscription_id: subscription.id,
+                    updated_at: new Date().toISOString()
+                  });
+                  console.log('✅ Webhook: Updated user with new customer ID and subscription for user:', userByEmail.id);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('❌ Error in subscription.created webhook:', error);
           }
         }
         break;
