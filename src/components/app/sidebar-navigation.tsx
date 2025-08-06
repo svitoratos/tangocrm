@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils'
 import { useAdmin } from '@/hooks/use-admin'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface NavigationItemProps {
   icon: React.ReactNode
@@ -108,6 +109,7 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
 
 const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed = false }) => {
   const { isAdmin, isLoaded, user } = useAdmin();
+  const router = useRouter();
   
   console.log('AdminNavigationItem render:', { 
     isAdmin, 
@@ -122,7 +124,11 @@ const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed 
   const handleAdminClick = (e: React.MouseEvent) => {
     e.preventDefault();
     console.log('🔧 Admin link clicked! Navigating to /admin');
-    window.location.href = '/admin';
+    console.log('🔧 Current URL:', window.location.href);
+    console.log('🔧 Current pathname:', window.location.pathname);
+    
+    // Use Next.js router for navigation
+    router.push('/admin');
   };
   
   return (
