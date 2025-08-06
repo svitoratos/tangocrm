@@ -34,7 +34,8 @@ function applyRateLimit(req: Request, pathname: string) {
   // Skip rate limiting for static assets and Next.js internals
   if (pathname.startsWith('/_next') || 
       pathname.startsWith('/favicon') ||
-      pathname.startsWith('/api/webhook')) {
+      pathname.startsWith('/api/webhook') ||
+      pathname.startsWith('/api/stripe/webhook')) {
     return null;
   }
 
@@ -139,9 +140,16 @@ function isAdminUser(sessionClaims: any): boolean {
 }
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
   const url = new URL(req.url);
   const pathname = url.pathname;
+  
+  // Special handling for webhook requests - bypass authentication
+  if (pathname.startsWith('/api/stripe/webhook')) {
+    console.log('🔧 Webhook request detected, bypassing authentication');
+    return NextResponse.next();
+  }
+  
+  const { userId } = await auth();
   
   // Apply rate limiting first
   const rateLimitResponse = applyRateLimit(req, pathname);
