@@ -131,6 +131,15 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
         
+        console.log('🚀 CHECKOUT.SESSION.COMPLETED WEBHOOK TRIGGERED');
+        console.log('📊 Session ID:', session.id);
+        console.log('📊 Session object:', JSON.stringify(session, null, 2));
+        console.log('📊 Session metadata:', session.metadata);
+        console.log('📊 Session customer:', session.customer);
+        console.log('📊 Session subscription:', session.subscription);
+        console.log('📊 Session amount_total:', session.amount_total);
+        console.log('📊 Session payment_status:', session.payment_status);
+        
         // Validate webhook data before processing
         const userId = session.metadata?.clerk_user_id;
         const validation = await validateWebhookData(event, userId);
@@ -141,14 +150,24 @@ export async function POST(request: NextRequest) {
           // This allows us to track issues without breaking the flow
         }
         
+        console.log('✅ VALIDATION COMPLETE:', validation);
+        console.log('📊 User ID from metadata:', userId);
+        
         // Handle successful checkout
         const primaryNiche = session.metadata?.niche || 'creator';
         const niches = session.metadata?.niches ? JSON.parse(session.metadata.niches) : [primaryNiche];
         
         if (userId) {
+          console.log('🔍 PROCESSING USER UPDATE');
           const customerEmail = session.customer_details?.email || session.metadata?.email || '';
           const isDiscountedPayment = (session.total_details?.amount_discount || 0) > 0;
           const isFreePayment = session.amount_total === 0;
+          
+          console.log('📊 Customer email:', customerEmail);
+          console.log('📊 Primary niche:', primaryNiche);
+          console.log('📊 All niches:', niches);
+          console.log('📊 Is discounted payment:', isDiscountedPayment);
+          console.log('📊 Is free payment:', isFreePayment);
           
           // Get current user profile to preserve existing niches
           const currentProfile = await userOperations.getProfile(userId);
@@ -173,6 +192,7 @@ export async function POST(request: NextRequest) {
           }
           
           // Update user profile
+          console.log('🔄 Attempting to update user profile for ID:', userId);
           const updatedUser = await userOperations.upsertProfile(userId, {
             email: customerEmail,
             onboarding_completed: true,
@@ -183,6 +203,9 @@ export async function POST(request: NextRequest) {
             subscription_tier: 'core',
             updated_at: new Date().toISOString()
           });
+          
+          console.log('✅ USER PROFILE UPDATED');
+          console.log('📊 Updated user data:', updatedUser);
           
           // If there's a subscription ID, fetch its status
           if (session.subscription) {
@@ -206,6 +229,8 @@ export async function POST(request: NextRequest) {
         } else {
           console.error('❌ No user ID found in session metadata');
         }
+        
+        console.log('🎉 CHECKOUT.SESSION.COMPLETED PROCESSING COMPLETE');
         break;
 
       case 'customer.subscription.created':
