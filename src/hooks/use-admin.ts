@@ -1,5 +1,6 @@
 import { useUser, useAuth } from '@clerk/nextjs';
 import { useMemo } from 'react';
+import { isAdminEmail } from '@/lib/admin-config';
 
 export function useAdmin() {
   const { user, isLoaded } = useUser();
@@ -8,11 +9,13 @@ export function useAdmin() {
   const isAdmin = useMemo(() => {
     if (!isLoaded || !user) return false;
     
+    const userEmail = user.emailAddresses?.[0]?.emailAddress;
+    
     // Check both publicMetadata and sessionClaims for admin role
     const publicMetadataRole = user.publicMetadata?.role;
     const sessionClaimsRole = sessionClaims?.metadata?.role;
     
-    console.log('useAdmin check for user:', user.emailAddresses?.[0]?.emailAddress, {
+    console.log('useAdmin check for user:', userEmail, {
       publicMetadataRole,
       sessionClaimsRole,
       isLoaded,
@@ -24,11 +27,18 @@ export function useAdmin() {
     // Ensure we're checking the correct user's session claims
     const isCorrectUser = sessionClaims?.sub === user.id;
     
-    // Only return true if the role is explicitly 'admin' in publicMetadata
-    // This is more reliable since it's what gets updated when we set roles via admin panel
-    const isAdminUser = publicMetadataRole === 'admin';
+    // Check if user has admin role in metadata OR if their email is in admin list
+    const isAdminByRole = publicMetadataRole === 'admin';
+    const isAdminByEmail = userEmail ? isAdminEmail(userEmail) : false;
     
-    console.log('Final isAdmin result:', isAdminUser, 'isCorrectUser:', isCorrectUser);
+    const isAdminUser = isAdminByRole || isAdminByEmail;
+    
+    console.log('Final isAdmin result:', isAdminUser, {
+      isAdminByRole,
+      isAdminByEmail,
+      userEmail,
+      isCorrectUser
+    });
     
     return isAdminUser;
   }, [user, isLoaded, sessionClaims]);
