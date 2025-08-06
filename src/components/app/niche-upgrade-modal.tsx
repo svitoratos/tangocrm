@@ -6,7 +6,7 @@ import { X, Check, Video, GraduationCap, Mic, Briefcase, Zap, Users, BarChart3 }
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { STRIPE_PAYMENT_LINKS } from '@/lib/stripe';
+// Stripe payment links removed - using simple checkout instead
 
 interface NicheUpgradeModalProps {
   isOpen: boolean;

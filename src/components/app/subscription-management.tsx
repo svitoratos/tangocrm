@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
-import { useStripe } from '@/hooks/use-stripe';
+// Stripe functionality removed - using simple payment status instead
 import { useUser } from '@clerk/nextjs';
 import { CancellationFormModal } from './cancellation-form-modal';
 import { 
@@ -40,7 +40,9 @@ export const SubscriptionManagement = () => {
     refetch: refetchSubscription
   } = useSubscriptionDetails();
 
-  const { openCustomerPortal, loading: portalLoading, error: portalError } = useStripe();
+  // Stripe portal functionality removed for now
+  const portalLoading = false;
+  const portalError = null;
   const [showContactModal, setShowContactModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -137,8 +139,8 @@ Thank you.`;
 
   const handleUpgradeToYearly = async () => {
     try {
-      // This would typically redirect to a checkout session for yearly upgrade
-      await openCustomerPortal();
+      // Stripe portal functionality removed for now
+      alert('Upgrade functionality is temporarily unavailable');
     } catch (error) {
       console.error('Error upgrading to yearly:', error);
     }
@@ -146,8 +148,8 @@ Thank you.`;
 
   const handleDowngradeToMonthly = async () => {
     try {
-      // This would typically redirect to a checkout session for monthly downgrade
-      await openCustomerPortal();
+      // Stripe portal functionality removed for now
+      alert('Downgrade functionality is temporarily unavailable');
     } catch (error) {
       console.error('Error downgrading to monthly:', error);
     }
@@ -337,12 +339,9 @@ Thank you.`;
                 )}
                 
                 <Button
-                  onClick={async () => {
-                    try {
-                      await openCustomerPortal();
-                    } catch (error) {
-                      console.error('Portal error:', error);
-                    }
+                  onClick={() => {
+                    // Stripe portal functionality removed for now
+                    alert('Customer portal functionality is temporarily unavailable');
                   }}
                   disabled={isLoading}
                   className="w-full"

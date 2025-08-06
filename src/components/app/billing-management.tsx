@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
-import { useStripe } from '@/hooks/use-stripe';
+// Stripe functionality removed - using simple payment status instead
 import { useUser } from '@clerk/nextjs';
 import { CancellationFormModal } from './cancellation-form-modal';
 import { CreditCard, Loader2, AlertTriangle, Info, Calendar, Mail } from 'lucide-react';
@@ -24,7 +24,9 @@ export const BillingManagement = () => {
     isMonthlySubscription
   } = useSubscriptionDetails();
 
-  const { openCustomerPortal, loading: portalLoading, error: portalError } = useStripe();
+  // Stripe portal functionality removed for now
+  const portalLoading = false;
+  const portalError = null;
   const [showContactModal, setShowContactModal] = useState(false);
   const isLoading = paymentStatusLoading || subscriptionLoading || portalLoading;
 
@@ -218,12 +220,9 @@ Thank you.`;
             )}
             
             <Button
-              onClick={async () => {
-                try {
-                  await openCustomerPortal();
-                } catch (error) {
-                  console.error('Portal error:', error);
-                }
+              onClick={() => {
+                // Stripe portal functionality removed for now
+                alert('Customer portal functionality is temporarily unavailable');
               }}
               disabled={isLoading}
               className="w-full"

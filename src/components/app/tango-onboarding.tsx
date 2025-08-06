@@ -24,7 +24,7 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
-import { STRIPE_PAYMENT_LINKS } from '@/lib/stripe';
+// Stripe payment links removed - using simple checkout instead
 
 
 interface OnboardingProps {
@@ -240,19 +240,31 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       console.log('Starting trial with billing cycle:', billingCycle);
       console.log('Selected roles:', selectedRoles);
       
-      // Use pre-configured payment links based on the primary role
+      // Create checkout session
       const primaryRole = selectedRoles[0] || 'creator';
-      console.log('🔧 Selected roles:', selectedRoles);
-      console.log('🔧 Primary role:', primaryRole);
-      console.log('🔧 Billing cycle:', billingCycle);
-      console.log('🔧 Available payment links:', STRIPE_PAYMENT_LINKS);
+      console.log('🔧 Creating checkout for:', primaryRole);
       
-      const paymentLink = STRIPE_PAYMENT_LINKS[primaryRole as keyof typeof STRIPE_PAYMENT_LINKS]?.monthly;
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: 'price_1RjlLtIvVfT8K9K9K9K9K9K9', // Replace with your actual price ID
+          niche: primaryRole,
+          niches: selectedRoles,
+          successUrl: `${window.location.origin}/payment-success`,
+          cancelUrl: `${window.location.origin}/onboarding`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
       
-      if (paymentLink) {
-        console.log('✅ Found payment link for:', primaryRole, billingCycle);
-        console.log('🔗 Payment link:', paymentLink);
-        
+      if (url) {
         // Store onboarding data in sessionStorage for after payment
         sessionStorage.setItem('pendingOnboarding', JSON.stringify({
           selectedRoles,
@@ -261,10 +273,10 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
           billingCycle
         }));
         
-        // Redirect to the pre-configured payment link
-        window.location.href = paymentLink;
+        // Redirect to Stripe checkout
+        window.location.href = url;
       } else {
-        throw new Error(`No payment link found for ${primaryRole}`);
+        throw new Error('No checkout URL received');
       }
     } catch (err) {
       console.error('Payment error:', err);
