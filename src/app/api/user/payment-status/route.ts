@@ -38,11 +38,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Check subscription status
-    const hasActiveSubscription = isAdmin || 
-      user.subscription_status === 'active' || 
-      user.subscription_status === 'trialing' || 
-      user.subscription_status === 'past_due'
+    // Payment integration removed - all users have access for now
+    const hasActiveSubscription = true
 
     return NextResponse.json({
       hasCompletedOnboarding: isAdmin || user.onboarding_completed === true,

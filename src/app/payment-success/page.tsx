@@ -5,25 +5,13 @@ import { useRouter } from 'next/navigation';
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
-  const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
     console.log('🔧 Payment success page loaded');
     
-    // Simple countdown and redirect
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          console.log('🔧 Redirecting to dashboard');
-          router.push('/dashboard');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
+    // Redirect immediately since payment integration is removed
+    console.log('🔧 Redirecting to dashboard');
+    router.push('/dashboard');
   }, [router]);
 
   return (
@@ -40,7 +28,7 @@ export default function PaymentSuccessPage() {
           Payment Successful!
         </h2>
         <p className="text-gray-600 mb-6">
-          Redirecting to your dashboard in {countdown} seconds...
+          Redirecting to your dashboard...
         </p>
         <div className="animate-pulse">
           <div className="h-2 bg-gray-200 rounded mb-2"></div>

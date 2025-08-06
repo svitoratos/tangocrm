@@ -24,7 +24,7 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
-import { getPriceId } from '@/lib/stripe-config';
+// Payment integration removed - will be replaced with new provider
 
 
 interface OnboardingProps {
@@ -240,56 +240,11 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       console.log('Starting trial with billing cycle:', billingCycle);
       console.log('Selected roles:', selectedRoles);
       
-      // Use payment link for content creator, checkout API for others
-      const primaryRole = selectedRoles[0] || 'creator';
-      console.log('🔧 Processing payment for:', primaryRole);
+      // Payment integration removed - will be replaced with new provider
+      console.log('🔧 Payment integration removed - will be replaced with new provider');
       
-      let paymentUrl;
-      
-      if (primaryRole === 'creator') {
-        // Use the specific payment link for content creator
-        paymentUrl = 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c';
-        console.log('🔧 Using payment link for creator:', paymentUrl);
-      } else {
-        // Use checkout API for other niches
-        console.log('🔧 Creating checkout for:', primaryRole);
-        
-        const response = await fetch('/api/stripe/checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            priceId: getPriceId(primaryRole, billingCycle),
-            niche: primaryRole,
-            niches: selectedRoles,
-            successUrl: `${window.location.origin}/payment-success`,
-            cancelUrl: `${window.location.origin}/onboarding`,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to create checkout session');
-        }
-
-        const { url } = await response.json();
-        paymentUrl = url;
-        
-        if (!paymentUrl) {
-          throw new Error('No checkout URL received');
-        }
-      }
-      
-      // Store onboarding data in sessionStorage for after payment
-      sessionStorage.setItem('pendingOnboarding', JSON.stringify({
-        selectedRoles,
-        selectedGoals,
-        selectedSetupTask,
-        billingCycle
-      }));
-      
-      // Redirect to payment
-      window.location.href = paymentUrl;
+      // For now, just complete onboarding without payment
+      await handleComplete(true); // Skip setup for now
     } catch (err) {
       console.error('Payment error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong');
