@@ -10,7 +10,7 @@ import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { useStripe } from '@/hooks/use-stripe';
 import { useUser } from '@clerk/nextjs';
-import { CancellationFormModal } from './cancellation-form-modal';
+
 import { 
   CreditCard, 
   Loader2, 
@@ -21,45 +21,28 @@ import {
   CheckCircle, 
   ArrowUpRight,
   ArrowDownRight,
-  RefreshCw,
-  Zap,
   Crown,
   Star
 } from 'lucide-react';
 
 export const SubscriptionManagement = () => {
   const { user } = useUser();
-  const { paymentStatus, isLoading: paymentStatusLoading, refreshPaymentStatus } = usePaymentStatus();
+  const { paymentStatus, isLoading: paymentStatusLoading } = usePaymentStatus();
   const {
     subscriptionDetails,
     isLoading: subscriptionLoading,
     formatCurrency,
     formatDate,
     isYearlySubscription,
-    isMonthlySubscription,
-    refetch: refetchSubscription
+    isMonthlySubscription
   } = useSubscriptionDetails();
 
   const { openCustomerPortal, loading: portalLoading, error: portalError } = useStripe();
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   
-  const isLoading = paymentStatusLoading || subscriptionLoading || portalLoading || isRefreshing;
+  const isLoading = paymentStatusLoading || subscriptionLoading || portalLoading;
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([
-        refreshPaymentStatus(true), // true = show loading state
-        refetchSubscription()
-      ]);
-    } catch (error) {
-      console.error('Error refreshing subscription data:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -116,24 +99,9 @@ export const SubscriptionManagement = () => {
 
   const subscriptionText = getSubscriptionTypeText();
 
-  const handleEmailCancellation = () => {
-    setShowContactModal(true);
-  };
 
-  const getCancellationMessage = () => {
-    return `Hi Tango Team,
 
-I would like to request cancellation of my Tango CRM subscription.
 
-Account Details:
-- Email: ${user?.emailAddresses?.[0]?.emailAddress || 'Not provided'}
-- Subscription Type: ${subscriptionText.plan}
-- Current Status: ${subscriptionDetails?.status || 'Active'}
-
-Please process my cancellation request.
-
-Thank you.`;
-  };
 
   const handleUpgradeToYearly = async () => {
     try {
@@ -163,19 +131,10 @@ Thank you.`;
             Manage your subscription, billing, and account features
           </p>
         </div>
-        <Button
-          onClick={handleRefresh}
-          disabled={isLoading}
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Info className="w-4 h-4" />
             Overview
@@ -183,10 +142,6 @@ Thank you.`;
           <TabsTrigger value="billing" className="flex items-center gap-2">
             <CreditCard className="w-4 h-4" />
             Billing
-          </TabsTrigger>
-          <TabsTrigger value="actions" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            Actions
           </TabsTrigger>
         </TabsList>
 
@@ -419,108 +374,10 @@ Thank you.`;
           )}
         </TabsContent>
 
-        {/* Actions Tab */}
-        <TabsContent value="actions" className="space-y-6">
-          {/* Cancellation Request */}
-          <Card className="border-orange-200 bg-orange-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-800">
-                <Mail className="w-5 h-5" />
-                Request Cancellation
-              </CardTitle>
-              <CardDescription className="text-orange-700">
-                Need to cancel your subscription? Send us a message and we'll help you.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Important:</strong> Cancellation takes effect at the end of your current billing period.
-                    You'll retain access to all features until then.
-                  </AlertDescription>
-                </Alert>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-orange-600" />
-                    <span>Your subscription will remain active until <strong>{getNextBillingDate()}</strong></span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm">
-                    <Info className="w-4 h-4 text-blue-600" />
-                    <span>You can reactivate your subscription at any time</span>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleEmailCancellation}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="w-full border-orange-300 text-orange-700 hover:bg-orange-100"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="mr-2 h-4 w-4" />
-                      Request Cancellation
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Support */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="w-5 h-5 text-blue-600" />
-                Need Help?
-              </CardTitle>
-              <CardDescription>
-                Get support with your subscription or billing questions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Button
-                  onClick={() => window.location.href = '/contact'}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Mail className="mr-2 h-4 w-4" />
-                  Contact Support
-                </Button>
-                
-                <Button
-                  onClick={() => window.location.href = '/pricing'}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Star className="mr-2 h-4 w-4" />
-                  View All Plans
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
 
-      {/* Contact Form Modal */}
-      <CancellationFormModal
-        isOpen={showContactModal}
-        onClose={() => setShowContactModal(false)}
-        prefillSubject="Cancellation Request"
-        prefillEmail={user?.emailAddresses?.[0]?.emailAddress || ""}
-        title="Request Cancellation"
-        description="Please provide your details and we'll process your cancellation request."
-      />
+
     </div>
   );
 }; 
