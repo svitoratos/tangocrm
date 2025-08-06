@@ -119,13 +119,14 @@ const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed 
   // Only show admin link if user is loaded and has admin role
   if (!isLoaded || !isAdmin) return null;
   
-  const handleAdminClick = () => {
+  const handleAdminClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     console.log('🔧 Admin link clicked! Navigating to /admin');
+    window.location.href = '/admin';
   };
   
   return (
-    <Link
-      href="/admin"
+    <button
       onClick={handleAdminClick}
       className={cn(
         "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group",
@@ -141,7 +142,7 @@ const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed 
           Admin
         </span>
       )}
-    </Link>
+    </button>
   );
 };
 
