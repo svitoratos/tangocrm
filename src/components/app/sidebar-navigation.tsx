@@ -127,8 +127,10 @@ const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed 
     console.log('🔧 Current URL:', window.location.href);
     console.log('🔧 Current pathname:', window.location.pathname);
     
-    // Use Next.js router for navigation
-    router.push('/admin');
+    // Try using full URL with window.location.href
+    const adminUrl = `${window.location.origin}/admin`;
+    console.log('🔧 Full admin URL:', adminUrl);
+    window.location.href = adminUrl;
   };
   
   return (
