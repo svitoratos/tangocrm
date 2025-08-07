@@ -57,8 +57,8 @@ export default function PaymentSuccessPage() {
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            console.log('🔧 Redirecting to dashboard');
-            router.push('/dashboard');
+            console.log('🔧 Redirecting to onboarding success');
+            router.push('/onboarding/success');
             return 0;
           }
           return prev - 1;
@@ -86,7 +86,7 @@ export default function PaymentSuccessPage() {
             {processing ? (
               'Processing your payment...'
             ) : (
-              `Redirecting to your dashboard in ${countdown} seconds...`
+              `Setting up your CRM... redirecting in ${countdown} seconds...`
             )}
           </p>
         <div className="animate-pulse">
