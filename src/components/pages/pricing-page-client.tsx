@@ -4,56 +4,11 @@ import React, { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { PaymentVerification } from '@/components/app/payment-verification';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Check, Star, Zap, Users, Target, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
 import { TangoHeader } from '@/components/app/tango-header';
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid';
+import { ClerkPricingTable } from '@/components/blocks/pricing/clerk-pricing-table';
 
-const pricingPlans = [
-  {
-    name: 'Tango Core',
-    description: 'Perfect for creators, coaches, podcasters & freelancers',
-    price: {
-      monthly: 39.99,
-      yearly: 383.90 // 20% discount
-    },
-    features: [
-      'Unlimited clients & opportunities',
-      'Content planning & scheduling',
-      'Goal tracking & analytics',
-      'Calendar integration',
-      'Journal & reflection tools',
-      'Email support',
-      'Mobile responsive dashboard'
-    ],
-    popular: true,
-    cta: 'Join Tango',
-    color: 'emerald'
-  },
-  {
-    name: 'Add a Niche',
-    description: 'Expand your workspace with additional creator niches',
-    price: {
-      monthly: 9.99,
-      yearly: 95.90 // 20% discount
-    },
-    features: [
-      'Additional niche workspace',
-      'Niche-specific templates',
-      'Cross-niche analytics',
-      'Unified dashboard view',
-      'Priority support',
-      'Advanced integrations'
-    ],
-    popular: false,
-    cta: 'Add Niche',
-    color: 'blue',
-    note: 'Requires Tango Core plan'
-  }
-];
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function PricingContent() {
@@ -90,73 +45,8 @@ function PricingContent() {
           )}
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {pricingPlans.map((plan, index) => (
-            <Card 
-              key={index} 
-              className={`relative ${plan.popular ? 'ring-2 ring-emerald-500 shadow-lg' : ''}`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-emerald-500 text-white px-3 py-1">
-                    <Star className="w-3 h-3 mr-1" />
-                    Most Popular
-                  </Badge>
-                </div>
-              )}
-              
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                <CardDescription className="text-gray-600">
-                  {plan.description}
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-gray-900">
-                    ${plan.price.monthly}
-                  </div>
-                  <div className="text-gray-600">per month</div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    ${plan.price.yearly} billed yearly (save 20%)
-                  </div>
-                </div>
-                
-                <ul className="space-y-3">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <Check className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                
-                {plan.note && (
-                  <div className="text-sm text-gray-500 text-center p-3 bg-gray-50 rounded-lg">
-                    {plan.note}
-                  </div>
-                )}
-                
-                <Link href="https://accounts.gotangocrm.com/sign-up">
-                  <Button 
-                    className={`w-full ${
-                      plan.popular 
-                        ? 'bg-emerald-600 hover:bg-emerald-700' 
-                        : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                  >
-                    {plan.cta}
-                  </Button>
-                </Link>
-                <p className="text-xs text-emerald-600 text-center mt-3">
-                  ✅ 14-day satisfaction guarantee — full refund if you're not happy
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Clerk Pricing Table */}
+        <ClerkPricingTable />
 
         {/* FAQ Section */}
         <div className="mt-16 max-w-3xl mx-auto">

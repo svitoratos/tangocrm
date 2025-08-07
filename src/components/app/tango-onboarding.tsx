@@ -24,7 +24,6 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
-// Payment integration removed - will be replaced with new provider
 
 
 interface OnboardingProps {
@@ -237,16 +236,30 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
     setError("");
 
     try {
-      console.log('Starting trial with billing cycle:', billingCycle);
-      console.log('Selected roles:', selectedRoles);
+      console.log('Starting onboarding with data:', {
+        billingCycle,
+        selectedRoles,
+        selectedGoals
+      });
       
-      // Payment integration removed - will be replaced with new provider
-      console.log('🔧 Payment integration removed - will be replaced with new provider');
+      // Save onboarding data to sessionStorage to be processed after payment
+      const onboardingData = {
+        selectedRoles,
+        selectedGoals,
+        selectedSetupTask,
+        billingCycle,
+        timestamp: Date.now()
+      };
       
-      // For now, just complete onboarding without payment
-      await handleComplete(true); // Skip setup for now
+      sessionStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
+      console.log('💾 Saved onboarding data to sessionStorage');
+      
+      // Redirect to Clerk pricing table
+      console.log('🔧 Redirecting to Clerk pricing table');
+      window.location.href = '/pricing-clerk';
+      
     } catch (err) {
-      console.error('Payment error:', err);
+      console.error('Onboarding preparation error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
@@ -753,7 +766,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                       {/* Action buttons */}
                       <div className="space-y-3">
                         <Button
-                          onClick={handleStartTrial}
+                          onClick={() => window.location.href = '/dashboard'}
                           disabled={isLoading}
                           className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-bold rounded px-8 py-4 text-lg transition disabled:cursor-not-allowed"
                         >

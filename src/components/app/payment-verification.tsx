@@ -141,22 +141,22 @@ export const PaymentVerification: React.FC<PaymentVerificationProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-sm text-slate-700">
                   <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                  <span>Choose your creator niche</span>
+                  <span>Pick your business niche</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-700">
                   <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                  <span>Select your subscription plan</span>
+                  <span>Complete secure payment</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-700">
                   <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                  <span>Complete payment setup</span>
+                  <span>Set up your CRM workspace</span>
                 </div>
               </div>
               <Button 
                 onClick={() => router.push('/onboarding')} 
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 text-base"
               >
-                Start Onboarding
+                Complete Sign Up
               </Button>
             </CardContent>
           </Card>
@@ -193,10 +193,10 @@ export const PaymentVerification: React.FC<PaymentVerificationProps> = ({
               </div>
               <div className="space-y-2">
                 <Button 
-                  onClick={() => router.push('/pricing')} 
+                  onClick={() => router.push('/onboarding')} 
                   className="w-full"
                 >
-                  View Plans
+                  Complete Sign Up
                 </Button>
                 <Button 
                   variant="outline"

@@ -8,38 +8,50 @@ export const PricingSection = () => {
 
   const plans = [
     {
-      name: 'Tango Core',
-      price: billingCycle === 'monthly' ? '$39.99' : '$383.90',
-      period: billingCycle === 'monthly' ? '/month' : '/year',
-      originalPrice: billingCycle === 'monthly' ? null : '$479.88',
-      savings: billingCycle === 'monthly' ? null : 'Save $95.98',
-      description: 'For creators, coaches, podcasters & freelancers',
-      subtitle: 'Includes access to one niche workspace',
-      features: [
-        'Manage clients, content & projects',
-        'Custom dashboards, pipelines & calendars',
-        'Smart task reminders',
-        'Niche-specific tools and workflows'
-      ],
-      buttonText: 'Start with Tango',
+      name: 'Creator Plan',
+      planType: 'creator' as const,
+      price: '$47',
+      period: '/month',
+      description: 'Perfect for content creators',
+      subtitle: 'Manage your content creation business',
+      features: ['Client Management', 'Content Planning', 'Goal Tracking', 'Analytics Dashboard', 'Email Support'],
+      buttonText: 'Start with Creator',
       isPrimary: true,
       isPopular: true
     },
     {
-      name: 'Add a Niche',
-      price: billingCycle === 'monthly' ? '$9.99' : '$95.90',
-      period: billingCycle === 'monthly' ? '/month per niche' : '/year per niche',
-      originalPrice: billingCycle === 'monthly' ? null : '$119.88',
-      savings: billingCycle === 'monthly' ? null : 'Save $23.98',
-      description: 'Expand Tango with more niche workspaces',
-      subtitle: '(e.g. Podcasting + Coaching)',
-      features: [
-        'Unlock another creator mode',
-        'Switch seamlessly between roles',
-        'Dedicated pipelines & dashboards',
-        'Keep content and clients organized by niche'
-      ],
-      buttonText: 'Add Another Niche',
+      name: 'Coach Plan', 
+      planType: 'coach' as const,
+      price: '$47',
+      period: '/month',
+      description: 'Built for coaches and consultants',
+      subtitle: 'Track clients and grow your coaching business',
+      features: ['Client Management', 'Session Tracking', 'Goal Tracking', 'Analytics Dashboard', 'Email Support'],
+      buttonText: 'Start with Coach',
+      isPrimary: false,
+      isPopular: false
+    },
+    {
+      name: 'Podcaster Plan',
+      planType: 'podcaster' as const, 
+      price: '$47',
+      period: '/month',
+      description: 'Designed for podcast creators',
+      subtitle: 'Organize your podcast production',
+      features: ['Episode Planning', 'Guest Management', 'Content Calendar', 'Analytics Dashboard', 'Email Support'],
+      buttonText: 'Start with Podcaster',
+      isPrimary: false,
+      isPopular: false
+    },
+    {
+      name: 'Freelancer Plan',
+      planType: 'freelancer' as const,
+      price: '$47', 
+      period: '/month',
+      description: 'Made for freelancers',
+      subtitle: 'Manage projects and clients efficiently',
+      features: ['Project Management', 'Client Tracking', 'Time Tracking', 'Analytics Dashboard', 'Email Support'],
+      buttonText: 'Start with Freelancer',
       isPrimary: false,
       isPopular: false
     }
@@ -84,7 +96,7 @@ export const PricingSection = () => {
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-6 xl:gap-8">
+        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-2 xl:grid-cols-4 lg:gap-6 xl:gap-4">
           {plans.map((plan, index) => (
             <div 
               key={index}
@@ -108,16 +120,6 @@ export const PricingSection = () => {
                 </h3>
                 
                 <div className="mt-4 flex flex-col items-center">
-                  {plan.originalPrice && (
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg line-through text-slate-400">
-                        {plan.originalPrice}
-                      </span>
-                      <Badge className="bg-orange-100 text-orange-700 text-xs">
-                        {plan.savings}
-                      </Badge>
-                    </div>
-                  )}
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold text-slate-800">
                       {plan.price}
@@ -137,23 +139,15 @@ export const PricingSection = () => {
               </div>
 
               <div className="mt-8">
-                <Button 
-                  onClick={() => {
-                    if (plan.isPrimary) {
-                      // Navigate to custom Clerk sign-up with billing cycle preference
-                      window.location.href = `https://accounts.gotangocrm.com/sign-up?billing=${billingCycle}`;
-                    } else {
-                      // For niche upgrade, this would typically open a modal or go to dashboard
-                      window.location.href = '/dashboard?section=upgrade';
-                    }
-                  }}
+                <Button
+                  onClick={() => window.location.href = '/onboarding'}
                   className={`w-full py-3 px-6 text-base font-medium rounded-lg transition-all duration-200 ${
                     plan.isPrimary
                       ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300'
                   }`}
                 >
-                  {plan.buttonText}
+                  Get Started
                 </Button>
               </div>
 

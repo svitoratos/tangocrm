@@ -8,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
-// Stripe functionality removed - using simple payment status instead
 import { useUser } from '@clerk/nextjs';
 import { CancellationFormModal } from './cancellation-form-modal';
 import { 
@@ -139,19 +138,39 @@ Thank you.`;
 
   const handleUpgradeToYearly = async () => {
     try {
-      // Stripe portal functionality removed for now
-      alert('Upgrade functionality is temporarily unavailable');
+      // Redirect to Stripe Customer Portal for plan changes
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        throw new Error('Failed to create portal session');
+      }
     } catch (error) {
       console.error('Error upgrading to yearly:', error);
+      alert('Failed to open billing portal. Please try again.');
     }
   };
 
   const handleDowngradeToMonthly = async () => {
     try {
-      // Stripe portal functionality removed for now
-      alert('Downgrade functionality is temporarily unavailable');
+      // Redirect to Stripe Customer Portal for plan changes
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        throw new Error('Failed to create portal session');
+      }
     } catch (error) {
       console.error('Error downgrading to monthly:', error);
+      alert('Failed to open billing portal. Please try again.');
     }
   };
 
@@ -339,24 +358,11 @@ Thank you.`;
                 )}
                 
                 <Button
-                  onClick={() => {
-                    // Stripe portal functionality removed for now
-                    alert('Customer portal functionality is temporarily unavailable');
-                  }}
-                  disabled={isLoading}
                   className="w-full"
+                  disabled
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Manage Billing
-                    </>
-                  )}
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Billing Management Unavailable
                 </Button>
               </div>
             </CardContent>
