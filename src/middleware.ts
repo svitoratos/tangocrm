@@ -8,6 +8,7 @@ const rateLimit = new Map();
 function getRateLimit(pathname: string) {
   // Strict limits for sensitive endpoints
   if (pathname.startsWith('/api/auth')) return { limit: 5, window: 60 };
+  if (pathname.startsWith('/api/stripe')) return { limit: 10, window: 60 };
   if (pathname.startsWith('/api/admin')) return { limit: 20, window: 60 };
   if (pathname.startsWith('/api/contact')) return { limit: 3, window: 60 };
   

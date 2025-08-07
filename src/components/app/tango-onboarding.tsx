@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
+import { getPriceId } from '@/lib/stripe';
 
 
 interface OnboardingProps {
@@ -236,30 +237,53 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
     setError("");
 
     try {
-      console.log('Starting onboarding with data:', {
+      console.log('Starting payment for:', {
         billingCycle,
         selectedRoles,
         selectedGoals
       });
       
-      // Save onboarding data to sessionStorage to be processed after payment
-      const onboardingData = {
-        selectedRoles,
-        selectedGoals,
-        selectedSetupTask,
-        billingCycle,
-        timestamp: Date.now()
-      };
+      const primaryRole = selectedRoles[0] || 'creator';
       
-      sessionStorage.setItem('pendingOnboarding', JSON.stringify(onboardingData));
-      console.log('💾 Saved onboarding data to sessionStorage');
+      // Create checkout session
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          niche: primaryRole,
+          billingCycle: billingCycle,
+          successUrl: `${window.location.origin}/payment-success`,
+          cancelUrl: `${window.location.origin}/onboarding`,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
       
-      // Redirect to Clerk pricing table
-      console.log('🔧 Redirecting to Clerk pricing table');
-      window.location.href = '/pricing-clerk';
+      if (url) {
+        // Save onboarding data to sessionStorage for after payment
+        sessionStorage.setItem('pendingOnboarding', JSON.stringify({
+          selectedRoles,
+          selectedGoals,
+          selectedSetupTask,
+          billingCycle,
+          timestamp: Date.now()
+        }));
+        
+        // Redirect to Stripe checkout
+        window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
       
     } catch (err) {
-      console.error('Onboarding preparation error:', err);
+      console.error('Payment error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
@@ -766,7 +790,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                       {/* Action buttons */}
                       <div className="space-y-3">
                         <Button
-                          onClick={() => window.location.href = '/dashboard'}
+                          onClick={handleStartTrial}
                           disabled={isLoading}
                           className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-bold rounded px-8 py-4 text-lg transition disabled:cursor-not-allowed"
                         >

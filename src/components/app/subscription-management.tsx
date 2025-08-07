@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { useUser } from '@clerk/nextjs';
+import { ManageSubscriptionButton } from '@/components/stripe/manage-subscription-button';
 import { CancellationFormModal } from './cancellation-form-modal';
 import { 
   CreditCard, 
@@ -357,13 +358,12 @@ Thank you.`;
                   </Alert>
                 )}
                 
-                <Button
+                <ManageSubscriptionButton
                   className="w-full"
-                  disabled
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
-                  Billing Management Unavailable
-                </Button>
+                  Manage Billing
+                </ManageSubscriptionButton>
               </div>
             </CardContent>
           </Card>
