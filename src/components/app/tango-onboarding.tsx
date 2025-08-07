@@ -24,7 +24,7 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
-import { getPriceId } from '@/lib/stripe';
+import { useUser } from '@clerk/nextjs';
 
 
 interface OnboardingProps {
@@ -181,6 +181,7 @@ const setupTasks = [
 ];
 
 export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplete }: OnboardingProps) => {
+  const { user } = useUser();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
@@ -259,12 +260,13 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
         throw new Error(`No payment link configured for niche: ${primaryRole}`);
       }
       
-      // Save onboarding data to sessionStorage for after payment
+      // Save onboarding data and Clerk user ID to sessionStorage for after payment
       sessionStorage.setItem('pendingOnboarding', JSON.stringify({
         selectedRoles,
         selectedGoals,
         selectedSetupTask,
         billingCycle,
+        clerkUserId: user?.id, // Store Clerk user ID
         timestamp: Date.now()
       }));
       

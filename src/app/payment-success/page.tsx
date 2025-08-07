@@ -6,25 +6,67 @@ import { useRouter } from 'next/navigation';
 export default function PaymentSuccessPage() {
   const router = useRouter();
   const [countdown, setCountdown] = useState(3);
+  const [processing, setProcessing] = useState(true);
 
   useEffect(() => {
     console.log('🔧 Payment success page loaded');
     
-    // Simple countdown and redirect
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          console.log('🔧 Redirecting to dashboard');
-          router.push('/dashboard');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    const processPayment = async () => {
+      try {
+        // Get onboarding data from sessionStorage
+        const pendingOnboarding = sessionStorage.getItem('pendingOnboarding');
+        
+        if (pendingOnboarding) {
+          const onboardingData = JSON.parse(pendingOnboarding);
+          console.log('🔧 Processing onboarding data:', onboardingData);
+          
+          // Call API to update user with onboarding data
+          const response = await fetch('/api/user/process-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ onboardingData }),
+          });
 
-    return () => clearInterval(timer);
-  }, [router]);
+          if (response.ok) {
+            console.log('✅ Payment processed successfully');
+            // Clear sessionStorage
+            sessionStorage.removeItem('pendingOnboarding');
+          } else {
+            console.error('❌ Failed to process payment');
+          }
+        } else {
+          console.log('⚠️ No pending onboarding data found');
+        }
+      } catch (error) {
+        console.error('❌ Error processing payment:', error);
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    processPayment();
+  }, []);
+
+  useEffect(() => {
+    if (!processing) {
+      // Start countdown after payment processing
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            console.log('🔧 Redirecting to dashboard');
+            router.push('/dashboard');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [processing, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -39,9 +81,13 @@ export default function PaymentSuccessPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Payment Successful!
         </h2>
-        <p className="text-gray-600 mb-6">
-          Redirecting to your dashboard in {countdown} seconds...
-        </p>
+                  <p className="text-gray-600 mb-6">
+            {processing ? (
+              'Processing your payment...'
+            ) : (
+              `Redirecting to your dashboard in ${countdown} seconds...`
+            )}
+          </p>
         <div className="animate-pulse">
           <div className="h-2 bg-gray-200 rounded mb-2"></div>
           <div className="h-2 bg-gray-200 rounded mb-2"></div>

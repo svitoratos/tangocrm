@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
         const session = event.data.object;
         console.log('✅ Checkout completed for session:', session.id);
         
-        const userId = session.metadata?.clerk_user_id;
         const customerEmail = session.customer_details?.email;
         const niche = session.metadata?.niche;
         
@@ -34,77 +33,45 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Missing email data' }, { status: 400 });
         }
 
-        // For payment links, we need to find the user by email since no user ID is passed
-        let userToUpdate;
-        
-        if (userId) {
-          // Direct checkout with user ID
-          const { data: user, error } = await supabase
-            .from('users')
-            .upsert({
-              id: userId,
-              email: customerEmail,
-              onboarding_completed: true,
-              stripe_customer_id: session.customer,
-              stripe_subscription_id: session.subscription,
-              subscription_status: 'active',
-              subscription_tier: 'core',
-              primary_niche: niche || 'creator',
-              niches: niche ? [niche] : ['creator'],
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'id'
-            })
-            .select()
-            .single();
+        // Find user by email (since they're logged in with Clerk)
+        const { data: existingUser, error: findError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('email', customerEmail)
+          .single();
 
-          if (error) {
-            console.error('❌ Error updating user:', error);
-            return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
-          }
-          userToUpdate = user;
-        } else {
-          // Payment link - find user by email
-          const { data: existingUser, error: findError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', customerEmail)
-            .single();
-
-          if (findError && findError.code !== 'PGRST116') { // PGRST116 = no rows returned
-            console.error('❌ Error finding user by email:', findError);
-            return NextResponse.json({ error: 'Database lookup failed' }, { status: 500 });
-          }
-
-          if (existingUser) {
-            // Update existing user
-            const { data: user, error: updateError } = await supabase
-              .from('users')
-              .update({
-                onboarding_completed: true,
-                stripe_customer_id: session.customer,
-                stripe_subscription_id: session.subscription,
-                subscription_status: 'active',
-                subscription_tier: 'core',
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', existingUser.id)
-              .select()
-              .single();
-
-            if (updateError) {
-              console.error('❌ Error updating existing user:', updateError);
-              return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
-            }
-            userToUpdate = user;
-          } else {
-            console.log('⚠️ No existing user found for payment link customer:', customerEmail);
-            // Could create a new user here if needed, but for now just log
-            return NextResponse.json({ received: true });
-          }
+        if (findError && findError.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('❌ Error finding user by email:', findError);
+          return NextResponse.json({ error: 'Database lookup failed' }, { status: 500 });
         }
 
-        console.log('✅ User updated successfully:', userToUpdate?.id);
+        if (!existingUser) {
+          console.log('⚠️ No existing user found for payment customer:', customerEmail);
+          // Could create a new user here if needed, but for now just log
+          return NextResponse.json({ received: true });
+        }
+
+        // Update existing user with subscription details
+        const { data: user, error: updateError } = await supabase
+          .from('users')
+          .update({
+            onboarding_completed: true,
+            stripe_customer_id: session.customer,
+            stripe_subscription_id: session.subscription,
+            subscription_status: 'active',
+            subscription_tier: 'core',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingUser.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('❌ Error updating user subscription:', updateError);
+          return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
+        }
+
+        console.log('✅ User subscription updated successfully:', user.id);
         break;
 
       case 'invoice.payment_succeeded':
