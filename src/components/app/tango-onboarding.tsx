@@ -245,42 +245,33 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       
       const primaryRole = selectedRoles[0] || 'creator';
       
-      // Create checkout session
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          niche: primaryRole,
-          billingCycle: billingCycle,
-          successUrl: `${window.location.origin}/payment-success`,
-          cancelUrl: `${window.location.origin}/onboarding`,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await response.json();
+      // Payment links for each niche
+      const paymentLinks = {
+        creator: 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
+        podcaster: 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
+        freelancer: 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e',
+        coach: 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f'
+      };
       
-      if (url) {
-        // Save onboarding data to sessionStorage for after payment
-        sessionStorage.setItem('pendingOnboarding', JSON.stringify({
-          selectedRoles,
-          selectedGoals,
-          selectedSetupTask,
-          billingCycle,
-          timestamp: Date.now()
-        }));
-        
-        // Redirect to Stripe checkout
-        window.location.href = url;
-      } else {
-        throw new Error('No checkout URL received');
+      const paymentUrl = paymentLinks[primaryRole as keyof typeof paymentLinks];
+      
+      if (!paymentUrl) {
+        throw new Error(`No payment link configured for niche: ${primaryRole}`);
       }
+      
+      // Save onboarding data to sessionStorage for after payment
+      sessionStorage.setItem('pendingOnboarding', JSON.stringify({
+        selectedRoles,
+        selectedGoals,
+        selectedSetupTask,
+        billingCycle,
+        timestamp: Date.now()
+      }));
+      
+      console.log('🔧 Redirecting to payment link for:', primaryRole);
+      
+      // Redirect to Stripe payment link
+      window.location.href = paymentUrl;
       
     } catch (err) {
       console.error('Payment error:', err);

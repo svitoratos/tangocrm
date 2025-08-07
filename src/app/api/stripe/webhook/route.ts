@@ -29,37 +29,82 @@ export async function POST(request: NextRequest) {
         const customerEmail = session.customer_details?.email;
         const niche = session.metadata?.niche;
         
-        if (!userId || !customerEmail) {
-          console.error('❌ Missing user ID or email in session metadata');
-          return NextResponse.json({ error: 'Missing user data' }, { status: 400 });
+        if (!customerEmail) {
+          console.error('❌ Missing email in session data');
+          return NextResponse.json({ error: 'Missing email data' }, { status: 400 });
         }
 
-        // Update or create user record
-        const { data: user, error } = await supabase
-          .from('users')
-          .upsert({
-            id: userId,
-            email: customerEmail,
-            onboarding_completed: true,
-            stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
-            subscription_status: 'active',
-            subscription_tier: 'core',
-            primary_niche: niche || 'creator',
-            niches: niche ? [niche] : ['creator'],
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'id'
-          })
-          .select()
-          .single();
+        // For payment links, we need to find the user by email since no user ID is passed
+        let userToUpdate;
+        
+        if (userId) {
+          // Direct checkout with user ID
+          const { data: user, error } = await supabase
+            .from('users')
+            .upsert({
+              id: userId,
+              email: customerEmail,
+              onboarding_completed: true,
+              stripe_customer_id: session.customer,
+              stripe_subscription_id: session.subscription,
+              subscription_status: 'active',
+              subscription_tier: 'core',
+              primary_niche: niche || 'creator',
+              niches: niche ? [niche] : ['creator'],
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'id'
+            })
+            .select()
+            .single();
 
-        if (error) {
-          console.error('❌ Error updating user:', error);
-          return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
+          if (error) {
+            console.error('❌ Error updating user:', error);
+            return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
+          }
+          userToUpdate = user;
+        } else {
+          // Payment link - find user by email
+          const { data: existingUser, error: findError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', customerEmail)
+            .single();
+
+          if (findError && findError.code !== 'PGRST116') { // PGRST116 = no rows returned
+            console.error('❌ Error finding user by email:', findError);
+            return NextResponse.json({ error: 'Database lookup failed' }, { status: 500 });
+          }
+
+          if (existingUser) {
+            // Update existing user
+            const { data: user, error: updateError } = await supabase
+              .from('users')
+              .update({
+                onboarding_completed: true,
+                stripe_customer_id: session.customer,
+                stripe_subscription_id: session.subscription,
+                subscription_status: 'active',
+                subscription_tier: 'core',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingUser.id)
+              .select()
+              .single();
+
+            if (updateError) {
+              console.error('❌ Error updating existing user:', updateError);
+              return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
+            }
+            userToUpdate = user;
+          } else {
+            console.log('⚠️ No existing user found for payment link customer:', customerEmail);
+            // Could create a new user here if needed, but for now just log
+            return NextResponse.json({ received: true });
+          }
         }
 
-        console.log('✅ User updated successfully:', user.id);
+        console.log('✅ User updated successfully:', userToUpdate?.id);
         break;
 
       case 'invoice.payment_succeeded':
