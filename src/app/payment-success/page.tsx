@@ -34,7 +34,8 @@ export default function PaymentSuccessPage() {
             // Clear sessionStorage
             sessionStorage.removeItem('pendingOnboarding');
           } else {
-            console.error('❌ Failed to process payment');
+            const errorData = await response.json();
+            console.error('❌ Failed to process payment:', errorData);
           }
         } else {
           console.log('⚠️ No pending onboarding data found');

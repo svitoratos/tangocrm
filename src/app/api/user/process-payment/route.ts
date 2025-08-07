@@ -16,7 +16,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No onboarding data provided' }, { status: 400 });
     }
 
-    // Update user with onboarding data and mark as paid
+    // First check if user exists, if not create them
+    let { data: existingUser, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // User doesn't exist, create them
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: `${userId}@placeholder.tango`, // Placeholder email
+          onboarding_completed: true,
+          primary_niche: onboardingData.selectedRoles[0] || 'creator',
+          niches: onboardingData.selectedRoles,
+          subscription_status: 'active',
+          subscription_tier: 'core',
+          timezone: 'UTC',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('❌ Error creating user after payment:', createError);
+        return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
+      }
+      
+      console.log('✅ User created successfully after payment:', newUser.id);
+      return NextResponse.json({ 
+        success: true, 
+        user: newUser 
+      });
+    } else if (fetchError) {
+      console.error('❌ Error fetching user:', fetchError);
+      return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
+    }
+
+    // User exists, update them
     const { data: user, error } = await supabase
       .from('users')
       .update({
