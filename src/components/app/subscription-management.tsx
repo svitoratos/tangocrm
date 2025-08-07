@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePaymentStatus } from '@/hooks/use-payment-status';
 import { useSubscriptionDetails } from '@/hooks/use-subscription-details';
 import { useUser } from '@clerk/nextjs';
-import { ManageSubscriptionButton } from '@/components/stripe/manage-subscription-button';
+// Stripe components removed - will be replaced with new provider
 import { CancellationFormModal } from './cancellation-form-modal';
 import { 
   CreditCard, 
@@ -358,12 +358,13 @@ Thank you.`;
                   </Alert>
                 )}
                 
-                <ManageSubscriptionButton
+                <Button
                   className="w-full"
+                  onClick={() => alert('Subscription management coming soon')}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
                   Manage Billing
-                </ManageSubscriptionButton>
+                </Button>
               </div>
             </CardContent>
           </Card>
