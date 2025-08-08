@@ -148,11 +148,12 @@ Thank you.`;
         const { url } = await response.json();
         window.location.href = url;
       } else {
-        throw new Error('Failed to create portal session');
+        const error = await response.json();
+        alert(`Unable to open billing portal: ${error.error}`);
       }
     } catch (error) {
-      console.error('Error upgrading to yearly:', error);
-      alert('Failed to open billing portal. Please try again.');
+      console.error('Error opening billing portal for upgrade:', error);
+      alert('Failed to open billing portal. Please try again or contact support.');
     }
   };
 
@@ -167,11 +168,12 @@ Thank you.`;
         const { url } = await response.json();
         window.location.href = url;
       } else {
-        throw new Error('Failed to create portal session');
+        const error = await response.json();
+        alert(`Unable to open billing portal: ${error.error}`);
       }
     } catch (error) {
-      console.error('Error downgrading to monthly:', error);
-      alert('Failed to open billing portal. Please try again.');
+      console.error('Error opening billing portal for downgrade:', error);
+      alert('Failed to open billing portal. Please try again or contact support.');
     }
   };
 
@@ -360,7 +362,24 @@ Thank you.`;
                 
                 <Button
                   className="w-full"
-                  onClick={() => alert('Subscription management coming soon')}
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/stripe/create-portal-session', {
+                        method: 'POST',
+                      });
+                      
+                      if (response.ok) {
+                        const { url } = await response.json();
+                        window.location.href = url;
+                      } else {
+                        const error = await response.json();
+                        alert(`Unable to open billing portal: ${error.error}`);
+                      }
+                    } catch (error) {
+                      console.error('Error opening billing portal:', error);
+                      alert('Failed to open billing portal. Please try again or contact support.');
+                    }
+                  }}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
                   Manage Billing

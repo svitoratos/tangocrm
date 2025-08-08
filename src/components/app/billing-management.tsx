@@ -220,9 +220,23 @@ Thank you.`;
             )}
             
             <Button
-              onClick={() => {
-                // Stripe portal functionality removed for now
-                alert('Customer portal functionality is temporarily unavailable');
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/stripe/create-portal-session', {
+                    method: 'POST',
+                  });
+                  
+                  if (response.ok) {
+                    const { url } = await response.json();
+                    window.location.href = url;
+                  } else {
+                    const error = await response.json();
+                    alert(`Unable to open billing portal: ${error.error}`);
+                  }
+                } catch (error) {
+                  console.error('Error opening billing portal:', error);
+                  alert('Failed to open billing portal. Please try again or contact support.');
+                }
               }}
               disabled={isLoading}
               className="w-full"
