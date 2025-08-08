@@ -193,6 +193,13 @@ function OnboardingSuccessContent() {
         // Immediately refresh payment status so sidebar sees the new niche
         clearCache();
         await forceRefreshAfterPayment();
+        
+        // Additional fallback refresh after a short delay
+        setTimeout(async () => {
+          console.log('🔧 Performing additional refresh for better reliability...');
+          clearCache();
+          await refreshPaymentStatus(false);
+        }, 1000);
 
         // Wait a bit for database updates to propagate and ensure onboarding status is set
         console.log('🔧 Waiting for database updates to propagate...');

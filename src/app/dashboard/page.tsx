@@ -301,6 +301,31 @@ function MainDashboardWithSearchParams() {
     }
   }, [mounted, selectedNiche, availableNiches]);
 
+  // Monitor for niche additions and ensure sidebar refreshes
+  useEffect(() => {
+    if (mounted && !paymentStatusLoading) {
+      const localStorageNiche = localStorage.getItem('selectedNiche');
+      
+      // If localStorage has a niche that wasn't previously available but now is
+      if (localStorageNiche && 
+          availableNiches.includes(localStorageNiche) && 
+          selectedNiche !== localStorageNiche) {
+        console.log('🔧 New niche detected in localStorage, switching to:', localStorageNiche);
+        setSelectedNiche(localStorageNiche);
+      }
+      
+      // If we detect a niche addition (availableNiches length increased)
+      if (availableNiches.length > 0) {
+        console.log('🔧 Available niches updated:', availableNiches);
+        
+        // Force a re-render of the sidebar by triggering a state update
+        if (localStorageNiche && availableNiches.includes(localStorageNiche)) {
+          setSelectedNiche(localStorageNiche);
+        }
+      }
+    }
+  }, [mounted, availableNiches, paymentStatusLoading]);
+
 
 
   // Auto-fix subscription status for users with niches but inactive subscription

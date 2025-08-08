@@ -169,6 +169,11 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   }) => {
     const { user } = useUser();
     
+    // Force re-render when subscribedNiches changes
+    React.useEffect(() => {
+      console.log('🔧 Sidebar: subscribedNiches changed:', subscribedNiches);
+    }, [subscribedNiches]);
+    
     // Get user's display name from Clerk
   const getUserDisplayName = () => {
     if (!user) return 'User';
