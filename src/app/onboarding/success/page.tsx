@@ -21,9 +21,11 @@ function OnboardingSuccessContent() {
     const niches = searchParams.get('niches');
     const isUpgrade = searchParams.get('upgrade') === 'true';
     const specificNiche = searchParams.get('specific_niche');
+    const fromPayment = searchParams.get('from') === 'payment';
     
     // Check for pending niche upgrade from sessionStorage (set by sidebar upgrade flow)
     const pendingNicheUpgrade = sessionStorage.getItem('pendingNicheUpgrade');
+    const needsPaymentProcessing = sessionStorage.getItem('needsPaymentProcessing') === 'true';
     
     // Detect if this is a niche upgrade from various sources
     const isNicheUpgradeFromLink = sessionId && !niche && !niches;
@@ -37,6 +39,8 @@ function OnboardingSuccessContent() {
     const finalIsUpgrade = isAnyUpgrade;
 
     console.log('🔧 Success page loaded with session:', sessionId);
+    console.log('🔧 From payment page:', fromPayment);
+    console.log('🔧 Needs payment processing:', needsPaymentProcessing);
     console.log('🔧 Pending niche upgrade from sessionStorage:', pendingNicheUpgrade);
     console.log('🔧 Final niche:', finalNiche);
     console.log('🔧 Final niches:', finalNiches);
@@ -46,6 +50,40 @@ function OnboardingSuccessContent() {
     // Verify payment and update onboarding status
     const verifyPaymentAndUpdateStatus = async () => {
       try {
+        // Handle background payment processing from payment-success page
+        if (needsPaymentProcessing && fromPayment) {
+          console.log('🔧 Handling background payment processing from payment-success page');
+          
+          const pendingOnboarding = sessionStorage.getItem('pendingOnboarding');
+          if (pendingOnboarding) {
+            try {
+              const onboardingData = JSON.parse(pendingOnboarding);
+              console.log('🔧 Processing legacy onboarding data in background:', onboardingData);
+              
+              // Call API to update user with onboarding data (legacy flow)
+              const response = await fetch('/api/user/process-payment', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ onboardingData }),
+              });
+
+              if (response.ok) {
+                console.log('✅ Background payment processing successful');
+                // Clear sessionStorage
+                sessionStorage.removeItem('pendingOnboarding');
+                sessionStorage.removeItem('needsPaymentProcessing');
+              } else {
+                const errorData = await response.json();
+                console.error('❌ Background payment processing failed:', errorData);
+              }
+            } catch (error) {
+              console.error('❌ Error in background payment processing:', error);
+            }
+          }
+        }
+        
         if (sessionId) {
           // First, verify the payment was successful (only if we have a session ID)
           console.log('🔧 Verifying payment session:', sessionId);
@@ -236,10 +274,11 @@ function OnboardingSuccessContent() {
     };
 
     // Simulate setup process with progress updates
+    // Faster progress since payment processing now happens in background
     const setupSteps = [
-      { name: 'Creating your CRM dashboard', duration: 1000 },
-      { name: 'Personalizing your workspace', duration: 800 },
-      { name: 'Getting everything ready for you', duration: 500 },
+      { name: 'Creating your CRM dashboard', duration: 800 },
+      { name: 'Personalizing your workspace', duration: 600 },
+      { name: 'Getting everything ready for you', duration: 400 },
     ];
 
     let currentStep = 0;
@@ -337,7 +376,7 @@ function OnboardingSuccessContent() {
               router.push(`/dashboard?niche=${finalNiche}&section=crm`);
             }
           }
-        }, 1500); // Reduced from 3000ms to 1500ms for faster redirect
+        }, 800); // Further reduced for better UX since payment processing is now in background
       }
     }, 100);
 
