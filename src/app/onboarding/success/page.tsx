@@ -189,26 +189,31 @@ function OnboardingSuccessContent() {
         }
 
         // Update onboarding status (fallback in case webhook hasn't processed yet)
-        console.log('🔧 Updating onboarding status...');
-        const response = await fetch('/api/user/onboarding-status', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            onboardingCompleted: true,
-            primaryNiche: finalNiche,
-            niches: JSON.parse(finalNiches),
-            isUpgrade: finalIsUpgrade
-          }),
-        });
+        // Skip this for niche upgrades since the niche was already successfully added
+        if (!finalIsUpgrade) {
+          console.log('🔧 Updating onboarding status for new user...');
+          const response = await fetch('/api/user/onboarding-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              onboardingCompleted: true,
+              primaryNiche: finalNiche,
+              niches: JSON.parse(finalNiches),
+              isUpgrade: false
+            }),
+          });
 
-        if (!response.ok) {
-          console.error('❌ Failed to update onboarding status');
-          const errorData = await response.json();
-          console.error('❌ Onboarding status error details:', errorData);
+          if (!response.ok) {
+            console.error('❌ Failed to update onboarding status');
+            const errorData = await response.json();
+            console.error('❌ Onboarding status error details:', errorData);
+          } else {
+            console.log('✅ Onboarding status updated successfully');
+          }
         } else {
-          console.log('✅ Onboarding status updated successfully');
+          console.log('🔧 Skipping onboarding status update for niche upgrade (already handled by add-niche API)');
         }
 
         // Immediately refresh payment status so sidebar sees the new niche

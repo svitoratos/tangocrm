@@ -105,29 +105,44 @@ export async function POST(request: NextRequest) {
 
     // Update user profile with onboarding status
     console.log('🔧 Calling userOperations.upsertProfile...');
-    const updatedUser = await userOperations.upsertProfile(userId, {
-      email: user?.emailAddresses[0]?.emailAddress || '',
-      onboarding_completed: onboardingCompleted,
-      primary_niche: primaryNiche,
-      niches: updatedNiches,
-      updated_at: new Date().toISOString()
-    })
+    
+    try {
+      const updatedUser = await userOperations.upsertProfile(userId, {
+        email: user?.emailAddresses[0]?.emailAddress || '',
+        onboarding_completed: onboardingCompleted,
+        primary_niche: primaryNiche,
+        niches: updatedNiches,
+        updated_at: new Date().toISOString()
+      });
 
-    console.log('🔧 Updated user profile result:', updatedUser);
+      console.log('🔧 Updated user profile result:', updatedUser);
 
-    if (!updatedUser) {
-      console.error('❌ userOperations.upsertProfile returned null');
+      if (!updatedUser) {
+        console.error('❌ userOperations.upsertProfile returned null');
+        return NextResponse.json(
+          { error: 'Failed to update user profile. Database operation returned null.' },
+          { status: 500 }
+        );
+      }
+
+      console.log('✅ Onboarding status updated successfully');
+      return NextResponse.json({
+        success: true,
+        user: updatedUser
+      });
+      
+    } catch (dbError) {
+      console.error('❌ Database error in upsertProfile:', dbError);
+      console.error('❌ Database error details:', {
+        message: dbError instanceof Error ? dbError.message : 'Unknown database error',
+        stack: dbError instanceof Error ? dbError.stack : undefined
+      });
+      
       return NextResponse.json(
-        { error: 'Failed to update user profile. Please check your database connection.' },
+        { error: 'Database connection error', details: dbError instanceof Error ? dbError.message : 'Unknown error' },
         { status: 500 }
-      )
+      );
     }
-
-    console.log('✅ Onboarding status updated successfully');
-    return NextResponse.json({
-      success: true,
-      user: updatedUser
-    })
   } catch (error) {
     console.error('❌ Error updating onboarding status:', error);
     console.error('❌ Error details:', {
