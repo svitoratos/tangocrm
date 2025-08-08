@@ -68,19 +68,28 @@ export async function GET(request: NextRequest) {
     });
 
     // Get the price details
-    const priceId = validSubscription.items.data[0].price.id;
+    const priceId = validSubscription.items.data[0]?.price.id;
+    if (!priceId) {
+      console.log('❌ No price ID found in subscription items');
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Invalid subscription data',
+        subscription: null 
+      });
+    }
+    
     const price = await stripe.prices.retrieve(priceId);
     
     const subscriptionDetails = {
       id: validSubscription.id,
       status: validSubscription.status,
-      current_period_end: validSubscription.current_period_end,
-      billing_interval: price.recurring?.interval || 'month',
+      current_period_end: validSubscription.current_period_end as number,
+      billing_interval: (price.recurring?.interval || 'month') as 'month' | 'year',
       billing_interval_count: price.recurring?.interval_count || 1,
       amount: price.unit_amount || 0,
       currency: price.currency,
-      product_id: typeof price.product === 'string' ? price.product : price.product?.id || '',
-      discount_applied: validSubscription.discount?.coupon.name || null,
+      product_id: typeof price.product === 'string' ? price.product : (price.product as any)?.id || '',
+      discount_applied: validSubscription.discount?.coupon?.name || null,
       discount_end: validSubscription.discount?.end || null,
     };
 
