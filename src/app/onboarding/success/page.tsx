@@ -22,19 +22,26 @@ function OnboardingSuccessContent() {
     const isUpgrade = searchParams.get('upgrade') === 'true';
     const specificNiche = searchParams.get('specific_niche');
     
-    // Detect if this is a niche upgrade from hardcoded payment link
-    // If we have a session ID but no specific niche params, it's likely a niche upgrade
+    // Check for pending niche upgrade from sessionStorage (set by sidebar upgrade flow)
+    const pendingNicheUpgrade = sessionStorage.getItem('pendingNicheUpgrade');
+    
+    // Detect if this is a niche upgrade from various sources
     const isNicheUpgradeFromLink = sessionId && !niche && !niches;
+    const isNicheUpgradeFromSidebar = !sessionId && pendingNicheUpgrade;
+    const isAnyUpgrade = isUpgrade || isNicheUpgradeFromLink || isNicheUpgradeFromSidebar;
     
     // Set default values for niche upgrade
-    const finalNiche = niche || 'creator';
+    // Priority: URL params > sessionStorage > default
+    const finalNiche = specificNiche || niche || pendingNicheUpgrade || 'creator';
     const finalNiches = niches || JSON.stringify([finalNiche]);
-    const finalIsUpgrade = isUpgrade || isNicheUpgradeFromLink;
+    const finalIsUpgrade = isAnyUpgrade;
 
     console.log('🔧 Success page loaded with session:', sessionId);
-    console.log('🔧 Niche:', finalNiche);
-    console.log('🔧 Niches:', finalNiches);
+    console.log('🔧 Pending niche upgrade from sessionStorage:', pendingNicheUpgrade);
+    console.log('🔧 Final niche:', finalNiche);
+    console.log('🔧 Final niches:', finalNiches);
     console.log('🔧 Is upgrade:', finalIsUpgrade);
+    console.log('🔧 Is niche upgrade from sidebar:', isNicheUpgradeFromSidebar);
 
     // Verify payment and update onboarding status
     const verifyPaymentAndUpdateStatus = async () => {
@@ -125,9 +132,15 @@ function OnboardingSuccessContent() {
             } catch (error) {
               console.error('❌ Error adding specific niche:', error);
             }
-          } else if (isNicheUpgradeFromLink) {
-            // If this is a niche upgrade from hardcoded payment link, add the specific niche
-            console.log('🔧 Detected niche upgrade from payment link, adding specific niche...');
+          } else if (isNicheUpgradeFromLink || isNicheUpgradeFromSidebar) {
+            // If this is a niche upgrade from hardcoded payment link OR sidebar upgrade
+            console.log('🔧 Detected niche upgrade, adding specific niche:', finalNiche);
+            console.log('🔧 Upgrade source:', {
+              fromLink: isNicheUpgradeFromLink,
+              fromSidebar: isNicheUpgradeFromSidebar,
+              pendingNicheUpgrade
+            });
+            
             try {
               const addNicheResponse = await fetch('/api/user/add-niche', {
                 method: 'POST',
@@ -135,18 +148,26 @@ function OnboardingSuccessContent() {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  nicheToAdd: finalNiche // Use the specific niche from URL params
+                  nicheToAdd: finalNiche
                 }),
               });
               
               if (addNicheResponse.ok) {
-                console.log('✅ Successfully added specific niche from payment link:', finalNiche);
+                console.log('✅ Successfully added specific niche:', finalNiche);
                 // Persist selection and refresh payment status cache
                 localStorage.setItem('selectedNiche', finalNiche);
                 clearCache();
                 await forceRefreshAfterPayment();
+                
+                // Clear the pending niche upgrade from sessionStorage
+                if (pendingNicheUpgrade) {
+                  sessionStorage.removeItem('pendingNicheUpgrade');
+                  console.log('🔧 Cleared pendingNicheUpgrade from sessionStorage');
+                }
               } else {
-                console.error('❌ Failed to add specific niche from payment link');
+                console.error('❌ Failed to add specific niche');
+                const errorData = await addNicheResponse.json();
+                console.error('❌ Add niche error details:', errorData);
               }
             } catch (error) {
               console.error('❌ Error adding specific niche:', error);
