@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { stripe } from '@/lib/stripe';
 import { userOperations } from '@/lib/database';
+import type Stripe from 'stripe';
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
     console.log('✅ Found valid subscription:', {
       id: validSubscription.id,
       status: validSubscription.status,
-      current_period_end: validSubscription.current_period_end,
+      current_period_end: (validSubscription as any).current_period_end,
     });
 
     // Get the price details
@@ -83,14 +84,14 @@ export async function GET(request: NextRequest) {
     const subscriptionDetails = {
       id: validSubscription.id,
       status: validSubscription.status,
-      current_period_end: validSubscription.current_period_end as number,
+      current_period_end: (validSubscription as any).current_period_end as number,
       billing_interval: (price.recurring?.interval || 'month') as 'month' | 'year',
       billing_interval_count: price.recurring?.interval_count || 1,
       amount: price.unit_amount || 0,
       currency: price.currency,
       product_id: typeof price.product === 'string' ? price.product : (price.product as any)?.id || '',
-      discount_applied: validSubscription.discount?.coupon?.name || null,
-      discount_end: validSubscription.discount?.end || null,
+      discount_applied: (validSubscription as any).discount?.coupon?.name || null,
+      discount_end: (validSubscription as any).discount?.end || null,
     };
 
     console.log('✅ Returning subscription details:', subscriptionDetails);
