@@ -20,6 +20,12 @@ export default function PaymentSuccessPage() {
           const onboardingData = JSON.parse(pendingOnboarding);
           console.log('🔧 Processing onboarding data:', onboardingData);
           
+          // Persist chosen niche so sidebar uses it right away
+          const chosen = onboardingData.selectedRoles?.[0] || 'creator';
+          if (chosen) {
+            localStorage.setItem('selectedNiche', chosen);
+          }
+          
           // Call API to update user with onboarding data
           const response = await fetch('/api/user/process-payment', {
             method: 'POST',

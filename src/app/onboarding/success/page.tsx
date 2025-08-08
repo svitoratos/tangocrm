@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PostSignupLoading } from '@/components/app/post-signup-loading';
 import { useUser } from '@clerk/nextjs';
+import { usePaymentStatus } from '@/hooks/use-payment-status';
 
 function OnboardingSuccessContent() {
   const router = useRouter();
@@ -11,6 +12,7 @@ function OnboardingSuccessContent() {
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const { forceRefreshAfterPayment, clearCache, refreshPaymentStatus } = usePaymentStatus();
 
   useEffect(() => {
     // Get session data from URL params
@@ -111,22 +113,10 @@ function OnboardingSuccessContent() {
               
               if (addNicheResponse.ok) {
                 console.log('✅ Successfully added specific niche:', specificNiche);
-                
-                // Force refresh payment status to ensure sidebar updates
-                try {
-                  await fetch('/api/user/payment-status?t=' + Date.now(), { 
-                    method: 'GET',
-                    cache: 'no-cache'
-                  });
-                  console.log('✅ Forced payment status refresh after niche addition');
-                } catch (refreshError) {
-                  console.error('❌ Error refreshing payment status:', refreshError);
-                }
-                
-                // Special handling for coach niche - immediately switch to coach dashboard
-                if (specificNiche === 'coach') {
-                  console.log('🎯 Coach niche added - will redirect to coach dashboard');
-                }
+                // Persist selection and refresh payment status cache
+                localStorage.setItem('selectedNiche', specificNiche);
+                clearCache();
+                await forceRefreshAfterPayment();
               } else {
                 console.error('❌ Failed to add specific niche');
                 const errorData = await addNicheResponse.json();
@@ -151,6 +141,10 @@ function OnboardingSuccessContent() {
               
               if (addNicheResponse.ok) {
                 console.log('✅ Successfully added specific niche from payment link:', finalNiche);
+                // Persist selection and refresh payment status cache
+                localStorage.setItem('selectedNiche', finalNiche);
+                clearCache();
+                await forceRefreshAfterPayment();
               } else {
                 console.error('❌ Failed to add specific niche from payment link');
               }
@@ -196,68 +190,13 @@ function OnboardingSuccessContent() {
           console.log('✅ Onboarding status updated successfully');
         }
 
-        // Wait longer for database updates to propagate and ensure onboarding status is set
+        // Immediately refresh payment status so sidebar sees the new niche
+        clearCache();
+        await forceRefreshAfterPayment();
+
+        // Wait a bit for database updates to propagate and ensure onboarding status is set
         console.log('🔧 Waiting for database updates to propagate...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
-
-        // Double-check payment status to ensure everything is properly set
-        console.log('🔧 Double-checking payment status...');
-        const paymentStatusResponse = await fetch('/api/user/payment-status');
-        if (paymentStatusResponse.ok) {
-          const paymentStatus = await paymentStatusResponse.json();
-          console.log('🔧 Final payment status check:', paymentStatus);
-          
-          if (!paymentStatus.hasActiveSubscription) {
-            console.warn('⚠️ User still doesn\'t have active subscription, this might indicate a webhook issue');
-            
-            // Directly update subscription status since webhook might not have processed yet
-            console.log('🔧 Manually updating subscription status to active...');
-            try {
-              const subscriptionUpdateResponse = await fetch('/api/user/subscription-status', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  subscriptionStatus: 'active',
-                  subscriptionTier: 'core'
-                }),
-              });
-              
-              if (subscriptionUpdateResponse.ok) {
-                console.log('✅ Manually updated subscription status to active');
-              } else {
-                console.error('❌ Failed to manually update subscription status');
-              }
-            } catch (error) {
-              console.error('❌ Error manually updating subscription status:', error);
-            }
-          }
-          
-          if (!paymentStatus.hasCompletedOnboarding) {
-            console.warn('⚠️ User onboarding status not updated, retrying...');
-            // Retry updating onboarding status
-            const retryResponse = await fetch('/api/user/onboarding-status', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                onboardingCompleted: true,
-                primaryNiche: finalNiche,
-                niches: JSON.parse(finalNiches),
-                isUpgrade: finalIsUpgrade
-              }),
-            });
-            
-            if (retryResponse.ok) {
-              console.log('✅ Onboarding status updated on retry');
-            } else {
-              console.error('❌ Failed to update onboarding status on retry');
-            }
-          }
-        }
-
+        await new Promise(resolve => setTimeout(resolve, 1500));
       } catch (error) {
         console.error('❌ Error verifying payment and updating status:', error);
       }
@@ -310,6 +249,12 @@ function OnboardingSuccessContent() {
               
               if (finalStatus.hasCompletedOnboarding) {
                 console.log('✅ Onboarding completed, redirecting to dashboard...');
+                
+                // Persist chosen niche to localStorage so dashboard selects it
+                const chosen = specificNiche || finalNiche;
+                if (chosen) {
+                  localStorage.setItem('selectedNiche', chosen);
+                }
                 
                 // Special handling for coach niche - redirect to coach dashboard
                 if (finalNiche === 'coach' || specificNiche === 'coach') {
