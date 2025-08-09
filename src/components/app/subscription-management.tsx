@@ -149,7 +149,17 @@ Thank you.`;
         window.location.href = url;
       } else {
         const error = await response.json();
-        alert(`Unable to open billing portal: ${error.error}`);
+        if (error.isManaged && error.supportEmail) {
+          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
+        } else if (error.needsSubscription) {
+          if (window.confirm(`${error.error}\n\nWould you like to view our subscription plans?`)) {
+            window.location.href = '/pricing';
+          }
+        } else if (error.supportEmail) {
+          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
+        } else {
+          alert(`Unable to open billing portal: ${error.error}`);
+        }
       }
     } catch (error) {
       console.error('Error opening billing portal for upgrade:', error);
@@ -169,7 +179,17 @@ Thank you.`;
         window.location.href = url;
       } else {
         const error = await response.json();
-        alert(`Unable to open billing portal: ${error.error}`);
+        if (error.isManaged && error.supportEmail) {
+          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
+        } else if (error.needsSubscription) {
+          if (window.confirm(`${error.error}\n\nWould you like to view our subscription plans?`)) {
+            window.location.href = '/pricing';
+          }
+        } else if (error.supportEmail) {
+          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
+        } else {
+          alert(`Unable to open billing portal: ${error.error}`);
+        }
       }
     } catch (error) {
       console.error('Error opening billing portal for downgrade:', error);
@@ -373,7 +393,17 @@ Thank you.`;
                         window.location.href = url;
                       } else {
                         const error = await response.json();
-                        alert(`Unable to open billing portal: ${error.error}`);
+                        if (error.isManaged && error.supportEmail) {
+                          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
+                        } else if (error.needsSubscription) {
+                          if (window.confirm(`${error.error}\n\nWould you like to view our subscription plans?`)) {
+                            window.location.href = '/pricing';
+                          }
+                        } else if (error.supportEmail) {
+                          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
+                        } else {
+                          alert(`Unable to open billing portal: ${error.error}`);
+                        }
                       }
                     } catch (error) {
                       console.error('Error opening billing portal:', error);
