@@ -69,18 +69,8 @@ export async function POST(request: NextRequest) {
     // SECURITY FIX: Use authenticated user's ID - NEVER hardcode
     const correctUserId = userId;
     
-    // Try to get user by email if provided
-    if (body.email) {
-      const { data: userDataByEmail } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', body.email)
-        .single();
-      
-      if (userDataByEmail) {
-        correctUserId = userDataByEmail.id;
-      }
-    }
+    // SECURITY NOTE: Always use authenticated user's ID - never override with email lookup
+    // The client being created belongs to the authenticated user, not to any email provided
     
     // Create client using database operations
     const newClient = await clientOperations.create({
