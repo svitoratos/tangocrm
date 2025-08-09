@@ -16,14 +16,13 @@ import {
   AlertTriangle, 
   Info, 
   CheckCircle, 
-  RefreshCw,
   Crown,
   Star
 } from 'lucide-react';
 
 export const SubscriptionManagement = () => {
   const { user } = useUser();
-  const { paymentStatus, isLoading: paymentStatusLoading, refreshPaymentStatus } = usePaymentStatus();
+  const { paymentStatus, isLoading: paymentStatusLoading } = usePaymentStatus();
   const {
     subscriptionDetails,
     isLoading: subscriptionLoading,
@@ -35,24 +34,10 @@ export const SubscriptionManagement = () => {
   } = useSubscriptionDetails();
 
   // Using direct Stripe portal link - no loading states needed
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   
-  const isLoading = paymentStatusLoading || subscriptionLoading || isRefreshing;
+  const isLoading = paymentStatusLoading || subscriptionLoading;
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([
-        refreshPaymentStatus(true), // true = show loading state
-        refetchSubscription()
-      ]);
-    } catch (error) {
-      console.error('Error refreshing subscription data:', error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -113,22 +98,11 @@ export const SubscriptionManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Subscription Management</h2>
-          <p className="text-muted-foreground">
-            Manage your subscription, billing, and account features
-          </p>
-        </div>
-        <Button
-          onClick={handleRefresh}
-          disabled={isLoading}
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Subscription Management</h2>
+        <p className="text-muted-foreground">
+          Manage your subscription, billing, and account features
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
