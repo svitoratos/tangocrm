@@ -157,22 +157,21 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.log('Could not find user by Clerk ID, trying to find by email...');
       // Try to find user by email as fallback
+      // SECURITY FIX: Get user data for authenticated user only - never use hardcoded email
       try {
         const { data: userData } = await supabaseAdmin
           .from('users')
           .select('timezone, id')
-          .eq('email', 'stevenvitoratos@getbondlyapp.com')
+          .eq('id', correctUserId)
           .single();
 
         if (userData?.timezone) {
           userTimezone = userData.timezone;
         }
-        if (userData?.id) {
-          correctUserId = userData.id;
-        }
-      } catch (emailError) {
-        console.log('Could not find user by email either, using default timezone UTC and original user ID');
-        // Continue with default timezone and original user ID
+        // correctUserId is already the authenticated user's ID - don't override
+      } catch (userError) {
+        console.log('Could not find user data, using default timezone UTC');
+        // Continue with default timezone and authenticated user ID
       }
     }
 
