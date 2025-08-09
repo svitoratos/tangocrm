@@ -72,25 +72,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const niche = searchParams.get('niche');
     
-    // Get the correct user_id for database query (same logic as POST)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@getbondlyapp.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('GET - Using existing user ID for query:', correctUserId);
-      } else {
-        console.log('GET - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('GET - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // SECURITY FIX: Use authenticated user's ID directly - never override with hardcoded values
+    const correctUserId = userId;
+    console.log('GET - Using authenticated user ID:', correctUserId);
     
     // Build query
     let query = supabaseAdmin

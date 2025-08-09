@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { clientOperations } from '@/lib/database';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { auth } from '@clerk/nextjs/server';
 
 export interface Client {
   id: string;
@@ -19,11 +20,21 @@ export interface Client {
 // GET /api/clients
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY FIX: Add authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const niche = searchParams.get('niche');
     
-    // Get the correct user_id for database operations
-    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    // SECURITY FIX: Use authenticated user's ID - NEVER hardcode
+    const correctUserId = userId;
     
     // Get clients using database operations with niche filtering
     const clients = await clientOperations.getAll(correctUserId, niche || undefined);
@@ -43,10 +54,20 @@ export async function GET(request: NextRequest) {
 // POST /api/clients
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY FIX: Add authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     
-    // Get the correct user_id for database operations
-    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    // SECURITY FIX: Use authenticated user's ID - NEVER hardcode
+    const correctUserId = userId;
     
     // Try to get user by email if provided
     if (body.email) {
@@ -95,6 +116,16 @@ export async function POST(request: NextRequest) {
 // PUT /api/clients
 export async function PUT(request: NextRequest) {
   try {
+    // SECURITY FIX: Add authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { id, ...updateData } = body;
     
@@ -105,8 +136,8 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Get the correct user_id for database operations
-    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    // SECURITY FIX: Use authenticated user's ID - NEVER hardcode
+    const correctUserId = userId;
     
     // Update client using database operations with niche filtering
     const updatedClient = await clientOperations.update(id, correctUserId, updateData, updateData.niche);
@@ -130,6 +161,16 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/clients
 export async function DELETE(request: NextRequest) {
   try {
+    // SECURITY FIX: Add authentication check
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     
@@ -140,8 +181,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    // Get the correct user_id for database operations
-    let correctUserId = 'user_2zmMw9vD4wiYXnUnGe7sCiS3F11'; // Default user ID
+    // SECURITY FIX: Use authenticated user's ID - NEVER hardcode
+    const correctUserId = userId;
     
     // Get the niche from the client before deleting
     const client = await clientOperations.getById(id, correctUserId);
