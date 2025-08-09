@@ -40,14 +40,12 @@ export const SubscriptionManagement = () => {
     refetch: refetchSubscription
   } = useSubscriptionDetails();
 
-  // Stripe portal functionality removed for now
-  const portalLoading = false;
-  const portalError = null;
+  // Using direct Stripe portal link - no loading states needed
   const [showContactModal, setShowContactModal] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   
-  const isLoading = paymentStatusLoading || subscriptionLoading || portalLoading || isRefreshing;
+  const isLoading = paymentStatusLoading || subscriptionLoading || isRefreshing;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -137,64 +135,14 @@ Please process my cancellation request.
 Thank you.`;
   };
 
-  const handleUpgradeToYearly = async () => {
-    try {
-      // Redirect to Stripe Customer Portal for plan changes
-      const response = await fetch('/api/stripe/create-portal-session', {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        const { url } = await response.json();
-        window.location.href = url;
-      } else {
-        const error = await response.json();
-        if (error.isManaged && error.supportEmail) {
-          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
-        } else if (error.needsSubscription) {
-          if (window.confirm(`${error.error}\n\nWould you like to view our subscription plans?`)) {
-            window.location.href = '/pricing';
-          }
-        } else if (error.supportEmail) {
-          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
-        } else {
-          alert(`Unable to open billing portal: ${error.error}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error opening billing portal for upgrade:', error);
-      alert('Failed to open billing portal. Please try again or contact support.');
-    }
+  const handleUpgradeToYearly = () => {
+    // Direct link to Stripe Customer Portal
+    window.location.href = 'https://billing.stripe.com/p/login/fZueVebJofyHaBi35W2Nq00';
   };
 
-  const handleDowngradeToMonthly = async () => {
-    try {
-      // Redirect to Stripe Customer Portal for plan changes
-      const response = await fetch('/api/stripe/create-portal-session', {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        const { url } = await response.json();
-        window.location.href = url;
-      } else {
-        const error = await response.json();
-        if (error.isManaged && error.supportEmail) {
-          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
-        } else if (error.needsSubscription) {
-          if (window.confirm(`${error.error}\n\nWould you like to view our subscription plans?`)) {
-            window.location.href = '/pricing';
-          }
-        } else if (error.supportEmail) {
-          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
-        } else {
-          alert(`Unable to open billing portal: ${error.error}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error opening billing portal for downgrade:', error);
-      alert('Failed to open billing portal. Please try again or contact support.');
-    }
+  const handleDowngradeToMonthly = () => {
+    // Direct link to Stripe Customer Portal
+    window.location.href = 'https://billing.stripe.com/p/login/fZueVebJofyHaBi35W2Nq00';
   };
 
   return (
@@ -371,44 +319,12 @@ Thank you.`;
                   </AlertDescription>
                 </Alert>
 
-                {portalError && (
-                  <Alert className="border-red-200 bg-red-50">
-                    <AlertTriangle className="h-4 w-4 text-red-600" />
-                    <AlertDescription className="text-red-700">
-                      {portalError}
-                    </AlertDescription>
-                  </Alert>
-                )}
                 
                 <Button
                   className="w-full"
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/stripe/create-portal-session', {
-                        method: 'POST',
-                      });
-                      
-                      if (response.ok) {
-                        const { url } = await response.json();
-                        window.location.href = url;
-                      } else {
-                        const error = await response.json();
-                        if (error.isManaged && error.supportEmail) {
-                          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
-                        } else if (error.needsSubscription) {
-                          if (window.confirm(`${error.error}\n\nWould you like to view our subscription plans?`)) {
-                            window.location.href = '/pricing';
-                          }
-                        } else if (error.supportEmail) {
-                          alert(`${error.error}\n\nSupport: ${error.supportEmail}`);
-                        } else {
-                          alert(`Unable to open billing portal: ${error.error}`);
-                        }
-                      }
-                    } catch (error) {
-                      console.error('Error opening billing portal:', error);
-                      alert('Failed to open billing portal. Please try again or contact support.');
-                    }
+                  onClick={() => {
+                    // Direct link to Stripe Customer Portal
+                    window.location.href = 'https://billing.stripe.com/p/login/fZueVebJofyHaBi35W2Nq00';
                   }}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
