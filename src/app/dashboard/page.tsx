@@ -659,9 +659,11 @@ function MainDashboardWithSearchParams() {
             <div className={cn(
               "fixed lg:relative z-50 h-full transition-all duration-300 ease-in-out sidebar-container",
               "lg:translate-x-0 flex-shrink-0",
-              sidebarCollapsed ? "-translate-x-full" : "translate-x-0",
-              // Ensure sidebar is always visible on desktop
-              "lg:block"
+              sidebarCollapsed ? "-translate-x-full lg:translate-x-0" : "translate-x-0",
+              // Ensure sidebar is always visible on desktop, but can slide on mobile
+              "lg:block",
+              // Improve mobile touch targets
+              "touch-manipulation"
             )}>
               <SidebarNavigation
                 activeItem={activeSection}
@@ -692,17 +694,24 @@ function MainDashboardWithSearchParams() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="touch-manipulation min-h-[44px] min-w-[44px]"
+                aria-label="Toggle sidebar"
               >
                 <Menu className="w-5 h-5" />
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="touch-manipulation min-h-[44px] min-w-[44px]"
+                    aria-label="User menu"
+                  >
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 z-[60]">
                   <DropdownMenuItem onClick={handleSettings} className="flex items-center gap-2">
                     <Settings size={16} />
                     Settings

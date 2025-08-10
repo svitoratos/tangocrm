@@ -81,10 +81,11 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group",
+        "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group touch-manipulation",
+        "min-h-[44px]", // Ensure minimum touch target size for mobile
         isActive 
           ? 'bg-primary text-primary-foreground shadow-sm' 
-          : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+          : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent/70'
       )}
     >
       <div className={cn(
@@ -344,7 +345,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 <Button 
                   variant="outline" 
                   className={cn(
-                    "w-full justify-between h-auto p-3 border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/30 hover:bg-blue-50/50 transition-all duration-200",
+                    "w-full justify-between h-auto p-3 border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/30 hover:bg-blue-50/50 transition-all duration-200 touch-manipulation",
+                    "min-h-[44px]", // Ensure minimum touch target size
                     isCollapsed && "w-10 h-10 p-0 justify-center border-2"
                   )}
                 >
@@ -385,7 +387,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[260px]">
+              <DropdownMenuContent align="start" className="w-[260px] z-[60] max-h-[80vh] overflow-y-auto">
                 <div className="px-2 py-1.5">
                   <p className="text-xs font-medium text-muted-foreground mb-2">
                     Switch Business Type
@@ -502,7 +504,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             <Button
               variant="ghost"
               className={cn(
-                "w-full justify-start h-auto p-3 hover:bg-accent",
+                "w-full justify-start h-auto p-3 hover:bg-accent touch-manipulation min-h-[44px]",
                 isCollapsed ? 'justify-center px-2' : ''
               )}
             >
@@ -529,7 +531,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
+          <DropdownMenuContent align="start" className="w-48 z-[60]">
             <DropdownMenuItem onClick={onSettings} className="flex items-center gap-2">
               <Settings size={16} />
               Settings
