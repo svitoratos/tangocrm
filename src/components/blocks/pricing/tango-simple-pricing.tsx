@@ -5,13 +5,13 @@ import { Check } from 'lucide-react';
 
 export const TangoSimplePricing = () => {
   const handleGetStarted = () => {
-    // Redirect to sign up
-    window.location.href = '/sign-up';
+    // Redirect to external sign up
+    window.location.href = 'https://accounts.gotangocrm.com/sign-up';
   };
 
   const handleAddNiche = () => {
-    // Redirect to sign in
-    window.location.href = '/sign-in';
+    // Redirect to external sign in
+    window.location.href = 'https://accounts.gotangocrm.com/sign-in';
   };
 
   return (
@@ -84,9 +84,9 @@ export const TangoSimplePricing = () => {
 
               <Button 
                 onClick={handleGetStarted}
-                className="w-full mt-8 bg-emerald-500 hover:bg-emerald-600 text-white py-3 text-lg font-semibold"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 text-lg"
               >
-                Start with Tango
+                Join Tango
               </Button>
             </div>
           </div>
