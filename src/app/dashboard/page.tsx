@@ -175,9 +175,10 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
   };
 
 // Mobile Sidebar Overlay
-const MobileSidebarOverlay: React.FC = () => {
-  const { sidebarCollapsed, setSidebarCollapsed } = useAppContext();
-
+const MobileSidebarOverlay: React.FC<{ sidebarCollapsed: boolean; setSidebarCollapsed: (collapsed: boolean) => void }> = ({ 
+  sidebarCollapsed, 
+  setSidebarCollapsed 
+}) => {
   if (sidebarCollapsed) return null;
 
   return (
@@ -186,6 +187,10 @@ const MobileSidebarOverlay: React.FC = () => {
       onClick={() => {
         console.log('🔧 Mobile overlay clicked, closing sidebar');
         setSidebarCollapsed(true);
+        // Save to localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('sidebarCollapsed', JSON.stringify(true));
+        }
       }}
       style={{ touchAction: 'none' }}
     />
@@ -229,18 +234,7 @@ function MainDashboardWithSearchParams() {
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [selectedNiche, setSelectedNiche] = useState<string>("");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    // Check localStorage first, then default based on screen size
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('sidebarCollapsed');
-      if (stored !== null) {
-        return JSON.parse(stored);
-      }
-      // Default to collapsed on mobile, expanded on desktop
-      return window.innerWidth < 1024;
-    }
-    return false;
-  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Start with expanded, will be set properly after mount
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
@@ -273,6 +267,28 @@ function MainDashboardWithSearchParams() {
   // Set mounted state and handle localStorage
   useEffect(() => {
     setMounted(true);
+    
+    // Initialize sidebar state after mounting
+    const initializeSidebarState = () => {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('sidebarCollapsed');
+        if (stored !== null) {
+          const parsed = JSON.parse(stored);
+          console.log('🔧 Restoring sidebar state from localStorage:', parsed);
+          setSidebarCollapsed(parsed);
+        } else {
+          // Default to collapsed on mobile, expanded on desktop
+          const shouldCollapse = window.innerWidth < 1024;
+          console.log('🔧 Setting default sidebar state:', shouldCollapse, 'window width:', window.innerWidth);
+          setSidebarCollapsed(shouldCollapse);
+          // Save the default state to localStorage
+          localStorage.setItem('sidebarCollapsed', JSON.stringify(shouldCollapse));
+        }
+      }
+    };
+    
+    // Small delay to ensure window is fully available
+    setTimeout(initializeSidebarState, 100);
   }, []);
 
   // Check if user has completed onboarding and set initial niche
@@ -491,26 +507,17 @@ function MainDashboardWithSearchParams() {
     setIsCheckingOnboarding(false);
   };
 
-  // Handle client-side mounting to prevent hydration mismatches
+  // Handle resize and payment status refresh
   useEffect(() => {
-    setMounted(true);
-    
-    // Set initial sidebar state based on screen size after mounting
-      const handleResize = () => {
-    if (window.innerWidth < 1024) {
-      setSidebarCollapsed(true);
-    } else {
-      // On desktop, keep the sidebar expanded by default
-      setSidebarCollapsed(false);
-    }
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('sidebarCollapsed', JSON.stringify(window.innerWidth < 1024));
-    }
-  };
-
-    // Set initial state
-    handleResize();
+    const handleResize = () => {
+      const shouldCollapse = window.innerWidth < 1024;
+      console.log('🔧 Resize detected, setting sidebar to:', shouldCollapse, 'window width:', window.innerWidth);
+      setSidebarCollapsed(shouldCollapse);
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sidebarCollapsed', JSON.stringify(shouldCollapse));
+      }
+    };
 
     // Add resize listener
     window.addEventListener('resize', handleResize);
@@ -676,7 +683,10 @@ function MainDashboardWithSearchParams() {
       }`} style={{ touchAction: 'manipulation' }}>
         <div className="flex h-full w-full">
           {/* Mobile Sidebar Overlay */}
-          <MobileSidebarOverlay />
+          <MobileSidebarOverlay 
+            sidebarCollapsed={sidebarCollapsed}
+            setSidebarCollapsed={setSidebarCollapsed}
+          />
           
           {/* Sidebar - Always render when user is authenticated */}
           {user && (
@@ -693,7 +703,9 @@ function MainDashboardWithSearchParams() {
               // Mobile-specific improvements
               "lg:min-w-[280px] min-w-[280px] max-w-[280px]",
               // Ensure proper mobile positioning
-              "left-0 top-0"
+              "left-0 top-0",
+              // Debug: add background color to see sidebar
+              "bg-white"
             )}>
               <SidebarNavigation
                 activeItem={activeSection}
@@ -732,7 +744,8 @@ function MainDashboardWithSearchParams() {
                 size="icon"
                 onClick={() => {
                   const newState = !sidebarCollapsed;
-                  console.log('🔧 Mobile menu toggle clicked, new state:', newState);
+                  console.log('🔧 Mobile menu toggle clicked, current state:', sidebarCollapsed, 'new state:', newState);
+                  console.log('🔧 Window width:', window.innerWidth, 'is mobile:', window.innerWidth < 1024);
                   setSidebarCollapsed(newState);
                   // Save to localStorage
                   if (typeof window !== 'undefined') {
