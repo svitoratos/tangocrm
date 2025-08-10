@@ -128,24 +128,63 @@ export const TangoCorePricing = () => {
   const totals = calculateTotal();
   const savings = (totals.monthly * 12) - totals.yearly;
 
-  const handleGetStarted = () => {
+  const handleGetStarted = async () => {
     if (!user) {
       window.location.href = '/sign-in?redirect_url=' + encodeURIComponent('/pricing');
       return;
     }
 
-    // Redirect to Stripe checkout with selected niches
     const selectedNiche = selectedNiches[0] || 'coach';
-    const stripePaymentLinks: Record<string, string> = {
-      'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
-      'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
-      'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
-      'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
-    };
-    
-    const paymentLink = stripePaymentLinks[selectedNiche];
-    if (paymentLink) {
-      window.location.href = paymentLink;
+    const billingCycle = isYearly ? 'yearly' : 'monthly';
+
+    try {
+      // Create checkout session via our API to prevent duplicate customers
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          niche: selectedNiche,
+          billingCycle,
+          isNicheUpgrade: false
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success && data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = data.url;
+      } else {
+        console.error('Failed to create checkout session:', data.error);
+        // Fallback to old payment links if API fails
+        const stripePaymentLinks: Record<string, string> = {
+          'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
+          'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
+          'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
+          'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
+        };
+        
+        const paymentLink = stripePaymentLinks[selectedNiche];
+        if (paymentLink) {
+          window.location.href = paymentLink;
+        }
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      // Fallback to payment links on error
+      const stripePaymentLinks: Record<string, string> = {
+        'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
+        'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
+        'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
+        'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
+      };
+      
+      const paymentLink = stripePaymentLinks[selectedNiche];
+      if (paymentLink) {
+        window.location.href = paymentLink;
+      }
     }
   };
 
