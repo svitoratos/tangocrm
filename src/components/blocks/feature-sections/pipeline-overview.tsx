@@ -44,7 +44,7 @@ export const PipelineOverviewSection = () => {
                     <TrendingUp className="h-4 w-4 text-emerald-600" />
                   </div>
                   <div className="text-2xl font-bold text-emerald-800">$24.5K</div>
-                  <div className="text-xs text-emerald-600 mt-1">Revenue tracking</div>
+                  <div className="text-xs text-emerald-600 mt-1">$8k potential value</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-xl border border-blue-200/50">
