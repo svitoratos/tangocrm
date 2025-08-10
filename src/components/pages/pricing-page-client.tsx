@@ -7,7 +7,7 @@ import { PaymentVerification } from '@/components/app/payment-verification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TangoHeader } from '@/components/app/tango-header';
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid';
-import { ClerkPricingTable } from '@/components/blocks/pricing/clerk-pricing-table';
+import { TangoCorePricing } from '@/components/blocks/pricing/tango-core-pricing';
 
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -30,10 +30,10 @@ function PricingContent() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Choose Your Creator CRM Plan
+            Build Your Perfect CRM
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Powerful tools designed specifically for creators, coaches, podcasters, and freelancers
+            Choose the niches that match your business. Start with one, scale as you grow.
           </p>
           
           {requirePayment && (
@@ -45,8 +45,8 @@ function PricingContent() {
           )}
         </div>
 
-        {/* Clerk Pricing Table */}
-        <ClerkPricingTable />
+        {/* Tango Core Pricing */}
+        <TangoCorePricing />
 
         {/* FAQ Section */}
         <div className="mt-16 max-w-3xl mx-auto">
