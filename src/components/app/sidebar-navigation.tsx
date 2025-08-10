@@ -79,14 +79,19 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
 }) => {
   return (
     <button
-      onClick={onClick}
+      onClick={() => {
+        console.log('🔧 Navigation item clicked:', label);
+        onClick?.();
+      }}
       className={cn(
         "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group touch-manipulation",
         "min-h-[44px]", // Ensure minimum touch target size for mobile
+        "active:scale-[0.98] transform", // Add touch feedback
         isActive 
           ? 'bg-primary text-primary-foreground shadow-sm' 
           : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent/70'
       )}
+      style={{ touchAction: 'manipulation' }}
     >
       <div className={cn(
         "flex-shrink-0 transition-colors duration-200",
@@ -137,9 +142,11 @@ const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed 
     <button
       onClick={handleAdminClick}
       className={cn(
-        "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group",
-        'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+        "relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group touch-manipulation",
+        "min-h-[44px] active:scale-[0.98] transform", // Ensure minimum touch target size and add touch feedback
+        'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent/70'
       )}
+      style={{ touchAction: 'manipulation' }}
     >
       <div className="flex-shrink-0 transition-colors duration-200 text-muted-foreground group-hover:text-foreground">
         <Shield size={20} />
@@ -346,9 +353,10 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   variant="outline" 
                   className={cn(
                     "w-full justify-between h-auto p-3 border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/30 hover:bg-blue-50/50 transition-all duration-200 touch-manipulation",
-                    "min-h-[44px]", // Ensure minimum touch target size
+                    "min-h-[44px] active:scale-[0.98] transform", // Ensure minimum touch target size and add touch feedback
                     isCollapsed && "w-10 h-10 p-0 justify-center border-2"
                   )}
+                  style={{ touchAction: 'manipulation' }}
                 >
                   {!isCollapsed && (
                     <div className="flex items-center gap-3">
@@ -387,7 +395,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[260px] z-[60] max-h-[80vh] overflow-y-auto">
+              <DropdownMenuContent align="start" className="w-[260px] z-[70] max-h-[80vh] overflow-y-auto">
                 <div className="px-2 py-1.5">
                   <p className="text-xs font-medium text-muted-foreground mb-2">
                     Switch Business Type
@@ -504,9 +512,10 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             <Button
               variant="ghost"
               className={cn(
-                "w-full justify-start h-auto p-3 hover:bg-accent touch-manipulation min-h-[44px]",
+                "w-full justify-start h-auto p-3 hover:bg-accent touch-manipulation min-h-[44px] active:scale-[0.98] transform",
                 isCollapsed ? 'justify-center px-2' : ''
               )}
+              style={{ touchAction: 'manipulation' }}
             >
               <Avatar className="w-8 h-8">
                 <AvatarImage src={user?.imageUrl || "/placeholder-avatar.jpg"} />
@@ -531,13 +540,25 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48 z-[60]">
-            <DropdownMenuItem onClick={onSettings} className="flex items-center gap-2">
+          <DropdownMenuContent align="start" className="w-48 z-[70]">
+            <DropdownMenuItem 
+              onClick={() => {
+                console.log('🔧 Sidebar settings clicked');
+                onSettings();
+              }} 
+              className="flex items-center gap-2 cursor-pointer p-3 min-h-[44px]"
+            >
               <Settings size={16} />
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onLogout} className="flex items-center gap-2 text-destructive">
+            <DropdownMenuItem 
+              onClick={() => {
+                console.log('🔧 Sidebar logout clicked');
+                onLogout();
+              }} 
+              className="flex items-center gap-2 text-destructive cursor-pointer p-3 min-h-[44px]"
+            >
               <LogOut size={16} />
               Logout
             </DropdownMenuItem>

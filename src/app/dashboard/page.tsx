@@ -182,8 +182,12 @@ const MobileSidebarOverlay: React.FC = () => {
 
   return (
     <div 
-      className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
-      onClick={() => setSidebarCollapsed(true)}
+      className="fixed inset-0 z-[55] bg-black/20 backdrop-blur-sm lg:hidden"
+      onClick={() => {
+        console.log('🔧 Mobile overlay clicked, closing sidebar');
+        setSidebarCollapsed(true);
+      }}
+      style={{ touchAction: 'none' }}
     />
   );
 };
@@ -225,7 +229,18 @@ function MainDashboardWithSearchParams() {
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [selectedNiche, setSelectedNiche] = useState<string>("");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Default to expanded on desktop
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Check localStorage first, then default based on screen size
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebarCollapsed');
+      if (stored !== null) {
+        return JSON.parse(stored);
+      }
+      // Default to collapsed on mobile, expanded on desktop
+      return window.innerWidth < 1024;
+    }
+    return false;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
@@ -481,14 +496,18 @@ function MainDashboardWithSearchParams() {
     setMounted(true);
     
     // Set initial sidebar state based on screen size after mounting
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setSidebarCollapsed(true);
-      } else {
-        // On desktop, keep the sidebar expanded by default
-        setSidebarCollapsed(false);
-      }
-    };
+      const handleResize = () => {
+    if (window.innerWidth < 1024) {
+      setSidebarCollapsed(true);
+    } else {
+      // On desktop, keep the sidebar expanded by default
+      setSidebarCollapsed(false);
+    }
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebarCollapsed', JSON.stringify(window.innerWidth < 1024));
+    }
+  };
 
     // Set initial state
     handleResize();
@@ -529,6 +548,11 @@ function MainDashboardWithSearchParams() {
     subscribedNiches: availableNiches,
     isSubscribed
   };
+
+  // Debug log for sidebar state
+  useEffect(() => {
+    console.log('🔧 Sidebar state changed:', { sidebarCollapsed, mounted, windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'unknown' });
+  }, [sidebarCollapsed, mounted]);
 
   const handleNavigationChange = (section: string) => {
     setActiveSection(section);
@@ -649,7 +673,7 @@ function MainDashboardWithSearchParams() {
         selectedNiche === 'creator' || selectedNiche === 'coach' || selectedNiche === 'podcaster' || selectedNiche === 'freelancer'
           ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100' 
           : 'bg-background'
-      }`}>
+      }`} style={{ touchAction: 'manipulation' }}>
         <div className="flex h-full w-full">
           {/* Mobile Sidebar Overlay */}
           <MobileSidebarOverlay />
@@ -657,13 +681,19 @@ function MainDashboardWithSearchParams() {
           {/* Sidebar - Always render when user is authenticated */}
           {user && (
             <div className={cn(
-              "fixed lg:relative z-50 h-full transition-all duration-300 ease-in-out sidebar-container",
+              "fixed lg:relative z-[60] h-full transition-all duration-300 ease-in-out sidebar-container",
               "lg:translate-x-0 flex-shrink-0",
               sidebarCollapsed ? "-translate-x-full lg:translate-x-0" : "translate-x-0",
               // Ensure sidebar is always visible on desktop, but can slide on mobile
               "lg:block",
               // Improve mobile touch targets
-              "touch-manipulation"
+              "touch-manipulation",
+              // Debug: add border to see sidebar boundaries
+              "border-r border-gray-200",
+              // Mobile-specific improvements
+              "lg:min-w-[280px] min-w-[280px] max-w-[280px]",
+              // Ensure proper mobile positioning
+              "left-0 top-0"
             )}>
               <SidebarNavigation
                 activeItem={activeSection}
@@ -677,7 +707,14 @@ function MainDashboardWithSearchParams() {
                 isSubscribed={isSubscribed}
                 hasCorePlan={hasCorePlan}
                 isCollapsed={sidebarCollapsed}
-                onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onToggleCollapse={() => {
+                  const newState = !sidebarCollapsed;
+                  setSidebarCollapsed(newState);
+                  // Save to localStorage
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+                  }
+                }}
               />
             </div>
           )}
@@ -693,8 +730,16 @@ function MainDashboardWithSearchParams() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="touch-manipulation min-h-[44px] min-w-[44px]"
+                onClick={() => {
+                  const newState = !sidebarCollapsed;
+                  console.log('🔧 Mobile menu toggle clicked, new state:', newState);
+                  setSidebarCollapsed(newState);
+                  // Save to localStorage
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+                  }
+                }}
+                className="touch-manipulation min-h-[44px] min-w-[44px] hover:bg-gray-100 active:bg-gray-200"
                 aria-label="Toggle sidebar"
               >
                 <Menu className="w-5 h-5" />
@@ -705,19 +750,31 @@ function MainDashboardWithSearchParams() {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="touch-manipulation min-h-[44px] min-w-[44px]"
+                    className="touch-manipulation min-h-[44px] min-w-[44px] hover:bg-gray-100 active:bg-gray-200"
                     aria-label="User menu"
                   >
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 z-[60]">
-                  <DropdownMenuItem onClick={handleSettings} className="flex items-center gap-2">
+                <DropdownMenuContent align="end" className="w-48 z-[80]">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      console.log('🔧 Settings clicked');
+                      handleSettings();
+                    }} 
+                    className="flex items-center gap-2 cursor-pointer p-3 min-h-[44px]"
+                  >
                     <Settings size={16} />
                     Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      console.log('🔧 Logout clicked');
+                      handleLogout();
+                    }} 
+                    className="flex items-center gap-2 text-destructive cursor-pointer p-3 min-h-[44px]"
+                  >
                     <LogOut size={16} />
                     Logout
                   </DropdownMenuItem>
