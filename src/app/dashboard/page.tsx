@@ -698,14 +698,12 @@ function MainDashboardWithSearchParams() {
               "lg:block",
               // Improve mobile touch targets
               "touch-manipulation",
-              // Debug: add border to see sidebar boundaries
-              "border-r border-gray-200",
               // Mobile-specific improvements
               "lg:min-w-[280px] min-w-[280px] max-w-[280px]",
               // Ensure proper mobile positioning
               "left-0 top-0",
-              // Debug: add background color to see sidebar
-              "bg-white"
+              // Ensure proper width when collapsed - collapse to just icon width
+              sidebarCollapsed ? "lg:w-16 lg:min-w-16 lg:max-w-16" : "lg:w-[280px] lg:min-w-[280px] lg:max-w-[280px]"
             )}>
               <SidebarNavigation
                 activeItem={activeSection}
@@ -732,7 +730,7 @@ function MainDashboardWithSearchParams() {
           )}
 
           {/* Main Content Area */}
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <div className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
             {/* Mobile Menu Toggle */}
             <div className={`lg:hidden flex items-center justify-between p-4 border-b flex-shrink-0 ${
               selectedNiche === 'creator' || selectedNiche === 'coach' || selectedNiche === 'podcaster' || selectedNiche === 'freelancer'
