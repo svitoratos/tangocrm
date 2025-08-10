@@ -31,14 +31,14 @@ export const TangoSimplePricing = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
           
           {/* Plan 1 - Tango Core (Primary/Popular) */}
-          <div className="relative">
+          <div className="relative flex flex-col h-full">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
               <Badge className="bg-emerald-500 text-white px-4 py-1 text-sm font-medium shadow-lg">
                 Most Popular
               </Badge>
             </div>
             
-            <div className="relative rounded-2xl p-8 ring-2 ring-emerald-500 bg-white shadow-xl">
+            <div className="relative rounded-2xl p-8 ring-2 ring-emerald-500 bg-white shadow-xl flex flex-col h-full">
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-slate-800 mb-2">
                   Tango Core
@@ -63,7 +63,7 @@ export const TangoSimplePricing = () => {
                 </p>
               </div>
 
-              <div className="mt-8 space-y-4">
+              <div className="mt-8 space-y-4 flex-grow">
                 <div className="flex items-start">
                   <Check className="h-5 w-5 text-emerald-500 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-slate-700">Manage clients, content & projects</span>
@@ -84,7 +84,7 @@ export const TangoSimplePricing = () => {
 
               <Button 
                 onClick={handleGetStarted}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 text-lg"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 text-lg mt-8"
               >
                 Join Tango
               </Button>
@@ -92,8 +92,8 @@ export const TangoSimplePricing = () => {
           </div>
 
           {/* Plan 2 - Add a Niche (Secondary) */}
-          <div className="relative">
-            <div className="rounded-2xl p-8 border border-slate-200 bg-white shadow-lg">
+          <div className="relative flex flex-col h-full">
+            <div className="rounded-2xl p-8 border border-slate-200 bg-white shadow-lg flex flex-col h-full">
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-slate-800 mb-2">
                   Add a Niche
@@ -118,7 +118,7 @@ export const TangoSimplePricing = () => {
                 </p>
               </div>
 
-              <div className="mt-8 space-y-4">
+              <div className="mt-8 space-y-4 flex-grow">
                 <div className="flex items-start">
                   <Check className="h-5 w-5 text-slate-500 mt-0.5 mr-3 flex-shrink-0" />
                   <span className="text-slate-700">Unlock another creator mode</span>
@@ -140,7 +140,7 @@ export const TangoSimplePricing = () => {
               <Button 
                 onClick={handleAddNiche}
                 variant="outline"
-                className="w-full mt-8 border-slate-300 text-slate-700 hover:bg-slate-50 py-3 text-lg font-semibold"
+                className="w-full border-slate-300 text-slate-700 hover:bg-slate-50 py-3 text-lg font-semibold mt-8"
               >
                 Add Another Niche
               </Button>
