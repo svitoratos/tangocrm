@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { isAdminEmail } from '@/lib/admin-config'
 
 export type Roles = 'admin' | 'user'
@@ -10,7 +10,8 @@ export const checkRole = async (role: Roles) => {
   console.log('🔧 sessionClaims:', {
     email: sessionClaims?.email,
     metadata: sessionClaims?.metadata,
-    sub: sessionClaims?.sub
+    sub: sessionClaims?.sub,
+    userId
   });
   
   // Check if user has the role in session claims
@@ -18,8 +19,20 @@ export const checkRole = async (role: Roles) => {
   
   // For admin role, also check if user's email is in admin list
   if (role === 'admin') {
-    // Get user email from session claims
-    const userEmail = sessionClaims?.email as string
+    // Get user email from session claims first
+    let userEmail = sessionClaims?.email as string
+    
+    // If no email in session claims, fetch user data from Clerk
+    if (!userEmail && userId) {
+      try {
+        const client = await clerkClient()
+        const user = await client.users.getUser(userId)
+        userEmail = user.emailAddresses.find(email => email.id === user.primaryEmailAddressId)?.emailAddress || ''
+        console.log('🔧 Fetched user email from Clerk:', userEmail);
+      } catch (error) {
+        console.error('🔧 Error fetching user from Clerk:', error);
+      }
+    }
     
     // Check if user has admin role OR if their email is in admin list
     const isAdminByRole = hasRole
