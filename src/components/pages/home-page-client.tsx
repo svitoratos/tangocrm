@@ -7,7 +7,7 @@ import SplitWithScreenshot from '@/components/blocks/heros/split-with-screenshot
 import { FeaturesSectionBentoGrid } from '@/components/blocks/feature-sections/bento-grid'
 import SimpleThreeColumnWithLargeIcons from '@/components/blocks/feature-sections/simple-three-column-with-large-icons'
 import { WhyTangoComparison } from '@/components/blocks/feature-sections/why-tango-comparison'
-import { PricingSection } from '@/components/blocks/pricing/tango-pricing'
+import { TangoSimplePricing } from '@/components/blocks/pricing/tango-simple-pricing'
 import { TestimonialsGridWithCenteredCarousel } from '@/components/blocks/testimonials/testimonials-grid-with-centered-carousel'
 import { TangoFaqs } from '@/components/blocks/faqs/tango-faqs'
 import SimpleCenteredWithGradient from '@/components/blocks/ctas/simple-centered-with-gradient'
@@ -91,7 +91,7 @@ export default function HomePageClient() {
       <FeaturesSectionBentoGrid />
       <WhyTangoComparison />
       <SimpleThreeColumnWithLargeIcons />
-      <PricingSection />
+      <TangoSimplePricing />
       <TestimonialsGridWithCenteredCarousel />
       <TangoFaqs />
       <SimpleCenteredWithGradient />

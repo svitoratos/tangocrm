@@ -7,7 +7,7 @@ import { PaymentVerification } from '@/components/app/payment-verification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TangoHeader } from '@/components/app/tango-header';
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid';
-import { TangoCorePricing } from '@/components/blocks/pricing/tango-core-pricing';
+import { TangoSimplePricing } from '@/components/blocks/pricing/tango-simple-pricing';
 
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -45,8 +45,8 @@ function PricingContent() {
           )}
         </div>
 
-        {/* Tango Core Pricing */}
-        <TangoCorePricing />
+        {/* Tango Simple Pricing */}
+        <TangoSimplePricing />
 
         {/* FAQ Section */}
         <div className="mt-16 max-w-3xl mx-auto">
