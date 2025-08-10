@@ -118,7 +118,7 @@ const publicRoutes = createRouteMatcher([
 ]);
 
 // Helper function to check if user is admin
-function isAdminUser(sessionClaims: any): boolean {
+async function isAdminUser(sessionClaims: any, userId: string): Promise<boolean> {
   // Check for admin role in metadata
   if (sessionClaims?.metadata?.role === 'admin') {
     return true;
@@ -128,7 +128,22 @@ function isAdminUser(sessionClaims: any): boolean {
   const adminEmails = [
     "stevenvitoratos@gmail.com", // Your email
   ];
-  const userEmail = sessionClaims?.email;
+  
+  // First try to get email from session claims
+  let userEmail = sessionClaims?.email;
+  
+  // If no email in session claims, fetch user data from Clerk
+  if (!userEmail && userId) {
+    try {
+      const { clerkClient } = await import('@clerk/nextjs/server');
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      userEmail = user.emailAddresses.find(email => email.id === user.primaryEmailAddressId)?.emailAddress;
+      console.log('🔧 Middleware: Fetched user email from Clerk:', userEmail);
+    } catch (error) {
+      console.error('🔧 Middleware: Error fetching user from Clerk:', error);
+    }
+  }
   
   if (userEmail && adminEmails.includes(userEmail.trim())) {
     console.log('🔧 Admin access granted by email:', userEmail);
@@ -187,15 +202,16 @@ export default clerkMiddleware(async (auth, req) => {
     try {
       const { sessionClaims } = await auth();
       
-      console.log('🔧 Middleware: Admin check for email:', sessionClaims?.email);
+      console.log('🔧 Middleware: Admin check for userId:', userId);
       
-      if (!isAdminUser(sessionClaims)) {
+      const hasAdminAccess = await isAdminUser(sessionClaims, userId);
+      if (!hasAdminAccess) {
         console.log('🔧 Middleware: Admin access denied, redirecting to /');
         // Redirect to home page if user doesn't have admin role
         return NextResponse.redirect(new URL('/', req.url));
       }
       
-      console.log('🔧 Middleware: Admin access granted for:', sessionClaims?.email);
+      console.log('🔧 Middleware: Admin access granted for userId:', userId);
       return NextResponse.next();
     } catch (error) {
       console.error('🔧 Middleware: Admin verification error:', error);
@@ -217,7 +233,7 @@ export default clerkMiddleware(async (auth, req) => {
       // First check if user is admin - admins bypass onboarding and payment requirements
       const { sessionClaims } = await auth();
       
-      if (isAdminUser(sessionClaims)) {
+      if (await isAdminUser(sessionClaims, userId)) {
         console.log('Admin user detected - bypassing onboarding and payment verification');
         return NextResponse.next();
       }
