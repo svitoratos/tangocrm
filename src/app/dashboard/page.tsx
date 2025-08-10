@@ -695,14 +695,7 @@ function MainDashboardWithSearchParams() {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <span className={`font-semibold ${
-                selectedNiche === 'creator' || selectedNiche === 'coach' || selectedNiche === 'podcaster' || selectedNiche === 'freelancer' ? 'text-slate-900' : 'text-foreground'
-              }`}>
-                {selectedNiche === 'creator' ? 'Creator CRM' : 
-                 selectedNiche === 'coach' ? 'Coach CRM' : 
-                 selectedNiche === 'podcaster' ? 'Podcaster CRM' :
-                 selectedNiche === 'freelancer' ? 'Freelancer CRM' : 'NicheCRM'}
-              </span>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
