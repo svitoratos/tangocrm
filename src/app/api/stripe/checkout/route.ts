@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { stripe, getPriceId } from '@/lib/stripe';
+import { stripe, getPriceId, ensureSingleCustomer } from '@/lib/stripe';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,8 +20,22 @@ export async function POST(request: NextRequest) {
     // Get the price ID for the selected niche and billing cycle
     const priceId = getPriceId(niche, billingCycle);
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Get user email for customer deduplication
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single();
+
+    if (!userProfile?.email) {
+      return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+    }
+
+    // Check if user already has a Stripe customer ID or find existing one
+    const customerId = await ensureSingleCustomer(userProfile.email, userId);
+
+    // Create checkout session with existing customer if available
+    const sessionOptions: any = {
       payment_method_types: ['card'],
       line_items: [
         {
@@ -36,7 +51,19 @@ export async function POST(request: NextRequest) {
         niche: niche,
         billing_cycle: billingCycle,
       },
-    });
+    };
+
+    // If user has existing customer, use it
+    if (customerId) {
+      sessionOptions.customer = customerId;
+      console.log('✅ Using existing customer for checkout:', customerId);
+    } else {
+      // Create new customer during checkout
+      sessionOptions.customer_creation = 'always';
+      console.log('🔧 Creating new customer during checkout');
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     return NextResponse.json({ 
       sessionId: session.id, 

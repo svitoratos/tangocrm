@@ -51,6 +51,92 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ received: true });
         }
 
+        // Check if user already has a Stripe customer ID
+        if (existingUser.stripe_customer_id && existingUser.stripe_customer_id !== session.customer) {
+          console.log('⚠️ User already has a different Stripe customer ID:', {
+            existing: existingUser.stripe_customer_id,
+            new: session.customer
+          });
+          
+          // Try to merge the new customer with the existing one
+          try {
+            console.log('🔧 Attempting to merge customers...');
+            
+            // Get the new customer details
+            const newCustomer = await stripe.customers.retrieve(session.customer);
+            
+            // Check if customer was deleted
+            if (newCustomer.deleted) {
+              console.log('⚠️ New customer was already deleted, skipping merge');
+            } else {
+              // Update the new customer with the existing customer's metadata
+              await stripe.customers.update(session.customer, {
+                metadata: {
+                  ...newCustomer.metadata,
+                  merged_from: existingUser.stripe_customer_id,
+                  merged_at: new Date().toISOString()
+                }
+              });
+              
+              // Transfer any subscriptions from the new customer to the existing one
+              const newCustomerSubscriptions = await stripe.subscriptions.list({
+                customer: session.customer,
+                limit: 100
+              });
+              
+              for (const subscription of newCustomerSubscriptions.data) {
+                console.log('🔄 Transferring subscription:', subscription.id);
+                
+                // Create a new subscription for the existing customer
+                const newSubscription = await stripe.subscriptions.create({
+                  customer: existingUser.stripe_customer_id,
+                  items: subscription.items.data.map(item => ({
+                    price: item.price.id,
+                    quantity: item.quantity
+                  })),
+                  metadata: {
+                    ...subscription.metadata,
+                    transferred_from_customer: session.customer,
+                    transferred_from_subscription: subscription.id,
+                    transferred_at: new Date().toISOString()
+                  }
+                });
+                
+                // Cancel the old subscription
+                await stripe.subscriptions.cancel(subscription.id);
+                
+                // Update the cancelled subscription with metadata
+                await stripe.subscriptions.update(subscription.id, {
+                  metadata: {
+                    ...subscription.metadata,
+                    cancelled_because: 'transferred_to_customer',
+                    transferred_to_customer: existingUser.stripe_customer_id,
+                    transferred_to_subscription: newSubscription.id,
+                    cancelled_at: new Date().toISOString()
+                  }
+                });
+                
+                console.log('✅ Subscription transferred:', {
+                  from: subscription.id,
+                  to: newSubscription.id
+                });
+              }
+              
+              // Delete the duplicate customer
+              await stripe.customers.del(session.customer);
+              
+              console.log('✅ Successfully merged customers and transferred subscriptions');
+            }
+            
+            // Use the existing customer ID for the session
+            session.customer = existingUser.stripe_customer_id;
+            
+          } catch (mergeError) {
+            console.error('❌ Error merging customers:', mergeError);
+            console.log('⚠️ Continuing with new customer ID - manual intervention may be needed');
+          }
+        }
+
         if (isNicheUpgrade && existingUser.stripe_subscription_id) {
           // This is a niche upgrade - add the new niche to existing subscription
           console.log('🔧 Adding niche to existing subscription:', niche);

@@ -3,6 +3,7 @@ import { generateMetadata } from '@/lib/metadata'
 import { redirect } from 'next/navigation'
 import { checkRole } from '@/utils/roles'
 import { SearchUsers } from './SearchUsers'
+import { DuplicateCustomerFixer } from '@/components/admin/duplicate-customer-fixer'
 import { clerkClient } from '@clerk/nextjs/server'
 import { removeRole, setRole } from './_actions'
 
@@ -67,8 +68,16 @@ export default async function AdminDashboard(params: {
           >
             Fix Specific User
           </a>
+          <a 
+            href="/admin/fix-duplicate-customers" 
+            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+          >
+            Fix Duplicate Customers
+          </a>
         </div>
       </div>
+
+      <DuplicateCustomerFixer />
 
       <SearchUsers />
 
