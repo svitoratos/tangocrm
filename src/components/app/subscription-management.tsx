@@ -17,7 +17,9 @@ import {
   Info, 
   CheckCircle, 
   Crown,
-  Star
+  Star,
+  Package,
+  Layers
 } from 'lucide-react';
 
 export const SubscriptionManagement = () => {
@@ -119,117 +121,118 @@ export const SubscriptionManagement = () => {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Current Subscription Status */}
+          {/* Current Plan */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                Current Subscription
+                <Package className="w-5 h-5 text-blue-600" />
+                Current Plan
               </CardTitle>
-              <CardDescription>
-                Your active subscription details and status
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {isLoading ? (
-                  <div className="flex items-center justify-center p-8">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                    <span className="ml-2">Loading subscription details...</span>
-                  </div>
-                ) : subscriptionDetails ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50">
-                      <div className="flex items-center gap-3">
-                        {subscriptionText.icon}
-                        <div>
-                          <h3 className="font-semibold text-lg">{subscriptionText.plan}</h3>
-                          <p className="text-sm text-gray-600">{subscriptionText.billing}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge
-                              variant={getStatusBadgeVariant(subscriptionDetails.status)}
-                              className={getStatusColor(subscriptionDetails.status)}
-                            >
-                              {subscriptionDetails.status === 'active' ? 'Active' :
-                               subscriptionDetails.status === 'past_due' ? 'Past Due' :
-                               subscriptionDetails.status === 'trialing' ? 'Trial' : 'Inactive'}
-                            </Badge>
-                            <span className="text-sm text-gray-500">
-                              Next billing: {getNextBillingDate()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold text-blue-600">
-                          {formatCurrency(subscriptionDetails.amount, subscriptionDetails.currency)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          per {isYearlySubscription ? 'year' : 'month'}
-                        </p>
-                        {isYearlySubscription && (
-                          <Badge variant="secondary" className="mt-1 bg-green-100 text-green-800">
-                            Save 20%
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Niche breakdown */}
-                    {paymentStatus?.niches && paymentStatus.niches.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-sm text-gray-700">Active Niches:</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {paymentStatus.niches.map((niche) => (
-                            <div key={niche} className="flex items-center justify-between p-3 border rounded-lg bg-white shadow-sm">
-                              <div className="flex items-center gap-3">
-                                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                <span className="font-medium capitalize">{niche}</span>
-                                <Badge variant="secondary" className="text-xs">Active</Badge>
-                              </div>
-                              <CheckCircle className="w-4 h-4 text-green-500" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Subscription Features */}
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm text-gray-700">Plan Features:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm">Unlimited clients</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm">Content calendar</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm">Revenue tracking</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span className="text-sm">Goal setting</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center p-8">
-                    <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-gray-900 mb-2">No Active Subscription</p>
-                    <p className="text-sm text-gray-500 mb-4">You don't have an active subscription yet.</p>
-                    <Button onClick={() => window.location.href = '/pricing'}>
-                      View Plans
-                    </Button>
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600">Plan</span>
+                  <span className="text-sm font-medium">Tango Core</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600">Status</span>
+                  <Badge variant={subscriptionDetails?.status === 'active' ? 'default' : 'secondary'}>
+                    {subscriptionDetails?.status || 'Unknown'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600">Billing Cycle</span>
+                  <span className="text-sm font-medium capitalize">
+                    {isYearlySubscription ? 'Yearly' : 'Monthly'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600">Total Amount</span>
+                  <span className="text-sm font-medium">
+                    {formatCurrency(subscriptionDetails?.amount || 0, subscriptionDetails?.currency || 'USD')}
+                    /{isYearlySubscription ? 'year' : 'month'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-600">Next Billing</span>
+                  <span className="text-sm font-medium">
+                    {subscriptionDetails?.current_period_end 
+                      ? formatDate(subscriptionDetails.current_period_end)
+                      : 'Unknown'
+                    }
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Active Niches */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="w-5 h-5 text-emerald-600" />
+                Active Niches ({subscriptionDetails?.niches?.length || 0})
+              </CardTitle>
+              <CardDescription>
+                All the creator niches you currently have access to
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {subscriptionDetails?.niches && subscriptionDetails.niches.length > 0 ? (
+                <div className="space-y-3">
+                  {subscriptionDetails.niches.map((nicheItem: any) => (
+                    <div key={nicheItem.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                        <div>
+                          <p className="font-medium capitalize">{nicheItem.niche}</p>
+                          <p className="text-sm text-slate-600">{nicheItem.product_name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">
+                          {formatCurrency(nicheItem.amount || 0, nicheItem.currency || 'USD')}
+                        </p>
+                        <p className="text-xs text-slate-600 capitalize">
+                          per {nicheItem.interval}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-slate-500">
+                  <Layers className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                  <p>No active niches found</p>
+                  <p className="text-sm">Contact support if you believe this is an error</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Subscription Features */}
+          <div className="space-y-3">
+            <h4 className="font-medium text-sm text-gray-700">Plan Features:</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">Unlimited clients</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">Content calendar</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">Revenue tracking</span>
+              </div>
+              <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm">Goal setting</span>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         {/* Billing Tab */}

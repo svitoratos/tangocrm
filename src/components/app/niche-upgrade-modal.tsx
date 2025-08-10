@@ -125,7 +125,12 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
         
         if (paymentLink) {
           console.log('🔗 Redirecting to Stripe payment link for:', selectedNiche);
-          window.location.href = paymentLink;
+          
+          // Add metadata to the URL to indicate this is a niche upgrade
+          const separator = paymentLink.includes('?') ? '&' : '?';
+          const upgradeUrl = `${paymentLink}${separator}metadata[is_niche_upgrade]=true&metadata[niche]=${selectedNiche}`;
+          
+          window.location.href = upgradeUrl;
         } else {
           console.error('❌ No payment link found for niche:', selectedNiche);
         }

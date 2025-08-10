@@ -66,35 +66,61 @@ export async function GET(request: NextRequest) {
       id: validSubscription.id,
       status: validSubscription.status,
       current_period_end: (validSubscription as any).current_period_end,
+      items_count: validSubscription.items.data.length
     });
 
-    // Get the price details
-    const priceId = validSubscription.items.data[0]?.price.id;
-    if (!priceId) {
-      console.log('❌ No price ID found in subscription items');
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Invalid subscription data',
-        subscription: null 
+    // Get all subscription items (niches)
+    const subscriptionItems = validSubscription.items.data;
+    const niches = [];
+    let totalAmount = 0;
+    let primaryPrice = null;
+
+    for (const item of subscriptionItems) {
+      const price = await stripe.prices.retrieve(item.price.id);
+      const product = await stripe.products.retrieve(price.product as string);
+      
+      // Extract niche from product metadata or name
+      const niche = product.metadata?.niche || product.name?.toLowerCase().replace(/\s+/g, '') || 'unknown';
+      
+      niches.push({
+        id: item.id,
+        niche: niche,
+        price_id: item.price.id,
+        quantity: item.quantity,
+        amount: price.unit_amount || 0,
+        currency: price.currency,
+        interval: price.recurring?.interval || 'month',
+        interval_count: price.recurring?.interval_count || 1,
+        product_name: product.name || 'Unknown Product'
       });
+      
+      totalAmount += (price.unit_amount || 0) * (item.quantity || 1);
+      
+      // Set the first item as primary price for billing cycle info
+      if (!primaryPrice) {
+        primaryPrice = price;
+      }
     }
-    
-    const price = await stripe.prices.retrieve(priceId);
-    
+
     const subscriptionDetails = {
       id: validSubscription.id,
       status: validSubscription.status,
       current_period_end: (validSubscription as any).current_period_end as number,
-      billing_interval: (price.recurring?.interval || 'month') as 'month' | 'year',
-      billing_interval_count: price.recurring?.interval_count || 1,
-      amount: price.unit_amount || 0,
-      currency: price.currency,
-      product_id: typeof price.product === 'string' ? price.product : (price.product as any)?.id || '',
+      billing_interval: (primaryPrice?.recurring?.interval || 'month') as 'month' | 'year',
+      billing_interval_count: primaryPrice?.recurring?.interval_count || 1,
+      amount: totalAmount,
+      currency: primaryPrice?.currency || 'usd',
+      product_id: typeof primaryPrice?.product === 'string' ? primaryPrice.product : (primaryPrice?.product as any)?.id || '',
       discount_applied: (validSubscription as any).discount?.coupon?.name || null,
       discount_end: (validSubscription as any).discount?.end || null,
+      niches: niches,
+      items_count: subscriptionItems.length
     };
 
-    console.log('✅ Returning subscription details:', subscriptionDetails);
+    console.log('✅ Returning subscription details:', {
+      ...subscriptionDetails,
+      niches_count: niches.length
+    });
 
     return NextResponse.json({
       success: true,
@@ -103,8 +129,21 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Error fetching subscription details:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('No such customer')) {
+        return NextResponse.json({ 
+          error: 'Customer not found in Stripe' 
+        }, { status: 404 });
+      }
+      if (error.message.includes('Invalid API key')) {
+        return NextResponse.json({ 
+          error: 'Stripe configuration error' 
+        }, { status: 500 });
+      }
+    }
+    
     return NextResponse.json({ 
-      success: false, 
       error: 'Failed to fetch subscription details',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });

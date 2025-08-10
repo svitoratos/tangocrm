@@ -11,6 +11,18 @@ interface SubscriptionDetails {
   product_id: string;
   discount_applied: string | null;
   discount_end: number | null;
+  niches?: Array<{
+    id: string;
+    niche: string;
+    price_id: string;
+    quantity: number;
+    amount: number;
+    currency: string;
+    interval: string;
+    interval_count: number;
+    product_name: string;
+  }>;
+  items_count?: number;
 }
 
 interface UseSubscriptionDetailsReturn {
