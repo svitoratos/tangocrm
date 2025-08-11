@@ -51,16 +51,16 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ received: true });
         }
 
-        // Check if user already has a Stripe customer ID
+        // AGGRESSIVE DEDUPLICATION: Check if user already has a Stripe customer ID
         if (existingUser.stripe_customer_id && existingUser.stripe_customer_id !== session.customer) {
           console.log('⚠️ User already has a different Stripe customer ID:', {
             existing: existingUser.stripe_customer_id,
             new: session.customer
           });
           
-          // Try to merge the new customer with the existing one
+          // AGGRESSIVE MERGE: Always merge, no exceptions
           try {
-            console.log('🔧 Attempting to merge customers...');
+            console.log('🔧 AGGRESSIVE customer merge initiated...');
             
             // Get the new customer details
             const newCustomer = await stripe.customers.retrieve(session.customer);

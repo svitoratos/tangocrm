@@ -31,37 +31,135 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email not found' }, { status: 400 });
     }
 
-    // ALWAYS find or create a single customer ID for this user
-    let customerId;
-    let retryCount = 0;
-    const maxRetries = 3;
+    // NUCLEAR OPTION: Direct Stripe-level deduplication
+    console.log('🔍 Starting aggressive customer deduplication for:', userProfile.email);
     
-    while (retryCount < maxRetries) {
-      try {
-        customerId = await ensureSingleCustomer(userProfile.email, userId);
-        if (customerId) break;
+    // 1. First, search Stripe directly for existing customers
+    const existingCustomers = await stripe.customers.list({
+      email: userProfile.email,
+      limit: 100
+    });
+    
+    let customerId = null;
+    
+    if (existingCustomers.data.length > 0) {
+      // Find the most recent non-deleted customer
+      const validCustomers = existingCustomers.data.filter(c => !c.deleted);
+      if (validCustomers.length > 0) {
+        // Sort by creation time, newest first
+        validCustomers.sort((a, b) => b.created - a.created);
+        customerId = validCustomers[0].id;
+        console.log('✅ Found existing customer in Stripe:', customerId);
         
-        // If no customer ID returned, wait and retry
-        retryCount++;
-        if (retryCount < maxRetries) {
-          console.log(`⚠️ No customer ID returned, retrying (${retryCount}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
-        }
-      } catch (error) {
-        console.error(`❌ Error in attempt ${retryCount + 1}:`, error);
-        retryCount++;
-        if (retryCount < maxRetries) {
-          console.log(`⚠️ Retrying (${retryCount}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        // Update our database to use this customer ID
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            stripe_customer_id: customerId,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+        
+        if (updateError) {
+          console.error('❌ Error updating database:', updateError);
         } else {
-          throw error; // Re-throw on final attempt
+          console.log('✅ Database updated with existing customer ID');
+        }
+      }
+    }
+    
+    // 2. If no existing customer found, create a new one
+    if (!customerId) {
+      console.log('🔧 No existing customer found, creating new one');
+      
+      // FINAL SAFEGUARD: Double-check one more time before creating
+      const finalCheck = await stripe.customers.list({
+        email: userProfile.email,
+        limit: 100
+      });
+      
+      if (finalCheck.data.length > 0) {
+        const validFinalCustomers = finalCheck.data.filter(c => !c.deleted);
+        if (validFinalCustomers.length > 0) {
+          validFinalCustomers.sort((a, b) => b.created - a.created);
+          customerId = validFinalCustomers[0].id;
+          console.log('✅ Found customer in final check:', customerId);
+          
+          // Update database
+          await supabase
+            .from('users')
+            .update({ 
+              stripe_customer_id: customerId,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+          
+          // Skip customer creation, use the found one
+        } else {
+          // Only create if we're absolutely sure no customer exists
+          console.log('🔧 Creating new customer after final verification');
+          
+          const newCustomer = await stripe.customers.create({
+            email: userProfile.email,
+            metadata: {
+              clerk_user_id: userId,
+              created_at: new Date().toISOString(),
+              source: 'checkout_flow_aggressive'
+            }
+          });
+          
+          customerId = newCustomer.id;
+          console.log('✅ Created new customer:', customerId);
+          
+          // Update our database
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ 
+              stripe_customer_id: customerId,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+          
+          if (updateError) {
+            console.error('❌ Error updating database with new customer:', updateError);
+            throw new Error(`Failed to update database: ${updateError.message}`);
+          }
+        }
+      } else {
+        // No customers found, create new one
+        console.log('🔧 Creating new customer after final verification');
+        
+        const newCustomer = await stripe.customers.create({
+          email: userProfile.email,
+          metadata: {
+            clerk_user_id: userId,
+            created_at: new Date().toISOString(),
+            source: 'checkout_flow_aggressive'
+          }
+        });
+        
+        customerId = newCustomer.id;
+        console.log('✅ Created new customer:', customerId);
+        
+        // Update our database
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            stripe_customer_id: customerId,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
+        
+        if (updateError) {
+          console.error('❌ Error updating database with new customer:', updateError);
+          throw new Error(`Failed to update database: ${updateError.message}`);
         }
       }
     }
     
     if (!customerId) {
-      console.error('❌ Failed to get customer ID after all retries');
-      return NextResponse.json({ error: 'Failed to create or find customer ID after multiple attempts' }, { status: 500 });
+      console.error('❌ Failed to get or create customer ID');
+      return NextResponse.json({ error: 'Failed to get or create customer ID' }, { status: 500 });
     }
 
     // Create checkout session ALWAYS using the existing/found customer ID
