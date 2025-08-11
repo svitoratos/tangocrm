@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
     // Verify and fix customer email if needed
-    if (session.customer) {
+    if (session.customer && typeof session.customer === 'string') {
       try {
         const customer = await stripe.customers.retrieve(session.customer);
         
