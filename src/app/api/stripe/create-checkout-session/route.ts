@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       try {
         const existingCustomer = await stripe.customers.retrieve(customerId);
         
-        // Check if customer exists and is not deleted
+        // Check if customer exists and is not deleted (TypeScript safe)
         if (existingCustomer && !existingCustomer.deleted && 'email' in existingCustomer) {
           console.log('🔍 Existing customer details:', {
             customerId,
