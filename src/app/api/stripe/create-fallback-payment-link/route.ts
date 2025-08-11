@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
+      allow_promotion_codes: true, // Enable discount code field
       after_completion: { 
         type: 'redirect', 
         redirect: { 
