@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { stripe, mergeCustomers, ensureSubscriptionCustomerConsistency } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -51,86 +51,36 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ received: true });
         }
 
-        // Check if user already has a Stripe customer ID
-        if (existingUser.stripe_customer_id && existingUser.stripe_customer_id !== session.customer) {
-          console.log('⚠️ User already has a different Stripe customer ID:', {
-            existing: existingUser.stripe_customer_id,
-            new: session.customer
+        // Log customer ID consistency check
+        console.log('🔍 Customer ID consistency check:', {
+          sessionId: session.id,
+          sessionCustomerId: session.customer,
+          databaseCustomerId: existingUser.stripe_customer_id,
+          isNicheUpgrade,
+          niche,
+          userEmail: customerEmail
+        });
+
+        // Validate customer ID consistency
+        if (existingUser.stripe_customer_id && session.customer && existingUser.stripe_customer_id !== session.customer) {
+          console.warn('⚠️ Customer ID mismatch detected:', {
+            databaseCustomerId: existingUser.stripe_customer_id,
+            sessionCustomerId: session.customer,
+            userEmail: customerEmail
           });
           
-          // Try to merge the new customer with the existing one
+          // Try to merge the customers to maintain consistency
           try {
-            console.log('🔧 Attempting to merge customers...');
+            console.log('🔄 Attempting to merge customers to resolve mismatch');
+            const mergeSuccess = await mergeCustomers(existingUser.stripe_customer_id, session.customer);
             
-            // Get the new customer details
-            const newCustomer = await stripe.customers.retrieve(session.customer);
-            
-            // Check if customer was deleted
-            if (newCustomer.deleted) {
-              console.log('⚠️ New customer was already deleted, skipping merge');
+            if (mergeSuccess) {
+              console.log('✅ Successfully merged customers, using existing customer ID');
+              // Use the existing customer ID for the session
+              session.customer = existingUser.stripe_customer_id;
             } else {
-              // Update the new customer with the existing customer's metadata
-              await stripe.customers.update(session.customer, {
-                metadata: {
-                  ...newCustomer.metadata,
-                  merged_from: existingUser.stripe_customer_id,
-                  merged_at: new Date().toISOString()
-                }
-              });
-              
-              // Transfer any subscriptions from the new customer to the existing one
-              const newCustomerSubscriptions = await stripe.subscriptions.list({
-                customer: session.customer,
-                limit: 100
-              });
-              
-              for (const subscription of newCustomerSubscriptions.data) {
-                console.log('🔄 Transferring subscription:', subscription.id);
-                
-                // Create a new subscription for the existing customer
-                const newSubscription = await stripe.subscriptions.create({
-                  customer: existingUser.stripe_customer_id,
-                  items: subscription.items.data.map(item => ({
-                    price: item.price.id,
-                    quantity: item.quantity
-                  })),
-                  metadata: {
-                    ...subscription.metadata,
-                    transferred_from_customer: session.customer,
-                    transferred_from_subscription: subscription.id,
-                    transferred_at: new Date().toISOString()
-                  }
-                });
-                
-                // Cancel the old subscription
-                await stripe.subscriptions.cancel(subscription.id);
-                
-                // Update the cancelled subscription with metadata
-                await stripe.subscriptions.update(subscription.id, {
-                  metadata: {
-                    ...subscription.metadata,
-                    cancelled_because: 'transferred_to_customer',
-                    transferred_to_customer: existingUser.stripe_customer_id,
-                    transferred_to_subscription: newSubscription.id,
-                    cancelled_at: new Date().toISOString()
-                  }
-                });
-                
-                console.log('✅ Subscription transferred:', {
-                  from: subscription.id,
-                  to: newSubscription.id
-                });
-              }
-              
-              // Delete the duplicate customer
-              await stripe.customers.del(session.customer);
-              
-              console.log('✅ Successfully merged customers and transferred subscriptions');
+              console.log('⚠️ Customer merge failed, will use session customer ID');
             }
-            
-            // Use the existing customer ID for the session
-            session.customer = existingUser.stripe_customer_id;
-            
           } catch (mergeError) {
             console.error('❌ Error merging customers:', mergeError);
             console.log('⚠️ Continuing with new customer ID - manual intervention may be needed');
@@ -189,11 +139,21 @@ export async function POST(request: NextRequest) {
           // This is a new subscription (Tango Core)
           console.log('🔧 Creating new Tango Core subscription');
           
+          // IMPORTANT: For new subscriptions, we should preserve the existing customer ID
+          // if the user already has one, rather than overwriting it with session.customer
+          const customerIdToUse = existingUser.stripe_customer_id || session.customer;
+          
+          console.log('🔧 Using customer ID for new subscription:', {
+            existingCustomerId: existingUser.stripe_customer_id,
+            sessionCustomerId: session.customer,
+            finalCustomerId: customerIdToUse
+          });
+          
           const { data: user, error: updateError } = await supabase
             .from('users')
             .update({
               onboarding_completed: true,
-              stripe_customer_id: session.customer,
+              stripe_customer_id: customerIdToUse, // Use existing customer ID if available
               stripe_subscription_id: session.subscription,
               subscription_status: 'active',
               subscription_tier: 'core',
@@ -211,6 +171,21 @@ export async function POST(request: NextRequest) {
           }
 
           console.log('✅ User subscription created successfully:', user.id);
+          
+          // After creating a new subscription, ensure customer consistency
+          // This helps prevent future customer ID mismatches
+          try {
+            console.log('🔍 Running post-subscription customer consistency check...');
+            const consistencyResult = await ensureSubscriptionCustomerConsistency(existingUser.id, customerEmail);
+            if (consistencyResult) {
+              console.log('✅ Customer consistency check completed successfully');
+            } else {
+              console.warn('⚠️ Customer consistency check failed, but subscription was created');
+            }
+          } catch (consistencyError) {
+            console.error('❌ Error during customer consistency check:', consistencyError);
+            // Don't fail the webhook for this - it's just a cleanup step
+          }
         }
         break;
 

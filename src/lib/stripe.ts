@@ -235,73 +235,125 @@ export async function cleanupDuplicateCustomers(email: string, primaryCustomerId
       limit: 100
     });
     
-    const duplicateCustomers = customers.data.filter(c => 
-      c.id !== primaryCustomerId && !c.deleted
-    );
-    
-    if (duplicateCustomers.length === 0) {
+    if (customers.data.length <= 1) {
       console.log('✅ No duplicate customers found');
       return true;
     }
     
-    console.log(`🔧 Found ${duplicateCustomers.length} duplicate customers to clean up`);
+    console.log(`🔍 Found ${customers.data.length} customers for email:`, email);
     
-    for (const duplicate of duplicateCustomers) {
+    // Sort customers by creation date (oldest first)
+    const sortedCustomers = customers.data.sort((a, b) => a.created - b.created);
+    const primaryCustomer = sortedCustomers[0];
+    
+    if (primaryCustomer.id !== primaryCustomerId) {
+      console.log('⚠️ Primary customer ID mismatch, using oldest customer as primary');
+    }
+    
+    // Process all other customers (merge them into the primary)
+    for (let i = 1; i < sortedCustomers.length; i++) {
+      const duplicateCustomer = sortedCustomers[i];
+      console.log(`🔄 Processing duplicate customer: ${duplicateCustomer.id}`);
+      
       try {
-        // Transfer any subscriptions to the primary customer
-        const subscriptions = await stripe.subscriptions.list({
-          customer: duplicate.id,
-          limit: 100
-        });
-        
-        for (const subscription of subscriptions.data) {
-          console.log(`🔄 Transferring subscription ${subscription.id} from duplicate customer`);
-          
-          // Create new subscription for primary customer
-          const newSubscription = await stripe.subscriptions.create({
-            customer: primaryCustomerId,
-            items: subscription.items.data.map(item => ({
-              price: item.price.id,
-              quantity: item.quantity
-            })),
-            metadata: {
-              ...subscription.metadata,
-              transferred_from_customer: duplicate.id,
-              transferred_from_subscription: subscription.id,
-              transferred_at: new Date().toISOString(),
-              cleanup_operation: 'true'
-            }
-          });
-          
-          // Cancel the old subscription
-          await stripe.subscriptions.cancel(subscription.id);
-          
-          // Update cancelled subscription with metadata
-          await stripe.subscriptions.update(subscription.id, {
-            metadata: {
-              ...subscription.metadata,
-              cancelled_because: 'duplicate_customer_cleanup',
-              transferred_to_customer: primaryCustomerId,
-              transferred_to_subscription: newSubscription.id,
-              cancelled_at: new Date().toISOString()
-            }
-          });
+        const mergeSuccess = await mergeCustomers(primaryCustomer.id, duplicateCustomer.id);
+        if (mergeSuccess) {
+          console.log(`✅ Successfully merged customer ${duplicateCustomer.id} into ${primaryCustomer.id}`);
+        } else {
+          console.log(`⚠️ Failed to merge customer ${duplicateCustomer.id}`);
         }
-        
-        // Delete the duplicate customer
-        await stripe.customers.del(duplicate.id);
-        console.log(`✅ Deleted duplicate customer: ${duplicate.id}`);
-        
       } catch (error) {
-        console.error(`❌ Error cleaning up duplicate customer ${duplicate.id}:`, error);
+        console.error(`❌ Error merging customer ${duplicateCustomer.id}:`, error);
       }
     }
     
-    console.log('✅ Duplicate customer cleanup completed');
+    return true;
+  } catch (error) {
+    console.error('❌ Error cleaning up duplicate customers:', error);
+    return false;
+  }
+}
+
+// Function to ensure all subscriptions for a user are under the same customer ID
+export async function ensureSubscriptionCustomerConsistency(userId: string, email: string): Promise<boolean> {
+  try {
+    console.log('🔍 Ensuring subscription customer consistency for user:', userId);
+    
+    // Get user's current customer ID
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('stripe_customer_id, stripe_subscription_id')
+      .eq('id', userId)
+      .single();
+    
+    if (!userProfile?.stripe_customer_id) {
+      console.log('⚠️ User has no customer ID, nothing to consolidate');
+      return true;
+    }
+    
+    // Find all customers with this email
+    const customers = await stripe.customers.list({
+      email: email,
+      limit: 100
+    });
+    
+    if (customers.data.length <= 1) {
+      console.log('✅ User already has single customer ID');
+      return true;
+    }
+    
+    console.log(`🔍 Found ${customers.data.length} customers for user, consolidating...`);
+    
+    // Find the primary customer (the one stored in our database)
+    const primaryCustomer = customers.data.find(c => c.id === userProfile.stripe_customer_id);
+    
+    if (!primaryCustomer) {
+      console.error('❌ Primary customer not found in Stripe');
+      return false;
+    }
+    
+    // Consolidate all other customers into the primary one
+    for (const customer of customers.data) {
+      if (customer.id === primaryCustomer.id) continue;
+      
+      console.log(`🔄 Consolidating customer ${customer.id} into ${primaryCustomer.id}`);
+      
+      try {
+        const mergeSuccess = await mergeCustomers(primaryCustomer.id, customer.id);
+        if (mergeSuccess) {
+          console.log(`✅ Successfully consolidated customer ${customer.id}`);
+        } else {
+          console.log(`⚠️ Failed to consolidate customer ${customer.id}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error consolidating customer ${customer.id}:`, error);
+      }
+    }
+    
+    console.log('✅ Subscription customer consistency check completed');
     return true;
     
   } catch (error) {
-    console.error('❌ Error during duplicate customer cleanup:', error);
+    console.error('❌ Error ensuring subscription customer consistency:', error);
     return false;
+  }
+}
+
+// Function to get customer portal URL with all subscriptions
+export async function createCustomerPortalSession(customerId: string, returnUrl: string): Promise<string | null> {
+  try {
+    console.log('🔗 Creating customer portal session for customer:', customerId);
+    
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+    
+    console.log('✅ Customer portal session created:', session.url);
+    return session.url;
+    
+  } catch (error) {
+    console.error('❌ Error creating customer portal session:', error);
+    return null;
   }
 } 
