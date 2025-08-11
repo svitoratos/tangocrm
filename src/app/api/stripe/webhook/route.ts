@@ -25,12 +25,41 @@ export async function POST(request: NextRequest) {
         const session = event.data.object;
         console.log('✅ Checkout completed for session:', session.id);
         
-        const customerEmail = session.customer_details?.email;
+        // Get email from session, but prioritize user profile email
+        let customerEmail = session.customer_details?.email;
         const niche = session.metadata?.niche;
         const isNicheUpgrade = session.metadata?.is_niche_upgrade === 'true';
+        const userId = session.metadata?.user_id;
+        
+        console.log('🔍 Session data:', {
+          sessionId: session.id,
+          sessionEmail: customerEmail,
+          metadata: session.metadata,
+          userId
+        });
+        
+        // If we have a userId, try to get the email from the user profile first
+        if (userId) {
+          try {
+            const { data: userProfile } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', userId)
+              .single();
+            
+            if (userProfile?.email) {
+              console.log('🔧 Using email from user profile:', userProfile.email);
+              customerEmail = userProfile.email;
+            } else {
+              console.log('⚠️ No user profile found for userId:', userId);
+            }
+          } catch (error) {
+            console.error('❌ Error fetching user profile:', error);
+          }
+        }
         
         if (!customerEmail) {
-          console.error('❌ Missing email in session data');
+          console.error('❌ Missing email in session data and user profile');
           return NextResponse.json({ error: 'Missing email data' }, { status: 400 });
         }
 

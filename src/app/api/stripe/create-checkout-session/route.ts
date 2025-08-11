@@ -167,13 +167,56 @@ export async function POST(request: NextRequest) {
         console.error('❌ Error checking existing customer:', error);
       }
     } else {
-      // For new customers, use if_required to prevent duplicates by email
+      // For new customers, ensure proper email handling
       sessionConfig.customer_creation = 'if_required';
       sessionConfig.customer_email = userEmail;
-      console.log('🔧 Creating checkout for new customer with if_required:', userEmail);
+      
+      // Add billing address collection to ensure email is captured
+      sessionConfig.billing_address_collection = 'required';
+      
+      // Force email collection even if customer exists
+      sessionConfig.payment_method_collection = 'always';
+      
+      console.log('🔧 Creating checkout for new customer with email enforcement:', userEmail);
+    }
+
+    // Always ensure the email is set in the session
+    if (!sessionConfig.customer_email) {
+      sessionConfig.customer_email = userEmail;
     }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    // Verify and fix customer email if needed
+    if (session.customer) {
+      try {
+        const customer = await stripe.customers.retrieve(session.customer);
+        
+        if (customer && !customer.deleted && 'email' in customer) {
+          console.log('🔍 Post-creation customer email check:', {
+            customerId: session.customer,
+            customerEmail: customer.email,
+            expectedEmail: userEmail
+          });
+          
+          // If the customer email is wrong (e.g., placeholder), fix it immediately
+          if (customer.email !== userEmail && customer.email.includes('@placeholder.tango')) {
+            console.warn('⚠️ Customer created with placeholder email, fixing immediately:', {
+              currentEmail: customer.email,
+              correctEmail: userEmail
+            });
+            
+            await stripe.customers.update(session.customer, {
+              email: userEmail
+            });
+            
+            console.log('✅ Fixed customer email immediately after creation');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error checking post-creation customer email:', error);
+      }
+    }
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
