@@ -62,6 +62,8 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     console.log('🔧 Profile update request body:', body);
+    console.log('🔧 Request body type:', typeof body);
+    console.log('🔧 Request body keys:', Object.keys(body));
 
     // Validate required fields
     const allowedFields = [
@@ -81,6 +83,9 @@ export async function PUT(request: NextRequest) {
     for (const [key, value] of Object.entries(body)) {
       if (allowedFields.includes(key)) {
         validUpdates[key] = value;
+        console.log(`🔧 Field ${key}:`, value, `(type: ${typeof value})`);
+      } else {
+        console.log(`⚠️ Skipping disallowed field ${key}:`, value);
       }
     }
 
@@ -88,12 +93,30 @@ export async function PUT(request: NextRequest) {
     validUpdates.updated_at = new Date().toISOString();
 
     console.log('🔧 Valid profile updates:', validUpdates);
+    console.log('🔧 Number of fields to update:', Object.keys(validUpdates).length);
+
+    // Check if user profile exists before updating
+    const existingProfile = await userOperations.getProfile(userId);
+    console.log('🔧 Existing profile check:', {
+      exists: !!existingProfile,
+      profileId: existingProfile?.id,
+      profileEmail: existingProfile?.email
+    });
+
+    if (!existingProfile) {
+      console.log('❌ User profile does not exist, cannot update');
+      return NextResponse.json(
+        { error: 'User profile not found. Please complete onboarding first.' },
+        { status: 404 }
+      );
+    }
 
     // Update user profile in database
+    console.log('🔧 Calling userOperations.updateProfile...');
     const updatedUser = await userOperations.updateProfile(userId, validUpdates);
     
     if (!updatedUser) {
-      console.log('❌ Failed to update user profile');
+      console.log('❌ Failed to update user profile - updateProfile returned null');
       return NextResponse.json(
         { error: 'Failed to update user profile' },
         { status: 500 }
