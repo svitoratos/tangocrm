@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe, mergeCustomers, ensureSubscriptionCustomerConsistency } from '@/lib/stripe';
+import { stripe, mergeCustomers, ensureSubscriptionCustomerConsistency, addNicheToCustomer, consolidateCustomerMetadata } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -114,6 +114,11 @@ export async function POST(request: NextRequest) {
             });
             
             console.log('✅ Added niche to existing subscription:', niche);
+            
+            // Update customer metadata with new niche
+            if (existingUser.stripe_customer_id) {
+              await addNicheToCustomer(existingUser.stripe_customer_id, niche);
+            }
             
             // Update user's niches array in database
             const currentNiches = existingUser.niches || [existingUser.primary_niche || 'creator'];

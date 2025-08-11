@@ -197,7 +197,13 @@ export async function ensureSingleCustomer(email: string, userId: string): Promi
       metadata: {
         clerk_user_id: userId,
         created_at: new Date().toISOString(),
-        source: 'checkout_flow'
+        source: 'checkout_flow',
+        customer_type: 'primary',
+        consolidation_status: 'active',
+        total_niches: '1',
+        niches: '[]',
+        last_consolidation_check: new Date().toISOString(),
+        system_version: '2.0.0'
       }
     });
     
@@ -250,6 +256,9 @@ export async function cleanupDuplicateCustomers(email: string, primaryCustomerId
       console.log('⚠️ Primary customer ID mismatch, using oldest customer as primary');
     }
     
+    // Collect all customer IDs to be merged
+    const customersToMerge = sortedCustomers.slice(1).map(c => c.id);
+    
     // Process all other customers (merge them into the primary)
     for (let i = 1; i < sortedCustomers.length; i++) {
       const duplicateCustomer = sortedCustomers[i];
@@ -265,6 +274,11 @@ export async function cleanupDuplicateCustomers(email: string, primaryCustomerId
       } catch (error) {
         console.error(`❌ Error merging customer ${duplicateCustomer.id}:`, error);
       }
+    }
+    
+    // Consolidate metadata after all merges
+    if (customersToMerge.length > 0) {
+      await consolidateCustomerMetadata(primaryCustomer.id, customersToMerge);
     }
     
     return true;
@@ -355,5 +369,113 @@ export async function createCustomerPortalSession(customerId: string, returnUrl:
   } catch (error) {
     console.error('❌ Error creating customer portal session:', error);
     return null;
+  }
+}
+
+// Function to update customer metadata with niche information
+export async function updateCustomerMetadata(customerId: string, metadata: Record<string, string>): Promise<boolean> {
+  try {
+    console.log('🔄 Updating customer metadata:', { customerId, metadata });
+    
+    await stripe.customers.update(customerId, {
+      metadata: metadata
+    });
+    
+    console.log('✅ Customer metadata updated successfully');
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Error updating customer metadata:', error);
+    return false;
+  }
+}
+
+// Function to add niche to customer metadata
+export async function addNicheToCustomer(customerId: string, niche: string): Promise<boolean> {
+  try {
+    console.log('🔧 Adding niche to customer metadata:', { customerId, niche });
+    
+    // Get current customer to read existing metadata
+    const customer = await stripe.customers.retrieve(customerId);
+    if (customer.deleted) {
+      console.error('❌ Customer was deleted');
+      return false;
+    }
+    
+    // Parse existing niches
+    const currentNiches = customer.metadata.niches ? JSON.parse(customer.metadata.niches) : [];
+    const totalNiches = parseInt(customer.metadata.total_niches || '0');
+    
+    // Add new niche if not already present
+    if (!currentNiches.includes(niche)) {
+      currentNiches.push(niche);
+      
+      // Update customer metadata
+      await updateCustomerMetadata(customerId, {
+        niches: JSON.stringify(currentNiches),
+        total_niches: (totalNiches + 1).toString(),
+        last_updated: new Date().toISOString(),
+        consolidation_status: 'active'
+      });
+      
+      console.log('✅ Niche added to customer metadata:', niche);
+      return true;
+    } else {
+      console.log('⚠️ Niche already exists in customer metadata:', niche);
+      return true;
+    }
+    
+  } catch (error) {
+    console.error('❌ Error adding niche to customer:', error);
+    return false;
+  }
+}
+
+// Function to consolidate customer metadata after merging
+export async function consolidateCustomerMetadata(primaryCustomerId: string, mergedCustomerIds: string[]): Promise<boolean> {
+  try {
+    console.log('🔧 Consolidating customer metadata after merge:', { primaryCustomerId, mergedCustomerIds });
+    
+    // Get primary customer
+    const primaryCustomer = await stripe.customers.retrieve(primaryCustomerId);
+    if (primaryCustomer.deleted) {
+      console.error('❌ Primary customer was deleted');
+      return false;
+    }
+    
+    // Collect all niches from merged customers
+    let allNiches = primaryCustomer.metadata.niches ? JSON.parse(primaryCustomer.metadata.niches) : [];
+    let totalNiches = parseInt(primaryCustomer.metadata.total_niches || '0');
+    
+    // Process each merged customer
+    for (const mergedCustomerId of mergedCustomerIds) {
+      try {
+        const mergedCustomer = await stripe.customers.retrieve(mergedCustomerId);
+        if (!mergedCustomer.deleted && mergedCustomer.metadata.niches) {
+          const mergedNiches = JSON.parse(mergedCustomer.metadata.niches);
+          allNiches = [...new Set([...allNiches, ...mergedNiches])];
+          totalNiches += mergedNiches.length;
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not retrieve merged customer metadata:', mergedCustomerId);
+      }
+    }
+    
+    // Update primary customer with consolidated metadata
+    await updateCustomerMetadata(primaryCustomerId, {
+      niches: JSON.stringify(allNiches),
+      total_niches: totalNiches.toString(),
+      last_consolidation: new Date().toISOString(),
+      consolidation_status: 'consolidated',
+      merged_customers: mergedCustomerIds.join(','),
+      total_merged: mergedCustomerIds.length.toString()
+    });
+    
+    console.log('✅ Customer metadata consolidated successfully');
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Error consolidating customer metadata:', error);
+    return false;
   }
 } 
