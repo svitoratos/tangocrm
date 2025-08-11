@@ -263,15 +263,6 @@ export async function POST(request: NextRequest) {
       appUrl: process.env.NEXT_PUBLIC_APP_URL
     });
     
-    // Check request data
-    console.error('❌ Request data check:', {
-      hasUserId: !!userId,
-      hasNiche: !!niche,
-      hasBillingCycle: !!billingCycle,
-      hasUserEmail: !!userEmail,
-      hasCustomerId: !!customerId
-    });
-    
     if (error instanceof Error) {
       return NextResponse.json({ 
         error: 'Failed to create checkout session',
