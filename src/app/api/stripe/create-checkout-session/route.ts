@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
           });
           
           // If the customer email is wrong (e.g., placeholder), fix it immediately
-          if (customer.email !== userEmail && customer.email.includes('@placeholder.tango')) {
+          if (customer.email && customer.email !== userEmail && customer.email.includes('@placeholder.tango')) {
             console.warn('⚠️ Customer created with placeholder email, fixing immediately:', {
               currentEmail: customer.email,
               correctEmail: userEmail
