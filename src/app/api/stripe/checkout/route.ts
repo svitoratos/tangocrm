@@ -32,10 +32,36 @@ export async function POST(request: NextRequest) {
     }
 
     // ALWAYS find or create a single customer ID for this user
-    const customerId = await ensureSingleCustomer(userProfile.email, userId);
+    let customerId;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        customerId = await ensureSingleCustomer(userProfile.email, userId);
+        if (customerId) break;
+        
+        // If no customer ID returned, wait and retry
+        retryCount++;
+        if (retryCount < maxRetries) {
+          console.log(`⚠️ No customer ID returned, retrying (${retryCount}/${maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        }
+      } catch (error) {
+        console.error(`❌ Error in attempt ${retryCount + 1}:`, error);
+        retryCount++;
+        if (retryCount < maxRetries) {
+          console.log(`⚠️ Retrying (${retryCount}/${maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        } else {
+          throw error; // Re-throw on final attempt
+        }
+      }
+    }
     
     if (!customerId) {
-      return NextResponse.json({ error: 'Failed to create or find customer ID' }, { status: 500 });
+      console.error('❌ Failed to get customer ID after all retries');
+      return NextResponse.json({ error: 'Failed to create or find customer ID after multiple attempts' }, { status: 500 });
     }
 
     // Create checkout session ALWAYS using the existing/found customer ID

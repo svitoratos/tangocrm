@@ -161,6 +161,34 @@ export async function ensureSingleCustomer(email: string, userId: string): Promi
     // Search for existing customer by email (this is the key deduplication step)
     const existingCustomerId = await findExistingCustomerByEmail(email);
     
+    // CRITICAL: Also check if we just created a customer for this user in the last 30 seconds
+    // This prevents race conditions where multiple requests create customers simultaneously
+    if (!existingCustomerId) {
+      const { data: recentUser } = await supabase
+        .from('users')
+        .select('stripe_customer_id, updated_at')
+        .eq('id', userId)
+        .single();
+      
+      if (recentUser?.stripe_customer_id && recentUser?.updated_at) {
+        const lastUpdate = new Date(recentUser.updated_at);
+        const timeDiff = Date.now() - lastUpdate.getTime();
+        
+        if (timeDiff < 30000) { // 30 seconds
+          console.log('⚠️ Customer was created very recently, checking if it exists in Stripe...');
+          try {
+            const customer = await stripe.customers.retrieve(recentUser.stripe_customer_id);
+            if (!customer.deleted) {
+              console.log('✅ Using recently created customer ID:', recentUser.stripe_customer_id);
+              return recentUser.stripe_customer_id;
+            }
+          } catch (error) {
+            console.log('⚠️ Recently created customer not found in Stripe, continuing...');
+          }
+        }
+      }
+    }
+    
     if (existingCustomerId) {
       console.log('✅ Found existing customer by email:', existingCustomerId);
       
@@ -205,6 +233,9 @@ export async function ensureSingleCustomer(email: string, userId: string): Promi
     
     if (updateError) {
       console.error('❌ Error updating user with new customer ID:', updateError);
+      // If we can't update the database, we shouldn't return the customer ID
+      // as it will cause duplicates
+      throw new Error(`Failed to update database with customer ID: ${updateError.message}`);
     } else {
       console.log('✅ Created and stored new customer ID:', newCustomer.id);
     }
