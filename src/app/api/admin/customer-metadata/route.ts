@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
             databaseNiches: user.niches || [],
             stripeMetadata: customer.metadata,
             customerCreated: customer.created,
-            totalSubscriptions: customer.subscriptions?.total_count || 0
+            totalSubscriptions: 0 // We'll fetch this separately if needed
           });
         }
       } catch (stripeError) {
