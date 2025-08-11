@@ -6,23 +6,23 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
 
-// Price IDs - Update these with your actual price IDs from Stripe Dashboard
+// Price IDs - Updated with actual price IDs from Stripe Dashboard
 export const STRIPE_PRICES = {
   creator: {
-    monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9', // Replace with your actual creator monthly price ID
-    yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',  // Replace with your actual creator yearly price ID
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   coach: {
-    monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9', // Replace with your actual coach monthly price ID
-    yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',  // Replace with your actual coach yearly price ID
+    monthly: 'price_1Rt8u9IvVfTNGbwu0UI52sRR',
+    yearly: 'price_1Rt8u9IvVfTNGbwuH88MMC8I',
   },
   podcaster: {
-    monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9', // Replace with your actual podcaster monthly price ID
-    yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',  // Replace with your actual podcaster yearly price ID
+    monthly: 'price_1Rt8uAIvVfTNGbwuiwPUarlw',
+    yearly: 'price_1Rt8uAIvVfTNGbwu9nXGrotw',
   },
   freelancer: {
-    monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9', // Replace with your actual freelancer monthly price ID
-    yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',  // Replace with your actual freelancer yearly price ID
+    monthly: 'price_1Rt8uAIvVfTNGbwupN9yBl9U',
+    yearly: 'price_1Rt8uBIvVfTNGbwuWxLrbFPu',
   },
 };
 
@@ -34,7 +34,7 @@ export function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly' = '
   }
   
   const priceId = prices[billingCycle];
-  if (!priceId || priceId === 'price_1RjlLtIvVfT8K9K9K9K9K9K9') {
+  if (!priceId) {
     throw new Error(`Price ID not configured for ${niche} ${billingCycle} plan`);
   }
   
