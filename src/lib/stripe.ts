@@ -9,20 +9,20 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Price IDs - Updated with actual price IDs from Stripe Dashboard
 export const STRIPE_PRICES = {
   creator: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RqIA2IvVfTNGbwujqF5AXfU',
+    yearly: 'price_1RqIAoIvVfTNGbwuXswPztfk',
   },
   coach: {
-    monthly: 'price_1Rt8u9IvVfTNGbwu0UI52sRR',
-    yearly: 'price_1Rt8u9IvVfTNGbwuH88MMC8I',
+    monthly: 'price_1RjmO3IvVfTNGbwuU9KTk44N',
+    yearly: 'price_1RkCcMIvVfTNGbwuyFeyMlbZ',
   },
   podcaster: {
-    monthly: 'price_1Rt8uAIvVfTNGbwuiwPUarlw',
-    yearly: 'price_1Rt8uAIvVfTNGbwu9nXGrotw',
+    monthly: 'price_1RqII9IvVfTNGbwuhApqysHX',
+    yearly: 'price_1RqIIXIvVfTNGbwu8EMGv4OG',
   },
   freelancer: {
-    monthly: 'price_1Rt8uAIvVfTNGbwupN9yBl9U',
-    yearly: 'price_1Rt8uBIvVfTNGbwuWxLrbFPu',
+    monthly: 'price_1RqIK7IvVfTNGbwuAiFKM7is',
+    yearly: 'price_1RqIKNIvVfTNGbwuHONiyPQ7',
   },
 };
 
