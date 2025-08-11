@@ -79,6 +79,13 @@ export async function POST(request: NextRequest) {
 
     // Use the ensureSingleCustomer utility to prevent duplicates
     const customerId = await ensureSingleCustomer(userEmail, userId);
+    
+    console.log('🔍 Customer consolidation result:', {
+      userEmail,
+      userId,
+      customerId,
+      userProfileEmail: userProfile.email
+    });
 
     // Get the price ID using the utility function
     let priceId: string;
@@ -126,6 +133,33 @@ export async function POST(request: NextRequest) {
       // Use existing customer - this prevents duplicate customer creation
       sessionConfig.customer = customerId;
       console.log('🔧 Using existing customer:', customerId);
+      
+      // Debug: Check what email the existing customer has in Stripe
+      try {
+        const existingCustomer = await stripe.customers.retrieve(customerId);
+        console.log('🔍 Existing customer details:', {
+          customerId,
+          customerEmail: existingCustomer.email,
+          customerMetadata: existingCustomer.metadata
+        });
+        
+        // If the existing customer has the wrong email, force email update
+        if (existingCustomer.email !== userEmail) {
+          console.warn('⚠️ Existing customer has wrong email, updating:', {
+            currentEmail: existingCustomer.email,
+            correctEmail: userEmail
+          });
+          
+          // Update the customer email in Stripe
+          await stripe.customers.update(customerId, {
+            email: userEmail
+          });
+          
+          console.log('✅ Updated customer email in Stripe');
+        }
+      } catch (error) {
+        console.error('❌ Error checking existing customer:', error);
+      }
     } else {
       // For new customers, use if_required to prevent duplicates by email
       sessionConfig.customer_creation = 'if_required';
