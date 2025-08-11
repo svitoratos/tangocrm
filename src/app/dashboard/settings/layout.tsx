@@ -165,7 +165,7 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   // Get actual subscribed niches from payment status
-  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading } = usePaymentStatus();
+  const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus, clearCache } = usePaymentStatus();
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches
@@ -182,6 +182,71 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
       setSelectedNiche(nicheParam);
     }
   }, [searchParams, subscribedNiches]);
+
+  // Handle upgrade success redirect
+  useEffect(() => {
+    const upgradeStatus = searchParams.get('upgrade');
+    const upgradedNiche = searchParams.get('niche');
+    
+    if (upgradeStatus === 'success') {
+      // Force immediate refresh of payment status
+      refreshPaymentStatus();
+      
+      // Also refresh after a short delay to ensure database updates are propagated
+      setTimeout(() => {
+        refreshPaymentStatus();
+      }, 2000);
+      
+      // And refresh again after a longer delay
+      setTimeout(() => {
+        refreshPaymentStatus();
+      }, 5000);
+      
+      // If we have a specific upgraded niche, switch to it
+      if (upgradedNiche) {
+        setSelectedNiche(upgradedNiche);
+      }
+      
+      // Clear the URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete('upgrade');
+      url.searchParams.delete('niche');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams, refreshPaymentStatus]);
+
+  // Add effect to refresh payment status when returning from payment success
+  useEffect(() => {
+    const handleFocus = () => {
+      // Check if user just returned from a payment flow
+      const referrer = document.referrer;
+      const isFromPayment = referrer.includes('/payment-success') || 
+                           referrer.includes('/onboarding/success') || 
+                           referrer.includes('stripe.com');
+      
+      if (isFromPayment) {
+        console.log('🔧 User returned from payment flow, refreshing payment status...');
+        // Clear cache and refresh to see updated niches
+        clearCache();
+        refreshPaymentStatus();
+        
+        // Also refresh after a delay to ensure webhook has processed
+        setTimeout(() => {
+          console.log('🔧 Delayed refresh to ensure webhook processing...');
+          clearCache();
+          refreshPaymentStatus();
+        }, 3000);
+      }
+    };
+
+    // Listen for when the user returns to the tab
+    window.addEventListener('focus', handleFocus);
+    
+    // Also check on mount if user came from payment
+    handleFocus();
+    
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [clearCache, refreshPaymentStatus]);
 
   // Set mounted state and handle localStorage
   useEffect(() => {

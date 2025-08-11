@@ -668,6 +668,39 @@ function MainDashboardWithSearchParams() {
     }
   };
 
+  // Add effect to refresh payment status when returning from payment success
+  useEffect(() => {
+    const handleFocus = () => {
+      // Check if user just returned from a payment flow
+      const referrer = document.referrer;
+      const isFromPayment = referrer.includes('/payment-success') || 
+                           referrer.includes('/onboarding/success') || 
+                           referrer.includes('stripe.com');
+      
+      if (isFromPayment) {
+        console.log('🔧 User returned from payment flow, refreshing payment status...');
+        // Clear cache and refresh to see updated niches
+        clearCache();
+        refreshPaymentStatus();
+        
+        // Also refresh after a delay to ensure webhook has processed
+        setTimeout(() => {
+          console.log('🔧 Delayed refresh to ensure webhook processing...');
+          clearCache();
+          refreshPaymentStatus();
+        }, 3000);
+      }
+    };
+
+    // Listen for when the user returns to the tab
+    window.addEventListener('focus', handleFocus);
+    
+    // Also check on mount if user came from payment
+    handleFocus();
+    
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [clearCache, refreshPaymentStatus]);
+
   // Show loading state while checking onboarding status or during mounting
   if (isCheckingOnboarding || !mounted || !user) {
     console.log('🔧 Dashboard loading state:', { isCheckingOnboarding, mounted, user: !!user });
