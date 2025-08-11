@@ -31,25 +31,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email not found' }, { status: 400 });
     }
 
-    // NUCLEAR OPTION: Direct Stripe-level deduplication
-    console.log('🔍 Starting aggressive customer deduplication for:', userProfile.email);
+    // SIMPLE AND EFFECTIVE: Find or create customer ID
+    console.log('🔍 Finding or creating customer ID for:', userProfile.email);
     
-    // 1. First, search Stripe directly for existing customers
+    let customerId = null;
+    
+    // 1. Search Stripe for existing customers
     const existingCustomers = await stripe.customers.list({
       email: userProfile.email,
       limit: 100
     });
     
-    let customerId = null;
-    
+    // 2. If we found existing customers, use the most recent one
     if (existingCustomers.data.length > 0) {
-      // Find the most recent non-deleted customer
       const validCustomers = existingCustomers.data.filter(c => !c.deleted);
       if (validCustomers.length > 0) {
         // Sort by creation time, newest first
         validCustomers.sort((a, b) => b.created - a.created);
         customerId = validCustomers[0].id;
-        console.log('✅ Found existing customer in Stripe:', customerId);
+        console.log('✅ Using existing customer:', customerId);
         
         // Update our database to use this customer ID
         const { error: updateError } = await supabase
@@ -68,92 +68,34 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // 2. If no existing customer found, create a new one
+    // 3. If no existing customer found, create a new one
     if (!customerId) {
-      console.log('🔧 No existing customer found, creating new one');
+      console.log('🔧 Creating new customer for:', userProfile.email);
       
-      // FINAL SAFEGUARD: Double-check one more time before creating
-      const finalCheck = await stripe.customers.list({
+      const newCustomer = await stripe.customers.create({
         email: userProfile.email,
-        limit: 100
+        metadata: {
+          clerk_user_id: userId,
+          created_at: new Date().toISOString(),
+          source: 'checkout_flow_simple'
+        }
       });
       
-      if (finalCheck.data.length > 0) {
-        const validFinalCustomers = finalCheck.data.filter(c => !c.deleted);
-        if (validFinalCustomers.length > 0) {
-          validFinalCustomers.sort((a, b) => b.created - a.created);
-          customerId = validFinalCustomers[0].id;
-          console.log('✅ Found customer in final check:', customerId);
-          
-          // Update database
-          await supabase
-            .from('users')
-            .update({ 
-              stripe_customer_id: customerId,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', userId);
-          
-          // Skip customer creation, use the found one
-        } else {
-          // Only create if we're absolutely sure no customer exists
-          console.log('🔧 Creating new customer after final verification');
-          
-          const newCustomer = await stripe.customers.create({
-            email: userProfile.email,
-            metadata: {
-              clerk_user_id: userId,
-              created_at: new Date().toISOString(),
-              source: 'checkout_flow_aggressive'
-            }
-          });
-          
-          customerId = newCustomer.id;
-          console.log('✅ Created new customer:', customerId);
-          
-          // Update our database
-          const { error: updateError } = await supabase
-            .from('users')
-            .update({ 
-              stripe_customer_id: customerId,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', userId);
-          
-          if (updateError) {
-            console.error('❌ Error updating database with new customer:', updateError);
-            throw new Error(`Failed to update database: ${updateError.message}`);
-          }
-        }
-      } else {
-        // No customers found, create new one
-        console.log('🔧 Creating new customer after final verification');
-        
-        const newCustomer = await stripe.customers.create({
-          email: userProfile.email,
-          metadata: {
-            clerk_user_id: userId,
-            created_at: new Date().toISOString(),
-            source: 'checkout_flow_aggressive'
-          }
-        });
-        
-        customerId = newCustomer.id;
-        console.log('✅ Created new customer:', customerId);
-        
-        // Update our database
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ 
-            stripe_customer_id: customerId,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId);
-        
-        if (updateError) {
-          console.error('❌ Error updating database with new customer:', updateError);
-          throw new Error(`Failed to update database: ${updateError.message}`);
-        }
+      customerId = newCustomer.id;
+      console.log('✅ Created new customer:', customerId);
+      
+      // Update our database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ 
+          stripe_customer_id: customerId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      
+      if (updateError) {
+        console.error('❌ Error updating database with new customer:', updateError);
+        throw new Error(`Failed to update database: ${updateError.message}`);
       }
     }
     
