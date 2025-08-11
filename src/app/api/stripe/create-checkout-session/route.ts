@@ -137,25 +137,31 @@ export async function POST(request: NextRequest) {
       // Debug: Check what email the existing customer has in Stripe
       try {
         const existingCustomer = await stripe.customers.retrieve(customerId);
-        console.log('🔍 Existing customer details:', {
-          customerId,
-          customerEmail: existingCustomer.email,
-          customerMetadata: existingCustomer.metadata
-        });
         
-        // If the existing customer has the wrong email, force email update
-        if (existingCustomer.email !== userEmail) {
-          console.warn('⚠️ Existing customer has wrong email, updating:', {
-            currentEmail: existingCustomer.email,
-            correctEmail: userEmail
+        // Check if customer exists and is not deleted
+        if (existingCustomer && !existingCustomer.deleted && 'email' in existingCustomer) {
+          console.log('🔍 Existing customer details:', {
+            customerId,
+            customerEmail: existingCustomer.email,
+            customerMetadata: existingCustomer.metadata
           });
           
-          // Update the customer email in Stripe
-          await stripe.customers.update(customerId, {
-            email: userEmail
-          });
-          
-          console.log('✅ Updated customer email in Stripe');
+          // If the existing customer has the wrong email, force email update
+          if (existingCustomer.email !== userEmail) {
+            console.warn('⚠️ Existing customer has wrong email, updating:', {
+              currentEmail: existingCustomer.email,
+              correctEmail: userEmail
+            });
+            
+            // Update the customer email in Stripe
+            await stripe.customers.update(customerId, {
+              email: userEmail
+            });
+            
+            console.log('✅ Updated customer email in Stripe');
+          }
+        } else {
+          console.log('⚠️ Customer not found or deleted, will create new customer');
         }
       } catch (error) {
         console.error('❌ Error checking existing customer:', error);
