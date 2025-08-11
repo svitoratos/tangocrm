@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { stripe } from '@/lib/stripe';
+import { stripe, getPriceId } from '@/lib/stripe';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,11 +24,15 @@ export async function POST(request: NextRequest) {
       isNicheUpgrade 
     });
 
-    // Get the price ID for the selected niche and billing cycle
-    const priceId = getPriceId(niche, billingCycle);
-    if (!priceId) {
+    // Get the price ID using the same utility function as the main checkout
+    let priceId: string;
+    try {
+      priceId = getPriceId(niche, billingCycle as 'monthly' | 'yearly');
+    } catch (error) {
+      console.error('❌ Error getting price ID for fallback:', error);
       return NextResponse.json({ 
-        error: 'Price configuration not found for this niche and billing cycle' 
+        error: 'Price configuration error', 
+        details: error instanceof Error ? error.message : 'Unknown error'
       }, { status: 400 });
     }
 
@@ -73,43 +77,4 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
-}
-
-/**
- * Gets the Stripe price ID for a niche and billing cycle
- * This matches the logic in our existing getPriceId function
- */
-function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly'): string | null {
-  const prices: Record<string, { monthly: string; yearly: string }> = {
-    coach: {
-      monthly: process.env.STRIPE_COACH_MONTHLY_PRICE_ID || '',
-      yearly: process.env.STRIPE_COACH_YEARLY_PRICE_ID || ''
-    },
-    creator: {
-      monthly: process.env.STRIPE_CREATOR_MONTHLY_PRICE_ID || '',
-      yearly: process.env.STRIPE_CREATOR_YEARLY_PRICE_ID || ''
-    },
-    podcaster: {
-      monthly: process.env.STRIPE_PODCASTER_MONTHLY_PRICE_ID || '',
-      yearly: process.env.STRIPE_PODCASTER_YEARLY_PRICE_ID || ''
-    },
-    freelancer: {
-      monthly: process.env.STRIPE_FREELANCER_MONTHLY_PRICE_ID || '',
-      yearly: process.env.STRIPE_FREELANCER_YEARLY_PRICE_ID || ''
-    }
-  };
-
-  const nichePrices = prices[niche];
-  if (!nichePrices) {
-    console.error(`No price configuration found for niche: ${niche}`);
-    return null;
-  }
-
-  const priceId = billingCycle === 'yearly' ? nichePrices.yearly : nichePrices.monthly;
-  if (!priceId) {
-    console.error(`No ${billingCycle} price found for niche: ${niche}`);
-    return null;
-  }
-
-  return priceId;
 }
