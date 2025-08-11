@@ -31,78 +31,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email not found' }, { status: 400 });
     }
 
-    // SIMPLE AND EFFECTIVE: Find or create customer ID
-    console.log('🔍 Finding or creating customer ID for:', userProfile.email);
-    
-    let customerId = null;
-    
-    // 1. Search Stripe for existing customers
-    const existingCustomers = await stripe.customers.list({
-      email: userProfile.email,
-      limit: 100
-    });
-    
-    // 2. If we found existing customers, use the most recent one
-    if (existingCustomers.data.length > 0) {
-      const validCustomers = existingCustomers.data.filter(c => !c.deleted);
-      if (validCustomers.length > 0) {
-        // Sort by creation time, newest first
-        validCustomers.sort((a, b) => b.created - a.created);
-        customerId = validCustomers[0].id;
-        console.log('✅ Using existing customer:', customerId);
-        
-        // Update our database to use this customer ID
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ 
-            stripe_customer_id: customerId,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId);
-        
-        if (updateError) {
-          console.error('❌ Error updating database:', updateError);
-        } else {
-          console.log('✅ Database updated with existing customer ID');
-        }
-      }
-    }
-    
-    // 3. If no existing customer found, create a new one
-    if (!customerId) {
-      console.log('🔧 Creating new customer for:', userProfile.email);
-      
-      const newCustomer = await stripe.customers.create({
-        email: userProfile.email,
-        metadata: {
-          clerk_user_id: userId,
-          created_at: new Date().toISOString(),
-          source: 'checkout_flow_simple'
-        }
-      });
-      
-      customerId = newCustomer.id;
-      console.log('✅ Created new customer:', customerId);
-      
-      // Update our database
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ 
-          stripe_customer_id: customerId,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
-      
-      if (updateError) {
-        console.error('❌ Error updating database with new customer:', updateError);
-        throw new Error(`Failed to update database: ${updateError.message}`);
-      }
-    }
+    // ALWAYS find or create a single customer ID for this user
+    console.log('🔍 Calling ensureSingleCustomer for:', { email: userProfile.email, userId });
+    const customerId = await ensureSingleCustomer(userProfile.email, userId);
     
     if (!customerId) {
-      console.error('❌ Failed to get or create customer ID');
-      return NextResponse.json({ error: 'Failed to get or create customer ID' }, { status: 500 });
+      console.error('❌ ensureSingleCustomer returned null for:', { email: userProfile.email, userId });
+      return NextResponse.json({ error: 'Failed to create or find customer ID' }, { status: 500 });
     }
+    
+    console.log('✅ ensureSingleCustomer returned customer ID:', customerId);
 
     // Create checkout session ALWAYS using the existing/found customer ID
     const sessionOptions: any = {
@@ -122,7 +60,6 @@ export async function POST(request: NextRequest) {
         niche: niche,
         billing_cycle: billingCycle,
         existing_customer_id: customerId, // Track that we're using existing customer
-        is_niche_upgrade: 'true', // This tells the webhook to add to existing subscription
       },
     };
 
