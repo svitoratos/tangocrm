@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe, mergeCustomers, ensureSubscriptionCustomerConsistency, addNicheToCustomer, consolidateCustomerMetadata } from '@/lib/stripe';
+import { stripe, mergeCustomers, ensureSubscriptionCustomerConsistency, addNicheToCustomer, consolidateCustomerMetadata, getPriceId } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -176,6 +176,13 @@ export async function POST(request: NextRequest) {
           }
 
           console.log('✅ User subscription created successfully:', user.id);
+          console.log('✅ Onboarding marked as completed for user:', existingUser.id);
+          console.log('✅ User profile updated with:', {
+            onboarding_completed: user.onboarding_completed,
+            subscription_status: user.subscription_status,
+            stripe_customer_id: user.stripe_customer_id,
+            primary_niche: user.primary_niche
+          });
           
           // After creating a new subscription, ensure customer consistency
           // This helps prevent future customer ID mismatches
@@ -257,38 +264,4 @@ export async function POST(request: NextRequest) {
     console.error('❌ Webhook processing error:', error);
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
-}
-
-// Helper function to get price ID (import from stripe.ts)
-function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly' = 'monthly'): string {
-  const STRIPE_PRICES = {
-    creator: {
-      monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-      yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-    },
-    coach: {
-      monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-      yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-    },
-    podcaster: {
-      monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-      yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-    },
-    freelancer: {
-      monthly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-      yearly: 'price_1RjlLtIvVfT8K9K9K9K9K9K9',
-    },
-  };
-  
-  const prices = STRIPE_PRICES[niche as keyof typeof STRIPE_PRICES];
-  if (!prices) {
-    throw new Error(`No price configuration found for niche: ${niche}`);
-  }
-  
-  const priceId = prices[billingCycle];
-  if (!priceId || priceId === 'price_1RjlLtIvVfT8K9K9K9K9K9K9') {
-    throw new Error(`Price ID not configured for ${niche} ${billingCycle} plan`);
-  }
-  
-  return priceId;
 }

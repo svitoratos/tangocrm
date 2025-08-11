@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       after_completion: { 
         type: 'redirect', 
         redirect: { 
-          url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}` 
+          url: `${process.env.NEXT_PUBLIC_APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}` 
         } 
       },
       metadata: {
