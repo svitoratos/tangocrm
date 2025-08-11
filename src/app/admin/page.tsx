@@ -68,12 +68,34 @@ export default async function AdminDashboard(params: {
           >
             Fix Specific User
           </a>
-          <a 
-            href="/admin/fix-duplicate-customers" 
-            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
-          >
-            Fix Duplicate Customers
-          </a>
+                  <a
+          href="/admin/fix-duplicate-customers"
+          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+        >
+          Fix Duplicate Customers
+        </a>
+        
+        <button
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/admin/cleanup-duplicate-customers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              const result = await response.json();
+              if (result.success) {
+                alert('Duplicate customers cleaned up successfully!');
+              } else {
+                alert('Error cleaning up duplicate customers: ' + result.error);
+              }
+            } catch (error) {
+              alert('Error: ' + error);
+            }
+          }}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+        >
+          Cleanup Duplicate Customers
+        </button>
         </div>
       </div>
 

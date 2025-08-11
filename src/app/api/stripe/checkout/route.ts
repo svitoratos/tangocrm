@@ -31,11 +31,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User email not found' }, { status: 400 });
     }
 
-    // Check if user already has a Stripe customer ID or find existing one
+    // ALWAYS find or create a single customer ID for this user
     const customerId = await ensureSingleCustomer(userProfile.email, userId);
+    
+    if (!customerId) {
+      return NextResponse.json({ error: 'Failed to create or find customer ID' }, { status: 500 });
+    }
 
-    // Create checkout session with existing customer if available
+    // Create checkout session ALWAYS using the existing/found customer ID
     const sessionOptions: any = {
+      customer: customerId, // Always use the customer ID
       payment_method_types: ['card'],
       line_items: [
         {
@@ -50,18 +55,11 @@ export async function POST(request: NextRequest) {
         clerk_user_id: userId,
         niche: niche,
         billing_cycle: billingCycle,
+        existing_customer_id: customerId, // Track that we're using existing customer
       },
     };
 
-    // If user has existing customer, use it
-    if (customerId) {
-      sessionOptions.customer = customerId;
-      console.log('✅ Using existing customer for checkout:', customerId);
-    } else {
-      // Create new customer during checkout
-      sessionOptions.customer_creation = 'always';
-      console.log('🔧 Creating new customer during checkout');
-    }
+    console.log('✅ Using customer ID for checkout:', customerId);
 
     const session = await stripe.checkout.sessions.create(sessionOptions);
 
