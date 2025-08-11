@@ -104,8 +104,21 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.error('❌ Error updating user profile:', error);
+    
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to update user profile' },
+      { 
+        error: 'Failed to update user profile',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

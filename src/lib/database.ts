@@ -340,40 +340,64 @@ export const userOperations = {
   },
 
   async updateProfile(userId: string, updates: Partial<User>): Promise<User | null> {
-    // Get current user profile to merge niches if needed
-    const currentProfile = await this.getProfile(userId);
-    
-    let updatedData = { ...updates };
-    
-    // Merge niches if new niches are provided
-    if (updates.niches && updates.niches.length > 0 && currentProfile) {
-      const existingNiches = currentProfile.niches || [];
-      const newNiches = updates.niches;
-      updatedData.niches = [...new Set([...existingNiches, ...newNiches])];
+    try {
+      console.log('🔧 updateProfile called with:', { userId, updates });
       
-      console.log('🔧 updateProfile niche merging:', {
-        existing: existingNiches,
-        new: newNiches,
-        merged: updatedData.niches
-      });
+      // Get current user profile to merge niches if needed
+      const currentProfile = await this.getProfile(userId);
+      console.log('🔧 Current profile:', currentProfile);
+      
+      let updatedData = { ...updates };
+      
+      // Merge niches if new niches are provided
+      if (updates.niches && updates.niches.length > 0 && currentProfile) {
+        const existingNiches = currentProfile.niches || [];
+        const newNiches = updates.niches;
+        updatedData.niches = [...new Set([...existingNiches, ...newNiches])];
+        
+        console.log('🔧 updateProfile niche merging:', {
+          existing: existingNiches,
+          new: newNiches,
+          merged: updatedData.niches
+        });
+      }
+      
+      console.log('🔧 Final update data:', updatedData);
+      
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          ...updatedData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Database error updating user profile:', error);
+        console.error('❌ Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        return null
+      }
+      
+      console.log('✅ Profile updated successfully:', data);
+      return data
+    } catch (error) {
+      console.error('❌ Unexpected error in updateProfile:', error);
+      if (error instanceof Error) {
+        console.error('❌ Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      }
+      return null;
     }
-    
-    const { data, error } = await supabase
-      .from('users')
-      .update({
-        ...updatedData,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', userId)
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error updating user profile:', error)
-      return null
-    }
-    
-    return data
   }
 }
 
