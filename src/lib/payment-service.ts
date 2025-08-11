@@ -1,5 +1,3 @@
-import { stripe } from './stripe';
-
 export interface PaymentLinkConfig {
   niche: string;
   billingCycle: 'monthly' | 'yearly';
@@ -17,6 +15,8 @@ export interface PaymentLinkResult {
 /**
  * Centralized payment service that ensures all payments go through our customer consolidation logic
  * instead of hardcoded Stripe payment links that bypass our safeguards.
+ * 
+ * This service is purely client-side and only makes API calls to our server endpoints.
  */
 export class PaymentService {
   /**
@@ -136,31 +136,34 @@ export class PaymentService {
 
       // This is the emergency fallback - creates a payment link that bypasses our safeguards
       // We should avoid this at all costs, but it's here as a last resort
-      const paymentLink = await stripe.paymentLinks.create({
-        line_items: [
-          {
-            price: this.getPriceId(config.niche, config.billingCycle),
-            quantity: 1,
-          },
-        ],
-        after_completion: { type: 'redirect', redirect: { url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}` } },
-        metadata: {
+      // Since this is client-side, we'll redirect to a server endpoint that can create the fallback
+      
+      const response = await fetch('/api/stripe/create-fallback-payment-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           niche: config.niche,
-          billing_cycle: config.billingCycle,
-          is_niche_upgrade: (config.isNicheUpgrade || false).toString(),
-          user_id: config.userId || 'unknown',
-          source: 'fallback_payment_link',
-          bypassed_consolidation: 'true'
-        }
+          billingCycle: config.billingCycle,
+          isNicheUpgrade: config.isNicheUpgrade || false,
+          userId: config.userId || 'unknown'
+        })
       });
 
-      console.warn('⚠️ PaymentService: Fallback payment link created (customer consolidation bypassed)');
-      
-      return {
-        success: true,
-        url: paymentLink.url,
-        error: 'WARNING: This payment bypasses customer consolidation safeguards'
-      };
+      const data = await response.json();
+
+      if (response.ok && data.success && data.url) {
+        console.warn('⚠️ PaymentService: Fallback payment link created (customer consolidation bypassed)');
+        
+        return {
+          success: true,
+          url: data.url,
+          error: 'WARNING: This payment bypasses customer consolidation safeguards'
+        };
+      } else {
+        throw new Error(data.error || 'Failed to create fallback payment link');
+      }
     } catch (error) {
       console.error('❌ PaymentService: Error creating fallback payment link:', error);
       return {
@@ -168,43 +171,6 @@ export class PaymentService {
         error: 'Failed to create fallback payment link'
       };
     }
-  }
-
-  /**
-   * Gets the Stripe price ID for a niche and billing cycle
-   * This matches the logic in our existing getPriceId function
-   */
-  private static getPriceId(niche: string, billingCycle: 'monthly' | 'yearly'): string {
-    const prices: Record<string, { monthly: string; yearly: string }> = {
-      coach: {
-        monthly: process.env.STRIPE_COACH_MONTHLY_PRICE_ID || '',
-        yearly: process.env.STRIPE_COACH_YEARLY_PRICE_ID || ''
-      },
-      creator: {
-        monthly: process.env.STRIPE_CREATOR_MONTHLY_PRICE_ID || '',
-        yearly: process.env.STRIPE_CREATOR_YEARLY_PRICE_ID || ''
-      },
-      podcaster: {
-        monthly: process.env.STRIPE_PODCASTER_MONTHLY_PRICE_ID || '',
-        yearly: process.env.STRIPE_PODCASTER_YEARLY_PRICE_ID || ''
-      },
-      freelancer: {
-        monthly: process.env.STRIPE_FREELANCER_MONTHLY_PRICE_ID || '',
-        yearly: process.env.STRIPE_FREELANCER_YEARLY_PRICE_ID || ''
-      }
-    };
-
-    const nichePrices = prices[niche];
-    if (!nichePrices) {
-      throw new Error(`No price configuration found for niche: ${niche}`);
-    }
-
-    const priceId = billingCycle === 'yearly' ? nichePrices.yearly : nichePrices.monthly;
-    if (!priceId) {
-      throw new Error(`No ${billingCycle} price found for niche: ${niche}`);
-    }
-
-    return priceId;
   }
 
   /**
