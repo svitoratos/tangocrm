@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
         niche: niche,
         billing_cycle: billingCycle,
         existing_customer_id: customerId, // Track that we're using existing customer
+        is_niche_upgrade: 'true', // This tells the webhook to add to existing subscription
       },
     };
 

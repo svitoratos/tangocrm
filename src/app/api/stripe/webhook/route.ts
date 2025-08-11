@@ -179,10 +179,58 @@ export async function POST(request: NextRequest) {
               
             if (updateError) {
               console.error('❌ Error updating user niches:', updateError);
+            } else {
+              console.log('✅ User niches updated successfully:', updatedNiches);
             }
             
           } catch (stripeError) {
             console.error('❌ Error adding niche to subscription:', stripeError);
+          }
+          
+        } else if (existingUser.stripe_customer_id && existingUser.stripe_customer_id === session.customer) {
+          // This is adding a niche to an existing user with the same customer ID
+          // We need to create a new subscription for the new niche
+          console.log('🔧 Adding new niche subscription for existing user:', niche);
+          
+          try {
+            // Create a new subscription for the new niche
+            const newSubscription = await stripe.subscriptions.create({
+              customer: existingUser.stripe_customer_id,
+              items: [
+                {
+                  price: getPriceId(niche, 'monthly'),
+                  quantity: 1
+                }
+              ],
+              metadata: {
+                niche: niche,
+                added_as_additional: 'true',
+                existing_user_id: existingUser.id
+              }
+            });
+            
+            console.log('✅ Created new subscription for niche:', niche, 'subscription ID:', newSubscription.id);
+            
+            // Update user's niches array in database
+            const currentNiches = existingUser.niches || [existingUser.primary_niche || 'creator'];
+            const updatedNiches = [...new Set([...currentNiches, niche])];
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({
+                niches: updatedNiches,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingUser.id);
+              
+            if (updateError) {
+              console.error('❌ Error updating user niches:', updateError);
+            } else {
+              console.log('✅ User niches updated successfully:', updatedNiches);
+            }
+            
+          } catch (stripeError) {
+            console.error('❌ Error creating new subscription for niche:', stripeError);
           }
           
         } else {
