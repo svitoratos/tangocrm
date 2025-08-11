@@ -28,52 +28,41 @@ export async function POST(request: NextRequest) {
     if (!userProfile) {
       console.log('🔧 User profile not found, creating new profile for:', userId);
       
-      // Get user info from Clerk
-      const { getToken } = await import('@clerk/nextjs/server');
-      const token = await getToken({ template: 'integration' });
+      // Get user info from Clerk using currentUser
+      const { currentUser } = await import('@clerk/nextjs/server');
+      const user = await currentUser();
       
-      if (!token) {
-        console.error('❌ Could not get Clerk token for user:', userId);
+      if (!user) {
+        console.error('❌ Could not get Clerk user for:', userId);
         return NextResponse.json({ error: 'Could not authenticate user' }, { status: 401 });
       }
       
-      // Try to get user email from Clerk
-      try {
-        const clerkResponse = await fetch('https://api.clerk.dev/v1/users/' + userId, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+      // Get email from Clerk user
+      const userEmail = user.emailAddresses?.[0]?.emailAddress;
+      
+      if (userEmail) {
+        console.log('🔧 Creating user profile with email from Clerk:', userEmail);
+        
+        // Create user profile
+        userProfile = await userOperations.upsertProfile(userId, {
+          id: userId,
+          email: userEmail,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          onboarding_completed: false,
+          subscription_status: 'inactive',
+          subscription_tier: 'none',
+          primary_niche: niche,
+          niches: [niche]
         });
         
-        if (clerkResponse.ok) {
-          const clerkUser = await clerkResponse.json();
-          const userEmail = clerkUser.email_addresses?.[0]?.email_address;
-          
-          if (userEmail) {
-            console.log('🔧 Creating user profile with email from Clerk:', userEmail);
-            
-            // Create user profile
-            userProfile = await userOperations.upsertProfile(userId, {
-              id: userId,
-              email: userEmail,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              onboarding_completed: false,
-              subscription_status: 'inactive',
-              subscription_tier: 'none',
-              primary_niche: niche,
-              niches: [niche]
-            });
-            
-            if (!userProfile) {
-              console.error('❌ Failed to create user profile');
-              return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
-            }
-          }
+        if (!userProfile) {
+          console.error('❌ Failed to create user profile');
+          return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
         }
-      } catch (clerkError) {
-        console.error('❌ Error getting user info from Clerk:', clerkError);
+      } else {
+        console.error('❌ No email found in Clerk user');
+        return NextResponse.json({ error: 'User email not found' }, { status: 400 });
       }
     }
     
