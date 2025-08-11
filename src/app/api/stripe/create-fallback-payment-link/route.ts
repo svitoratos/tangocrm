@@ -73,6 +73,34 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Error creating fallback payment link:', error);
+    
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
+    // Check if it's a Stripe error
+    if (error && typeof error === 'object' && 'type' in error) {
+      console.error('❌ Stripe error details:', {
+        type: (error as any).type,
+        code: (error as any).code,
+        message: (error as any).message,
+        decline_code: (error as any).decline_code,
+        param: (error as any).param
+      });
+    }
+    
+    // Check environment variables
+    console.error('❌ Environment check:', {
+      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+      hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL
+    });
+    
     return NextResponse.json({ 
       error: 'Failed to create fallback payment link',
       details: error instanceof Error ? error.message : 'Unknown error'
