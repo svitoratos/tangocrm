@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Video, GraduationCap, Mic, Briefcase, Zap, Users, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-// Stripe payment links removed - using simple checkout instead
+import { Check, X, Video, GraduationCap, Mic, Briefcase, Crown, Zap, Users, BarChart3 } from 'lucide-react';
+import PaymentService from '@/lib/payment-service';
 
 interface NicheUpgradeModalProps {
   isOpen: boolean;
@@ -14,6 +14,7 @@ interface NicheUpgradeModalProps {
   currentNiche: string;
   hasCorePlan?: boolean;
   subscribedNiches?: string[];
+  onUpgrade?: (nicheId: string, billingCycle: 'monthly' | 'yearly') => Promise<void>;
 }
 
 interface Niche {
@@ -95,10 +96,12 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
   onClose,
   currentNiche,
   hasCorePlan = true,
-  subscribedNiches = []
+  subscribedNiches = [],
+  onUpgrade
 }) => {
   const [selectedNiche, setSelectedNiche] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Filter out niches that the user already has
   const availableNiches = NICHE_DATA.filter(niche => 
@@ -108,38 +111,50 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
   const handleUpgrade = async () => {
     if (selectedNiche) {
       try {
+        setIsProcessing(true);
         console.log('🔧 Starting niche upgrade process for:', selectedNiche);
         
         // Store the selected niche in sessionStorage so we can retrieve it after payment
         sessionStorage.setItem('pendingNicheUpgrade', selectedNiche);
         
-        // Use direct Stripe payment links based on the selected niche
-        const stripePaymentLinks: Record<string, string> = {
-          'coach': 'https://buy.stripe.com/5kQ3cw5l086faBieOE2Nq05',
-          'creator': 'https://buy.stripe.com/fZu14o7t83PZeRy35W2Nq06',
-          'podcaster': 'https://buy.stripe.com/14AcN65l00DNbFm9uk2Nq08',
-          'freelancer': 'https://buy.stripe.com/3cI7sMcNs5Y710I21S2Nq0a'
-        };
+        // If we have an onUpgrade callback, use it (preferred method)
+        if (onUpgrade) {
+          await onUpgrade(selectedNiche, billingCycle);
+          return;
+        }
         
-        const paymentLink = stripePaymentLinks[selectedNiche];
+        // Fallback: Use PaymentService directly if no callback provided
+        const result = await PaymentService.createCheckoutSessionWithFallbacks({
+          niche: selectedNiche,
+          billingCycle,
+          isNicheUpgrade: true,
+          userId: undefined // Will be handled by the API endpoint
+        });
         
-        if (paymentLink) {
-          console.log('🔗 Redirecting to Stripe payment link for:', selectedNiche);
+        if (result.success && result.url) {
+          console.log('✅ Redirecting to checkout session for niche upgrade:', result.url);
           
-          // Add metadata to the URL to indicate this is a niche upgrade
-          const separator = paymentLink.includes('?') ? '&' : '?';
-          const upgradeUrl = `${paymentLink}${separator}metadata[is_niche_upgrade]=true&metadata[niche]=${selectedNiche}`;
+          // Check if this was a fallback payment link (bypasses consolidation)
+          if (result.error && result.error.includes('bypasses customer consolidation')) {
+            console.warn('⚠️ Using fallback payment link for niche upgrade - customer consolidation bypassed');
+            // You could show a warning to the user here if desired
+          }
           
-          window.location.href = upgradeUrl;
+          // Redirect to Stripe checkout
+          window.location.href = result.url;
         } else {
-          console.error('❌ No payment link found for niche:', selectedNiche);
+          console.error('❌ Failed to create niche upgrade session:', result.error);
+          alert(`Failed to process niche upgrade: ${result.error}`);
         }
       } catch (error) {
         console.error('❌ Error redirecting to payment link:', error);
+        alert('An error occurred while processing your upgrade request. Please try again.');
+      } finally {
+        setIsProcessing(false);
       }
-      
-      onClose();
     }
+    
+    onClose();
   };
 
   const getSelectedNichePrice = () => {
@@ -360,7 +375,7 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
                       {/* Benefits Section */}
                       <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-emerald-50 rounded-xl">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <Zap size={20} className="text-purple-600" />
+                          <Crown size={20} className="text-purple-600" />
                           Why Add More Niches?
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -416,10 +431,10 @@ export const NicheUpgradeModal: React.FC<NicheUpgradeModalProps> = ({
                   </Button>
                   <Button 
                     onClick={handleUpgrade}
-                    disabled={!selectedNiche}
+                    disabled={!selectedNiche || isProcessing}
                     className="bg-gradient-to-r from-purple-600 to-emerald-600 hover:from-purple-700 hover:to-emerald-700"
                   >
-                    Upgrade to {selectedNiche ? NICHE_DATA.find(n => n.id === selectedNiche)?.name : 'Niche'}
+                    {isProcessing ? 'Processing...' : `Upgrade to ${selectedNiche ? NICHE_DATA.find(n => n.id === selectedNiche)?.name : 'Niche'}`}
                   </Button>
                 </div>
               </div>

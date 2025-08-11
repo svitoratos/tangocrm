@@ -25,6 +25,7 @@ import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { EventRefreshProvider } from "@/contexts/EventRefreshContext";
 import { PaymentVerification } from "@/components/app/payment-verification";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
+import PaymentService from '@/lib/payment-service';
 
 // Types
 interface AppContextType {
@@ -309,32 +310,40 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
 
   const handleNicheUpgrade = async (nicheId: string, billingCycle: 'monthly' | 'yearly') => {
     try {
+      console.log('🔧 Starting niche upgrade process for:', nicheId);
       setIsLoading(true);
+      setError(null);
       
       // Store the selected niche in sessionStorage so we can retrieve it after payment
       sessionStorage.setItem('pendingNicheUpgrade', nicheId);
       
-      // Use direct Stripe payment links based on the selected niche
-      const stripePaymentLinks: Record<string, string> = {
-        'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
-        'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
-        'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
-        'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
-      };
+      // Use our centralized PaymentService instead of hardcoded links
+      const result = await PaymentService.createCheckoutSessionWithFallbacks({
+        niche: nicheId,
+        billingCycle,
+        isNicheUpgrade: true,
+        userId: user?.id
+      });
       
-      const paymentLink = stripePaymentLinks[nicheId];
-      
-      if (paymentLink) {
-        console.log('🔗 Redirecting to Stripe payment link for:', nicheId);
-        window.location.href = paymentLink;
+      if (result.success && result.url) {
+        console.log('✅ Redirecting to checkout session for niche upgrade:', result.url);
+        
+        // Check if this was a fallback payment link (bypasses consolidation)
+        if (result.error && result.error.includes('bypasses customer consolidation')) {
+          console.warn('⚠️ Using fallback payment link for niche upgrade - customer consolidation bypassed');
+          // You could show a warning to the user here if desired
+        }
+        
+        // Redirect to Stripe checkout
+        window.location.href = result.url;
       } else {
-        console.error('❌ No payment link found for niche:', nicheId);
-        setError('Failed to find payment link for selected niche');
+        console.error('❌ Failed to create niche upgrade session:', result.error);
+        setError(`Failed to process niche upgrade: ${result.error}`);
       }
       
       setIsUpgradeModalOpen(false);
     } catch (error) {
-      console.error('Error upgrading niche:', error);
+      console.error('❌ Error upgrading niche:', error);
       setError('Failed to process upgrade request');
     } finally {
       setIsLoading(false);

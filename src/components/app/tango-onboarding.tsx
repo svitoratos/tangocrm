@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
   Check
 } from "lucide-react";
 import { useUser } from '@clerk/nextjs';
+import PaymentService from '@/lib/payment-service';
 
 
 interface OnboardingProps {
@@ -234,46 +235,61 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
   };
 
   const handleStartTrial = async () => {
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
     try {
-      console.log('Starting payment for:', {
-        billingCycle,
-        selectedRoles,
-        selectedGoals
-      });
-      
+      // Validate that we have the required data
+      if (selectedRoles.length === 0) {
+        throw new Error('Please select at least one role');
+      }
+
+      if (selectedGoals.length === 0) {
+        throw new Error('Please select at least one goal');
+      }
+
       const primaryRole = selectedRoles[0] || 'creator';
       
-      // Payment links for each niche
-      const paymentLinks = {
-        creator: 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
-        podcaster: 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
-        freelancer: 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e',
-        coach: 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f'
-      };
-      
-      const paymentUrl = paymentLinks[primaryRole as keyof typeof paymentLinks];
-      
-      if (!paymentUrl) {
-        throw new Error(`No payment link configured for niche: ${primaryRole}`);
-      }
-      
-      // Save onboarding data and Clerk user ID to sessionStorage for after payment
-      sessionStorage.setItem('pendingOnboarding', JSON.stringify({
-        selectedRoles,
-        selectedGoals,
-        selectedSetupTask,
+      console.log('🔧 Creating checkout session for onboarding:', { primaryRole, billingCycle, userId: user.id });
+
+      // Use our centralized PaymentService instead of hardcoded links
+      const result = await PaymentService.createCheckoutSessionWithFallbacks({
+        niche: primaryRole,
         billingCycle,
-        clerkUserId: user?.id, // Store Clerk user ID
-        timestamp: Date.now()
-      }));
+        isNicheUpgrade: false,
+        userId: user.id
+      });
       
-      console.log('🔧 Redirecting to payment link for:', primaryRole);
-      
-      // Redirect to Stripe payment link
-      window.location.href = paymentUrl;
+      if (result.success && result.url) {
+        console.log('✅ Redirecting to checkout session for onboarding:', result.url);
+        
+        // Check if this was a fallback payment link (bypasses consolidation)
+        if (result.error && result.error.includes('bypasses customer consolidation')) {
+          console.warn('⚠️ Using fallback payment link for onboarding - customer consolidation bypassed');
+          // You could show a warning to the user here if desired
+        }
+        
+        // Save onboarding data and Clerk user ID to sessionStorage for after payment
+        sessionStorage.setItem('pendingOnboarding', JSON.stringify({
+          selectedRoles,
+          selectedGoals,
+          selectedSetupTask,
+          billingCycle,
+          clerkUserId: user?.id, // Store Clerk user ID
+          timestamp: Date.now()
+        }));
+        
+        // Redirect to Stripe checkout
+        window.location.href = result.url;
+      } else {
+        console.error('❌ Failed to create checkout session for onboarding:', result.error);
+        throw new Error(`Failed to create checkout session: ${result.error}`);
+      }
       
     } catch (err) {
       console.error('Payment error:', err);

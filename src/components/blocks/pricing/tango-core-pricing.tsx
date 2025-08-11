@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Check, Plus, Crown, Star, Zap, Users } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
+import PaymentService from '@/lib/payment-service';
 
 interface NichePlan {
   id: string;
@@ -138,53 +139,36 @@ export const TangoCorePricing = () => {
     const billingCycle = isYearly ? 'yearly' : 'monthly';
 
     try {
-      // Create checkout session via our API to prevent duplicate customers
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          niche: selectedNiche,
-          billingCycle,
-          isNicheUpgrade: false
-        })
+      console.log('🔧 Creating checkout session for:', { selectedNiche, billingCycle, userId: user.id });
+
+      // Use our centralized PaymentService instead of hardcoded links
+      const result = await PaymentService.createCheckoutSessionWithFallbacks({
+        niche: selectedNiche,
+        billingCycle,
+        isNicheUpgrade: false,
+        userId: user.id
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success && data.url) {
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      } else {
-        console.error('Failed to create checkout session:', data.error);
-        // Fallback to old payment links if API fails
-        const stripePaymentLinks: Record<string, string> = {
-          'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
-          'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
-          'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
-          'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
-        };
+      if (result.success && result.url) {
+        console.log('✅ Redirecting to checkout session:', result.url);
         
-        const paymentLink = stripePaymentLinks[selectedNiche];
-        if (paymentLink) {
-          window.location.href = paymentLink;
+        // Check if this was a fallback payment link (bypasses consolidation)
+        if (result.error && result.error.includes('bypasses customer consolidation')) {
+          console.warn('⚠️ Using fallback payment link - customer consolidation bypassed');
+          // You could show a warning to the user here if desired
         }
+        
+        // Redirect to Stripe checkout
+        window.location.href = result.url;
+      } else {
+        console.error('❌ Failed to create checkout session:', result.error);
+        
+        // Show user-friendly error message
+        alert(`Unable to process payment at this time. Please try again or contact support if the problem persists. Error: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
-      // Fallback to payment links on error
-      const stripePaymentLinks: Record<string, string> = {
-        'coach': 'https://buy.stripe.com/14AcN64gW9ajeRy5e42Nq0f',
-        'creator': 'https://buy.stripe.com/6oU14o3cSgCL5gY7mc2Nq0c',
-        'podcaster': 'https://buy.stripe.com/dRm4gA00G9aj4cUayo2Nq0d',
-        'freelancer': 'https://buy.stripe.com/00w00k00G72bgZGbCs2Nq0e'
-      };
-      
-      const paymentLink = stripePaymentLinks[selectedNiche];
-      if (paymentLink) {
-        window.location.href = paymentLink;
-      }
+      console.error('❌ Error creating checkout session:', error);
+      alert('An unexpected error occurred. Please try again or contact support.');
     }
   };
 
