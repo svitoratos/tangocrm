@@ -192,23 +192,27 @@ export async function GET(request: NextRequest) {
       niches: user.niches 
     });
 
-    // CRITICAL FIX: Sync user's niches with actual Stripe subscriptions
-    let finalNiches = user.niches || [user.primary_niche || 'creator'];
+    // CRITICAL FIX: Only show niches for active Stripe subscriptions
+    let finalNiches: string[] = [];
     
-    if (user.stripe_customer_id && !isAdmin) {
-      console.log('🔧 Syncing user niches with Stripe subscriptions...');
+    if (isAdmin) {
+      // Admin users get access to all niches
+      finalNiches = ['creator', 'coach', 'podcaster', 'freelancer'];
+      console.log('🔧 Admin user - granting access to all niches');
+    } else if (user.stripe_customer_id) {
+      console.log('🔧 Syncing user niches with active Stripe subscriptions...');
       const syncedNiches = await syncUserNichesWithStripe(user.id, user.stripe_customer_id);
       
       if (syncedNiches.length > 0) {
         finalNiches = syncedNiches;
-        console.log('✅ Using synced niches from Stripe:', finalNiches);
+        console.log('✅ Using synced niches from active Stripe subscriptions:', finalNiches);
       } else {
-        console.log('⚠️ No active subscriptions found in Stripe, using database niches');
+        console.log('⚠️ No active subscriptions found in Stripe - user has no niche access');
+        finalNiches = [];
       }
-    } else if (isAdmin) {
-      console.log('🔧 Admin user - skipping Stripe sync');
     } else {
-      console.log('⚠️ No Stripe customer ID found, using database niches');
+      console.log('⚠️ No Stripe customer ID found - user has no niche access');
+      finalNiches = [];
     }
 
     // Check subscription status
