@@ -59,16 +59,18 @@ function SettingsPage() {
   useEffect(() => {
     if (profile) {
       const nameParts = (profile.full_name || '').split(' ');
+      const realEmail = user?.emailAddresses?.[0]?.emailAddress || profile.email || '';
+      
       setFormData({
         firstName: nameParts[0] || '',
         lastName: nameParts.slice(1).join(' ') || '',
-        email: profile.email || '',
+        email: realEmail, // Always use real email from Clerk
         company: '', // Not stored in current schema
         timezone: profile.timezone || 'America/New_York',
         language: 'en' // Not stored in current schema
       });
     }
-  }, [profile]);
+  }, [profile, user]);
 
   // Update timezone when profile timezone changes
   useEffect(() => {
@@ -108,32 +110,32 @@ function SettingsPage() {
   };
 
   const handleSaveProfile = async () => {
-    if (!profile) {
-      setSaveError('No profile found. Please complete onboarding first.');
-      return;
-    }
-
     setIsSavingProfile(true);
     setSaveError(null);
     setSaveSuccess(false);
 
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      // CRITICAL SAFEGUARD: Prevent saving placeholder emails
+      const realEmail = user?.emailAddresses?.[0]?.emailAddress;
+      const emailToSave = realEmail || formData.email;
       
+      // Check if the email is a placeholder
+      if (emailToSave && emailToSave.includes('@placeholder.tango')) {
+        throw new Error('Cannot save placeholder email. Please use your real email address.');
+      }
+
       const updates = {
-        full_name: fullName || null,
-        email: formData.email,
-        timezone: formData.timezone
+        full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: emailToSave, // Always use real email from Clerk
+        timezone: formData.timezone,
       };
 
+      console.log('🔄 Saving profile with real email:', emailToSave);
       await updateProfile(updates);
       setSaveSuccess(true);
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      setSaveError(err instanceof Error ? err.message : 'Failed to save profile');
+    } catch (error) {
+      console.error('❌ Error saving profile:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save profile');
     } finally {
       setIsSavingProfile(false);
     }
@@ -243,11 +245,12 @@ function SettingsPage() {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleFormChange('email', e.target.value)}
-                  placeholder="Enter your email address"
+                  readOnly
+                  className="bg-gray-50 cursor-not-allowed"
+                  placeholder="Email from your account"
                 />
                 <p className="text-sm text-gray-500">
-                  This is your primary email for account notifications
+                  Email is managed by your account settings and cannot be changed here
                 </p>
               </div>
 

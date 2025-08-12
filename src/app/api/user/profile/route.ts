@@ -82,6 +82,14 @@ export async function PUT(request: NextRequest) {
     const validUpdates: any = {};
     for (const [key, value] of Object.entries(body)) {
       if (allowedFields.includes(key)) {
+        // CRITICAL SAFEGUARD: Prevent saving placeholder emails
+        if (key === 'email' && value && typeof value === 'string') {
+          if (value.includes('@placeholder.tango')) {
+            console.warn('⚠️ Attempted to save placeholder email, skipping email update:', value);
+            continue; // Skip this field
+          }
+        }
+        
         validUpdates[key] = value;
         console.log(`🔧 Field ${key}:`, value, `(type: ${typeof value})`);
       } else {
@@ -109,6 +117,13 @@ export async function PUT(request: NextRequest) {
         { error: 'User profile not found. Please complete onboarding first.' },
         { status: 404 }
       );
+    }
+
+    // CRITICAL SAFEGUARD: Always use email from Clerk, never from request body
+    if (validUpdates.email) {
+      console.log('⚠️ Email update attempted, but email should come from Clerk, not request body');
+      console.log('⚠️ Skipping email update to prevent placeholder emails');
+      delete validUpdates.email; // Remove email from updates
     }
 
     // Update user profile in database

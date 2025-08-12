@@ -141,7 +141,8 @@ export const useUserProfile = () => {
     refreshProfile,
     // Convenience getters
     hasProfile: !!profile,
-    email: profile?.email || '',
+    // Always use real email from Clerk, fallback to profile email only if Clerk email is not available
+    email: user?.emailAddresses?.[0]?.emailAddress || profile?.email || '',
     fullName: profile?.full_name || '',
     avatarUrl: profile?.avatar_url || '',
     timezone: profile?.timezone || 'America/New_York',
