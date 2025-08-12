@@ -3,6 +3,27 @@ import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 import { isAdminEmail } from '@/lib/admin-config'
 
+// Simple in-memory rate limiting (for production, use Redis or similar)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(userId: string, limit: number = 10, windowMs: number = 60000): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    // Reset or create new rate limit entry
+    rateLimitMap.set(userId, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+  
+  if (userLimit.count >= limit) {
+    return false; // Rate limit exceeded
+  }
+  
+  userLimit.count++;
+  return true;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { userId, sessionClaims } = await auth()
@@ -10,6 +31,15 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       console.error('❌ No userId in auth');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check rate limit (10 requests per minute)
+    if (!checkRateLimit(userId, 10, 60000)) {
+      console.warn('⚠️ Rate limit exceeded for user:', userId);
+      return NextResponse.json({ 
+        error: 'Too many requests. Please try again later.',
+        retryAfter: 60
+      }, { status: 429 });
     }
 
     console.log('🔧 Checking payment status for user:', userId);

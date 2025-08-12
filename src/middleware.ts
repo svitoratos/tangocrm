@@ -127,6 +127,7 @@ async function isAdminUser(sessionClaims: any, userId: string): Promise<boolean>
   // Check for admin emails - hardcoded to match admin-config.ts
   const adminEmails = [
     "stevenvitoratos@gmail.com", // Your email
+    "svitoratos13@gmail.com", // Admin user
   ];
   
   // First try to get email from session claims
