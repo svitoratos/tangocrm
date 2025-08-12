@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { supabase } from '@/lib/supabase'
 import { isAdminEmail } from '@/lib/admin-config'
+import { stripe } from '@/lib/stripe'
 
 // Simple in-memory rate limiting (for production, use Redis or similar)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -22,6 +23,82 @@ function checkRateLimit(userId: string, limit: number = 10, windowMs: number = 6
   
   userLimit.count++;
   return true;
+}
+
+// Function to sync user's niches with actual Stripe subscriptions
+async function syncUserNichesWithStripe(userId: string, stripeCustomerId: string): Promise<string[]> {
+  try {
+    console.log('🔧 Syncing user niches with Stripe subscriptions:', { userId, stripeCustomerId });
+    
+    // Get all active subscriptions for this customer
+    const subscriptions = await stripe.subscriptions.list({
+      customer: stripeCustomerId,
+      status: 'active',
+      limit: 100
+    });
+    
+    console.log('🔧 Found active Stripe subscriptions:', subscriptions.data.length);
+    
+    // Map price IDs to niches
+    const priceToNiche = {
+      // Initial signup prices
+      'price_1Rt8u9IvVfTNGbwuoAxHpYSj': 'creator',
+      'price_1Rt8u9IvVfTNGbwug424qIjh': 'creator',
+      'price_1Rt8u9IvVfTNGbwu0UI52sRR': 'coach',
+      'price_1Rt8u9IvVfTNGbwuH88MMC8I': 'coach',
+      'price_1Rt8uAIvVfTNGbwuiwPUarlw': 'podcaster',
+      'price_1Rt8uAIvVfTNGbwu9nXGrotw': 'podcaster',
+      'price_1Rt8uAIvVfTNGbwupN9yBl9U': 'freelancer',
+      'price_1Rt8uBIvVfTNGbwuWxLrbFPu': 'freelancer',
+      // Niche upgrade prices
+      'price_1RqIA2IvVfTNGbwujqF5AXfU': 'creator',
+      'price_1RqIAoIvVfTNGbwuXswPztfk': 'creator',
+      'price_1RjmO3IvVfTNGbwuU9KTk44N': 'coach',
+      'price_1RkCcMIvVfTNGbwuHONiyPQ7': 'coach',
+      'price_1RqII9IvVfTNGbwuhApqysHX': 'podcaster',
+      'price_1RqIIXIvVfTNGbwu8EMGv4OG': 'podcaster',
+      'price_1RqIK7IvVfTNGbwuAiFKM7is': 'freelancer',
+      'price_1RqIKNIvVfTNGbwuHONiyPQ7': 'freelancer'
+    };
+    
+    const activeNiches: string[] = [];
+    
+    // Extract niches from active subscriptions
+    for (const subscription of subscriptions.data) {
+      for (const item of subscription.items.data) {
+        const niche = priceToNiche[item.price.id as keyof typeof priceToNiche];
+        if (niche && !activeNiches.includes(niche)) {
+          activeNiches.push(niche);
+          console.log('🔧 Found active niche:', niche, 'from price:', item.price.id);
+        }
+      }
+    }
+    
+    console.log('🔧 Active niches from Stripe:', activeNiches);
+    
+    // Update the database with the actual active niches
+    if (activeNiches.length > 0) {
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          niches: activeNiches,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      
+      if (updateError) {
+        console.error('❌ Error updating user niches in database:', updateError);
+      } else {
+        console.log('✅ Updated user niches in database:', activeNiches);
+      }
+    }
+    
+    return activeNiches;
+    
+  } catch (error) {
+    console.error('❌ Error syncing user niches with Stripe:', error);
+    return [];
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -115,6 +192,25 @@ export async function GET(request: NextRequest) {
       niches: user.niches 
     });
 
+    // CRITICAL FIX: Sync user's niches with actual Stripe subscriptions
+    let finalNiches = user.niches || [user.primary_niche || 'creator'];
+    
+    if (user.stripe_customer_id && !isAdmin) {
+      console.log('🔧 Syncing user niches with Stripe subscriptions...');
+      const syncedNiches = await syncUserNichesWithStripe(user.id, user.stripe_customer_id);
+      
+      if (syncedNiches.length > 0) {
+        finalNiches = syncedNiches;
+        console.log('✅ Using synced niches from Stripe:', finalNiches);
+      } else {
+        console.log('⚠️ No active subscriptions found in Stripe, using database niches');
+      }
+    } else if (isAdmin) {
+      console.log('🔧 Admin user - skipping Stripe sync');
+    } else {
+      console.log('⚠️ No Stripe customer ID found, using database niches');
+    }
+
     // Check subscription status
     const hasActiveSubscription = isAdmin || 
       user.subscription_status === 'active' || 
@@ -127,7 +223,7 @@ export async function GET(request: NextRequest) {
       subscriptionStatus: isAdmin ? 'active' : (user.subscription_status || 'inactive'),
       subscriptionTier: isAdmin ? 'admin' : (user.subscription_tier || 'free'),
       primaryNiche: user.primary_niche || 'creator',
-      niches: user.niches || [user.primary_niche || 'creator']
+      niches: finalNiches // Use synced niches instead of raw database niches
     };
 
     console.log('✅ Payment status response:', response);
