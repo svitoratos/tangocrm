@@ -1,7 +1,7 @@
 // Admin configuration - central place to manage admin access
 export const ADMIN_EMAILS = [
   "stevenvitoratos@gmail.com", // Your email
-  "svitoratos13@gmail.com", // Admin user
+  // Removed svitoratos13@gmail.com - should only see subscribed niches
   // Add more admin emails here as needed
   // "admin2@example.com",
   // "admin3@example.com",

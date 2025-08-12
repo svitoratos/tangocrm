@@ -27,6 +27,7 @@ import { EventRefreshProvider } from "@/contexts/EventRefreshContext";
 import { PaymentVerification } from "@/components/app/payment-verification";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
 import PaymentService from '@/lib/payment-service';
+import { isAdminEmail } from '@/lib/admin-config';
 
 // Types
 interface AppContextType {
@@ -246,8 +247,8 @@ function MainDashboardWithSearchParams() {
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches
-  const adminEmails = ['stevenvitoratos@gmail.com', 'svitoratos13@gmail.com'];
-  const isAdmin = currentUser?.emailAddresses?.[0]?.emailAddress && adminEmails.includes(currentUser.emailAddresses[0].emailAddress);
+  const userEmail = currentUser?.emailAddresses?.[0]?.emailAddress;
+  const isAdmin = userEmail && isAdminEmail(userEmail);
   const availableNiches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : subscribedNiches;
 
   // Handle URL parameters for section and niche
