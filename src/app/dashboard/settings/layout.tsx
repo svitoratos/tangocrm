@@ -168,10 +168,8 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
   const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus, clearCache } = usePaymentStatus();
   const { user: currentUser } = useUser();
   
-  // Ensure admin users always have access to all niches
-  const adminEmails = ['stevenvitoratos@gmail.com', 'svitoratos13@gmail.com'];
-  const isAdmin = currentUser?.emailAddresses?.[0]?.emailAddress && adminEmails.includes(currentUser.emailAddresses[0].emailAddress);
-  const availableNiches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : subscribedNiches;
+  // Sidebar should only show niches the user is actually subscribed to
+  const availableNiches = subscribedNiches;
 
   // Handle URL parameters for niche
   useEffect(() => {
