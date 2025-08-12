@@ -124,8 +124,14 @@ export async function POST(request: NextRequest) {
             // Get the existing subscription
             const existingSubscription = await stripe.subscriptions.retrieve(existingUser.stripe_subscription_id);
             
+            // Get billing cycle from session metadata
+            const billingCycle = session.metadata?.billing_cycle || 'monthly';
+            console.log('🔧 Using billing cycle for niche upgrade:', billingCycle);
+            
             // Get the price ID for the new niche
-            const priceId = getPriceId(niche, 'monthly'); // Default to monthly for niche upgrades
+            const priceId = getPriceId(niche, billingCycle as 'monthly' | 'yearly', true); // true for niche upgrades
+            
+            console.log('🔧 Using price ID for niche upgrade:', priceId);
             
             // Add the new niche as a subscription item
             const updatedSubscription = await stripe.subscriptions.update(existingUser.stripe_subscription_id, {
