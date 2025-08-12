@@ -100,9 +100,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session configuration
-    const originHeader = request.headers.get('origin');
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || originHeader || 'https://www.gotangocrm.com';
-
     const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: [
@@ -113,8 +110,8 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'subscription',
       allow_promotion_codes: true, // Enable discount code field
-      success_url: `${appUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/pricing`,
+      success_url: `${request.headers.get('origin')}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.headers.get('origin')}/pricing`,
       metadata: {
         niche,
         billing_cycle: billingCycle,
@@ -274,10 +271,9 @@ export async function POST(request: NextRequest) {
         details: error.message 
       }, { status: 500 });
     }
- 
+    
     return NextResponse.json({ 
-      error: 'Failed to create checkout session',
-      details: 'Unknown server error'
+      error: 'Failed to create checkout session' 
     }, { status: 500 });
   }
 }
