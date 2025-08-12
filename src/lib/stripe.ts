@@ -9,6 +9,26 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Price IDs - Updated with actual price IDs from Stripe Dashboard
 export const STRIPE_PRICES = {
   creator: {
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+  },
+  coach: {
+    monthly: 'price_1Rt8u9IvVfTNGbwu0UI52sRR',
+    yearly: 'price_1Rt8u9IvVfTNGbwuH88MMC8I',
+  },
+  podcaster: {
+    monthly: 'price_1Rt8uAIvVfTNGbwuiwPUarlw',
+    yearly: 'price_1Rt8uAIvVfTNGbwu9nXGrotw',
+  },
+  freelancer: {
+    monthly: 'price_1Rt8uAIvVfTNGbwupN9yBl9U',
+    yearly: 'price_1Rt8uBIvVfTNGbwuWxLrbFPu',
+  },
+};
+
+// Price IDs for niche upgrades (different from initial signups)
+export const STRIPE_NICHE_UPGRADE_PRICES = {
+  creator: {
     monthly: 'price_1RqIA2IvVfTNGbwujqF5AXfU',
     yearly: 'price_1RqIAoIvVfTNGbwuXswPztfk',
   },
@@ -27,15 +47,17 @@ export const STRIPE_PRICES = {
 };
 
 // Helper function to get price ID
-export function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly' = 'monthly'): string {
-  const prices = STRIPE_PRICES[niche as keyof typeof STRIPE_PRICES];
-  if (!prices) {
-    throw new Error(`No price configuration found for niche: ${niche}`);
+export function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly' = 'monthly', isNicheUpgrade: boolean = false): string {
+  const prices = isNicheUpgrade ? STRIPE_NICHE_UPGRADE_PRICES : STRIPE_PRICES;
+  const priceSet = prices[niche as keyof typeof prices];
+  
+  if (!priceSet) {
+    throw new Error(`No price configuration found for niche: ${niche} (${isNicheUpgrade ? 'upgrade' : 'initial'})`);
   }
   
-  const priceId = prices[billingCycle];
+  const priceId = priceSet[billingCycle];
   if (!priceId) {
-    throw new Error(`Price ID not configured for ${niche} ${billingCycle} plan`);
+    throw new Error(`Price ID not configured for ${niche} ${billingCycle} plan (${isNicheUpgrade ? 'upgrade' : 'initial'})`);
   }
   
   return priceId;

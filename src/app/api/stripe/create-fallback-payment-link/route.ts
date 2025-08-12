@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Get the price ID using the same utility function as the main checkout
     let priceId: string;
     try {
-      priceId = getPriceId(niche, billingCycle as 'monthly' | 'yearly');
+      priceId = getPriceId(niche, billingCycle as 'monthly' | 'yearly', isNicheUpgrade);
     } catch (error) {
       console.error('❌ Error getting price ID for fallback:', error);
       return NextResponse.json({ 
