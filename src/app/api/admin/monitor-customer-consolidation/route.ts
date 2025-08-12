@@ -101,8 +101,23 @@ async function fixCustomerConsolidationForUser(userEmail: string) {
   try {
     console.log('🔧 Fixing customer consolidation for:', userEmail);
     
-    // Run the consolidation function
-    const result = await ensureSubscriptionCustomerConsistency(null, userEmail);
+    // Get user ID from email first
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', userEmail)
+      .single();
+    
+    if (!user) {
+      console.error('❌ User not found for email:', userEmail);
+      return {
+        success: false,
+        error: 'User not found'
+      };
+    }
+    
+    // Run the consolidation function with proper user ID
+    const result = await ensureSubscriptionCustomerConsistency(user.id, userEmail);
     
     return {
       success: result,
