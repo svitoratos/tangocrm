@@ -177,79 +177,90 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   }) => {
     const { user } = useUser();
     
+    // Get user's display name from Clerk
+    const getUserDisplayName = () => {
+      if (!user) return 'User';
+      
+      // Try to get the full name first
+      if (user.fullName) return user.fullName;
+      
+      // Fall back to first name
+      if (user.firstName) return user.firstName;
+      
+      // Fall back to email
+      if (user.emailAddresses?.[0]?.emailAddress) {
+        return user.emailAddresses[0].emailAddress.split('@')[0];
+      }
+      
+      return 'User';
+    };
+    
+    // Get user's initials for avatar
+    const getUserInitials = () => {
+      if (!user) return 'U';
+      
+      if (user.firstName && user.lastName) {
+        return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+      }
+      
+      if (user.firstName) {
+        return user.firstName[0].toUpperCase();
+      }
+      
+      if (user.emailAddresses?.[0]?.emailAddress) {
+        return user.emailAddresses[0].emailAddress[0].toUpperCase();
+      }
+      
+      return 'U';
+    };
+    const niches: Niche[] = [
+      { 
+        id: 'creator', 
+        name: 'Creator', 
+        label: 'Content Creator',
+        icon: <Video size={16} />,
+        color: '#8b5cf6'
+      },
+      { 
+        id: 'coach', 
+        name: 'Coach', 
+        label: 'Online Coach',
+        icon: <GraduationCap size={16} />,
+        color: '#10b981'
+      },
+      { 
+        id: 'podcaster', 
+        name: 'Podcaster', 
+        label: 'Podcast Host',
+        icon: <Mic size={16} />,
+        color: '#f97316'
+      },
+      { 
+        id: 'freelancer', 
+        name: 'Freelancer', 
+        label: 'Freelancer/Consultant',
+        icon: <Briefcase size={16} />,
+        color: '#3b82f6'
+      }
+    ]
+
+    // CRITICAL FIX: Only show niches that the user is actually subscribed to
+    const availableNiches = niches.filter(niche => isSubscribed(niche.id));
+
+    // Ensure we have a valid current niche from available ones only
+    const currentNiche = availableNiches.find(n => n.id === activeNiche) || availableNiches[0] || null;
+
+    // If no niches are available, show a fallback
+    if (availableNiches.length === 0) {
+      console.warn('⚠️ No subscribed niches available for user');
+    }
+
     // Force re-render when subscribedNiches changes
     React.useEffect(() => {
       console.log('🔧 Sidebar: subscribedNiches changed:', subscribedNiches);
-    }, [subscribedNiches]);
-    
-    // Get user's display name from Clerk
-  const getUserDisplayName = () => {
-    if (!user) return 'User';
-    
-    // Try to get the full name first
-    if (user.fullName) return user.fullName;
-    
-    // Fall back to first name
-    if (user.firstName) return user.firstName;
-    
-    // Fall back to email
-    if (user.emailAddresses?.[0]?.emailAddress) {
-      return user.emailAddresses[0].emailAddress.split('@')[0];
-    }
-    
-    return 'User';
-  };
-  
-  // Get user's initials for avatar
-  const getUserInitials = () => {
-    if (!user) return 'U';
-    
-    if (user.firstName && user.lastName) {
-      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
-    }
-    
-    if (user.firstName) {
-      return user.firstName[0].toUpperCase();
-    }
-    
-    if (user.emailAddresses?.[0]?.emailAddress) {
-      return user.emailAddresses[0].emailAddress[0].toUpperCase();
-    }
-    
-    return 'U';
-  };
-  const niches: Niche[] = [
-    { 
-      id: 'creator', 
-      name: 'Creator', 
-      label: 'Content Creator',
-      icon: <Video size={16} />,
-      color: '#8b5cf6'
-    },
-    { 
-      id: 'coach', 
-      name: 'Coach', 
-      label: 'Online Coach',
-      icon: <GraduationCap size={16} />,
-      color: '#10b981'
-    },
-    { 
-      id: 'podcaster', 
-      name: 'Podcaster', 
-      label: 'Podcast Host',
-      icon: <Mic size={16} />,
-      color: '#f97316'
-    },
-    { 
-      id: 'freelancer', 
-      name: 'Freelancer', 
-      label: 'Freelancer/Consultant',
-      icon: <Briefcase size={16} />,
-      color: '#3b82f6'
-    }
-  ]
-
-  const currentNiche = niches.find(n => n.id === activeNiche) || niches[0]
+      console.log('🔧 Sidebar: availableNiches filtered:', availableNiches);
+      console.log('🔧 Sidebar: currentNiche selected:', currentNiche);
+    }, [subscribedNiches, availableNiches, currentNiche]);
 
   const getNavigationItems = (niche: string) => {
     const baseItems = [
@@ -363,17 +374,17 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                       <div 
                         className="flex-shrink-0" 
                         style={{ 
-                          color: isSubscribed(currentNiche.id) ? currentNiche.color : '#9ca3af'
+                          color: isSubscribed(currentNiche?.id || 'creator') ? (currentNiche?.color || '#9ca3af') : '#9ca3af'
                         }}
                       >
-                        {currentNiche.icon}
+                        {currentNiche?.icon || <Video size={16} />}
                       </div>
                       <span className={cn(
                         "text-sm font-semibold truncate",
-                        !isSubscribed(currentNiche.id) && "text-muted-foreground font-normal"
+                        !isSubscribed(currentNiche?.id || 'creator') && "text-muted-foreground font-normal"
                       )}>
-                        {currentNiche.label}
-                        {!isSubscribed(currentNiche.id) && (
+                        {currentNiche?.label || 'Content Creator'}
+                        {!isSubscribed(currentNiche?.id || 'creator') && (
                           <span className="ml-1 text-xs text-muted-foreground/60">
                             (Upgrade)
                           </span>
@@ -384,10 +395,10 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   {isCollapsed && (
                     <div 
                       style={{ 
-                        color: isSubscribed(currentNiche.id) ? currentNiche.color : '#9ca3af'
+                        color: isSubscribed(currentNiche?.id || 'creator') ? (currentNiche?.color || '#9ca3af') : '#9ca3af'
                       }}
                     >
-                      {currentNiche.icon}
+                      {currentNiche?.icon || <Video size={16} />}
                     </div>
                   )}
                   {!isCollapsed && (
@@ -401,8 +412,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     Switch Business Type
                   </p>
                 </div>
-                {niches
-                  .filter(niche => isSubscribed(niche.id))
+                {availableNiches
                   .map((niche) => {
                     return (
                       <DropdownMenuItem
@@ -433,44 +443,61 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   );
                 })}
 
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem
-                  onClick={onAddNiche}
-                  disabled={subscribedNiches.length >= 4}
-                  className={cn(
-                    "flex items-center gap-3 p-3 cursor-pointer text-primary hover:text-primary",
-                    subscribedNiches.length >= 4 && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  <div className={cn(
-                    "flex-shrink-0 text-primary",
-                    subscribedNiches.length >= 4 && "text-muted-foreground"
-                  )}>
-                    <Plus size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className={cn(
-                      "text-sm font-medium text-primary",
-                      subscribedNiches.length >= 4 && "text-muted-foreground"
-                    )}>
-                      {subscribedNiches.length >= 4 
-                        ? 'All Niches Added' 
-                        : hasCorePlan() 
-                          ? 'Add Niche' 
-                          : 'Get Core Plan'
-                      }
+                {/* Show message when no niches are available */}
+                {availableNiches.length === 0 && (
+                  <div className="px-3 py-2 text-center">
+                    <div className="text-sm text-muted-foreground">
+                      No business types available
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {subscribedNiches.length >= 4
-                        ? 'You have access to all business types'
-                        : hasCorePlan() 
-                          ? 'Add another business type' 
-                          : 'Start with Tango Core first'
-                      }
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Please contact support or upgrade your plan
                     </div>
                   </div>
-                </DropdownMenuItem>
+                )}
+
+                {/* Only show separator and add niche button if there are available niches */}
+                {availableNiches.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem
+                      onClick={onAddNiche}
+                      disabled={subscribedNiches.length >= 4}
+                      className={cn(
+                        "flex items-center gap-3 p-3 cursor-pointer text-primary hover:text-primary",
+                        subscribedNiches.length >= 4 && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      <div className={cn(
+                        "flex-shrink-0 text-primary",
+                        subscribedNiches.length >= 4 && "text-muted-foreground"
+                      )}>
+                        <Plus size={16} />
+                      </div>
+                      <div className="flex-1">
+                        <div className={cn(
+                          "text-sm font-medium text-primary",
+                          subscribedNiches.length >= 4 && "text-muted-foreground"
+                        )}>
+                          {subscribedNiches.length >= 4 
+                            ? 'All Niches Added' 
+                            : hasCorePlan() 
+                              ? 'Add Niche' 
+                              : 'Get Core Plan'
+                          }
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {subscribedNiches.length >= 4
+                            ? 'You have access to all business types'
+                            : hasCorePlan() 
+                              ? 'Add another business type' 
+                              : 'Start with Tango Core first'
+                          }
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  </>
+                )}
 
               </DropdownMenuContent>
             </DropdownMenu>
@@ -495,8 +522,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               <div className="pt-2">
                 <div className="px-3 py-2 bg-muted/30 rounded-lg">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {currentNiche.icon}
-                    <span>Optimized for {currentNiche.label.toLowerCase()}s</span>
+                    {currentNiche?.icon || <Video size={16} />}
+                    <span>Optimized for {currentNiche?.label || 'Content Creator'}s</span>
                   </div>
                 </div>
               </div>
@@ -530,7 +557,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     {getUserDisplayName()}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
-                    {currentNiche.label}
+                    {currentNiche?.label || 'Content Creator'}
                   </div>
                 </div>
               )}

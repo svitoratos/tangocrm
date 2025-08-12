@@ -330,9 +330,9 @@ export async function ensureSubscriptionCustomerConsistency(userId: string, emai
     // Find all customers with this email
     const customers = await stripe.customers.list({
       email: email,
-      limit: 100
-    });
-    
+          limit: 100
+        });
+        
     if (customers.data.length <= 1) {
       console.log('✅ User already has single customer ID');
       return true;
