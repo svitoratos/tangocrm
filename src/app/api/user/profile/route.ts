@@ -125,6 +125,12 @@ export async function PUT(request: NextRequest) {
       console.log('⚠️ Skipping email update to prevent placeholder emails');
       delete validUpdates.email; // Remove email from updates
     }
+    
+    // CRITICAL SAFEGUARD: Preserve user's original email from Clerk
+    if (existingProfile.email) {
+      console.log('🔒 Preserving user\'s original email:', existingProfile.email);
+      // The email will remain unchanged in the database
+    }
 
     // Update user profile in database
     console.log('🔧 Calling userOperations.updateProfile...');

@@ -413,9 +413,9 @@ export async function updateCustomerMetadata(customerId: string, metadata: Recor
 }
 
 // Function to add niche to customer metadata
-export async function addNicheToCustomer(customerId: string, niche: string): Promise<boolean> {
+export async function addNicheToCustomer(customerId: string, niche: string, userId?: string): Promise<boolean> {
   try {
-    console.log('🔧 Adding niche to customer metadata:', { customerId, niche });
+    console.log('🔧 Adding niche to customer metadata:', { customerId, niche, userId });
     
     // Get current customer to read existing metadata
     const customer = await stripe.customers.retrieve(customerId);
@@ -441,6 +441,30 @@ export async function addNicheToCustomer(customerId: string, niche: string): Pro
       });
       
       console.log('✅ Niche added to customer metadata:', niche);
+      
+      // CRITICAL FIX: Also update the user's niches in the database if userId is provided
+      if (userId) {
+        try {
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({
+              niches: currentNiches,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', userId);
+          
+          if (updateError) {
+            console.error('❌ Error updating user niches in database:', updateError);
+            console.warn('⚠️ Stripe metadata updated but database update failed');
+          } else {
+            console.log('✅ User niches updated in database:', currentNiches);
+          }
+        } catch (dbError) {
+          console.error('❌ Database error updating user niches:', dbError);
+          console.warn('⚠️ Stripe metadata updated but database update failed');
+        }
+      }
+      
       return true;
     } else {
       console.log('⚠️ Niche already exists in customer metadata:', niche);

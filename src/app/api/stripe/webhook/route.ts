@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
             
             // Update customer metadata with new niche
             if (existingUser.stripe_customer_id) {
-              await addNicheToCustomer(existingUser.stripe_customer_id, niche);
+              await addNicheToCustomer(existingUser.stripe_customer_id, niche, existingUser.id);
             }
             
             // Update user's niches array in database
@@ -227,6 +227,17 @@ export async function POST(request: NextRequest) {
             finalCustomerId: customerIdToUse
           });
           
+          // CRITICAL FIX: Preserve existing niches when creating new subscription
+          const existingNiches = existingUser.niches || [];
+          const newNiche = niche || 'creator';
+          const updatedNiches = existingNiches.includes(newNiche) ? existingNiches : [...existingNiches, newNiche];
+          
+          console.log('🔧 Preserving existing niches:', {
+            existingNiches,
+            newNiche,
+            updatedNiches
+          });
+          
           const { data: user, error: updateError } = await supabase
             .from('users')
             .update({
@@ -235,8 +246,8 @@ export async function POST(request: NextRequest) {
               stripe_subscription_id: session.subscription,
               subscription_status: 'active',
               subscription_tier: 'core',
-              primary_niche: niche || 'creator',
-              niches: [niche || 'creator'],
+              primary_niche: newNiche,
+              niches: updatedNiches, // Use updated niches that preserve existing ones
               updated_at: new Date().toISOString()
             })
             .eq('id', existingUser.id)
