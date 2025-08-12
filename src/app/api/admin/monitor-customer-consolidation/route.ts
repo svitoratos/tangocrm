@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { stripe, ensureSubscriptionCustomerConsistency, findExistingCustomerByEmail } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
-// Force Vercel to build from latest commit
+// Force Vercel to build from latest commit - Updated: 2024-01-11 13:10 UTC
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
