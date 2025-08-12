@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { stripe } from '@/lib/stripe';
+import { stripe, ensureSubscriptionCustomerConsistency } from '@/lib/stripe';
 import { userOperations } from '@/lib/database';
 import { supabase } from '@/lib/supabase';
 import { isAdminEmail } from '@/lib/admin-config';
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const isAdmin = isAdminEmail(userEmail);
 
     // Get user profile to get Stripe customer ID
-    const userProfile = await userOperations.getProfile(userId);
+    let userProfile = await userOperations.getProfile(userId);
     
     if (!userProfile) {
       console.log('❌ No user profile found for user:', userId);
@@ -71,10 +71,35 @@ export async function POST(request: NextRequest) {
 
     console.log('🔧 Found Stripe customer ID:', userProfile.stripe_customer_id);
 
+    // CRITICAL SAFEGUARD: Ensure customer consistency before portal access
+    console.log('🔍 Running customer consistency check before portal access...');
+    try {
+      const consolidationResult = await ensureSubscriptionCustomerConsistency(userId, userProfile.email);
+      
+      if (consolidationResult) {
+        console.log('✅ Customer consistency check completed');
+        
+        // Refresh user profile after consolidation
+        const refreshedProfile = await userOperations.getProfile(userId);
+        if (refreshedProfile?.stripe_customer_id && refreshedProfile.stripe_customer_id !== userProfile.stripe_customer_id) {
+          console.log('🔄 Customer ID updated after consolidation:', {
+            old: userProfile.stripe_customer_id,
+            new: refreshedProfile.stripe_customer_id
+          });
+          userProfile = refreshedProfile;
+        }
+      } else {
+        console.warn('⚠️ Customer consistency check failed, proceeding with current customer ID');
+      }
+    } catch (consistencyError) {
+      console.error('❌ Error during customer consistency check:', consistencyError);
+      console.log('⚠️ Proceeding with current customer ID despite consistency check failure');
+    }
+
     // Create a customer portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: userProfile.stripe_customer_id,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?section=settings&tab=subscription`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com'}/dashboard?section=settings&tab=subscription`,
     });
 
     console.log('✅ Created portal session:', session.id);

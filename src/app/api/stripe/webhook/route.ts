@@ -90,10 +90,48 @@ export async function POST(request: NextRequest) {
           userEmail: customerEmail
         });
 
-        // Validate customer ID consistency
+        // CRITICAL SAFEGUARD: Always ensure customer consistency before processing
+        let finalCustomerId = existingUser.stripe_customer_id;
+        
+        // If we have a customer ID mismatch, consolidate immediately
         if (existingUser.stripe_customer_id && session.customer && existingUser.stripe_customer_id !== session.customer) {
-          console.warn('⚠️ Customer ID mismatch detected:', {
+          console.warn('⚠️ Customer ID mismatch detected - consolidating immediately:', {
             databaseCustomerId: existingUser.stripe_customer_id,
+            sessionCustomerId: session.customer,
+            userEmail: customerEmail
+          });
+          
+          try {
+            // Run immediate customer consolidation
+            console.log('🔄 Running immediate customer consolidation...');
+            const consolidationResult = await ensureSubscriptionCustomerConsistency(existingUser.id, customerEmail);
+            
+            if (consolidationResult) {
+              console.log('✅ Customer consolidation completed successfully');
+              
+              // Refresh user data after consolidation
+              const { data: refreshedUser } = await supabase
+                .from('users')
+                .select('stripe_customer_id')
+                .eq('id', existingUser.id)
+                .single();
+              
+              if (refreshedUser?.stripe_customer_id) {
+                finalCustomerId = refreshedUser.stripe_customer_id;
+                console.log('🔄 Updated final customer ID after consolidation:', finalCustomerId);
+              }
+            } else {
+              console.error('❌ Customer consolidation failed');
+            }
+          } catch (consolidationError) {
+            console.error('❌ Error during customer consolidation:', consolidationError);
+          }
+        }
+
+        // Validate customer ID consistency
+        if (finalCustomerId && session.customer && finalCustomerId !== session.customer) {
+          console.warn('⚠️ Customer ID mismatch still exists after consolidation:', {
+            finalCustomerId,
             sessionCustomerId: session.customer,
             userEmail: customerEmail
           });
@@ -101,12 +139,12 @@ export async function POST(request: NextRequest) {
           // Try to merge the customers to maintain consistency
           try {
             console.log('🔄 Attempting to merge customers to resolve mismatch');
-            const mergeSuccess = await mergeCustomers(existingUser.stripe_customer_id, session.customer);
+            const mergeSuccess = await mergeCustomers(finalCustomerId, session.customer);
             
             if (mergeSuccess) {
               console.log('✅ Successfully merged customers, using existing customer ID');
               // Use the existing customer ID for the session
-              session.customer = existingUser.stripe_customer_id;
+              session.customer = finalCustomerId;
             } else {
               console.log('⚠️ Customer merge failed, will use session customer ID');
             }
