@@ -145,6 +145,19 @@ function OnboardingSuccessContent() {
           // Handle specific niche upgrade from the upgrade modal or payment links
           if (specificNiche) {
             console.log('🔧 Adding specific niche from upgrade modal or payment link:', specificNiche);
+            
+            // CRITICAL FIX: Only add niche if payment was actually completed
+            // Check if we have a session ID or came from payment success
+            const hasPaymentSession = sessionId || fromPayment;
+            
+            if (!hasPaymentSession) {
+              console.warn('⚠️ Specific niche detected but no payment session found - skipping niche addition');
+              console.warn('⚠️ This prevents adding niches without payment completion');
+              
+              // Don't add the niche - user needs to complete payment first
+              return;
+            }
+            
             try {
               const addNicheResponse = await fetch('/api/user/add-niche', {
                 method: 'POST',
@@ -178,6 +191,24 @@ function OnboardingSuccessContent() {
               fromSidebar: isNicheUpgradeFromSidebar,
               pendingNicheUpgrade
             });
+            
+            // CRITICAL FIX: Only add niche if payment was actually completed
+            // Check if we have a session ID or came from payment success
+            const hasPaymentSession = sessionId || fromPayment;
+            
+            if (!hasPaymentSession) {
+              console.warn('⚠️ Niche upgrade detected but no payment session found - skipping niche addition');
+              console.warn('⚠️ This prevents adding niches without payment completion');
+              
+              // Clear the pending niche upgrade from sessionStorage to prevent future issues
+              if (pendingNicheUpgrade) {
+                sessionStorage.removeItem('pendingNicheUpgrade');
+                console.log('🔧 Cleared pendingNicheUpgrade from sessionStorage (no payment)');
+              }
+              
+              // Don't add the niche - user needs to complete payment first
+              return;
+            }
             
             try {
               const addNicheResponse = await fetch('/api/user/add-niche', {
