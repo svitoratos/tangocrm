@@ -63,6 +63,50 @@ export function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly' = '
   return priceId;
 }
 
+// Robust search helpers
+async function searchCustomersByClerkUserId(userId: string): Promise<Stripe.Customer[]> {
+  try {
+    // Use Stripe's search API to find customers tagged with this Clerk user ID
+    const results = await stripe.customers.search({
+      // Match metadata field exactly
+      query: `metadata['clerk_user_id']:'${userId}'`,
+      limit: 100,
+    });
+    return results.data as Stripe.Customer[];
+  } catch (error) {
+    console.warn('⚠️ Customer search by clerk_user_id failed; falling back to email search', error);
+    return [];
+  }
+}
+
+async function listCustomersByEmail(email: string): Promise<Stripe.Customer[]> {
+  const listed = await stripe.customers.list({ email, limit: 100 });
+  // Filter out deleted types defensively
+  return listed.data.filter((c) => !('deleted' in c && c.deleted)) as Stripe.Customer[];
+}
+
+function pickPrimaryCustomer(customers: Stripe.Customer[]): Stripe.Customer | null {
+  if (customers.length === 0) return null;
+  // Pick the oldest by created timestamp
+  return customers.slice().sort((a, b) => a.created - b.created)[0];
+}
+
+async function tagDuplicates(primary: Stripe.Customer, duplicates: Stripe.Customer[]) {
+  for (const dup of duplicates) {
+    try {
+      await stripe.customers.update(dup.id, {
+        metadata: {
+          ...(dup.metadata || {}),
+          duplicate_of: primary.id,
+          duplicate_tagged_at: new Date().toISOString(),
+        },
+      });
+    } catch (e) {
+      console.warn('⚠️ Failed to tag duplicate customer', dup.id, e);
+    }
+  }
+}
+
 // Customer deduplication utilities
 export async function findExistingCustomerByEmail(email: string): Promise<string | null> {
   try {
@@ -158,7 +202,7 @@ export async function ensureSingleCustomer(email: string, userId: string): Promi
   try {
     console.log('🔍 Ensuring single customer for:', { email, userId });
     
-    // First check if user already has a customer ID in our database
+    // 1) Prefer DB mapping when valid
     const { data: userProfile } = await supabase
       .from('users')
       .select('stripe_customer_id')
@@ -166,86 +210,79 @@ export async function ensureSingleCustomer(email: string, userId: string): Promi
       .single();
     
     if (userProfile?.stripe_customer_id) {
-      // Verify the customer still exists in Stripe
       try {
         const customer = await stripe.customers.retrieve(userProfile.stripe_customer_id);
-        if (!customer.deleted) {
+        if (!('deleted' in customer && customer.deleted)) {
           console.log('✅ Using existing customer ID from database:', userProfile.stripe_customer_id);
           return userProfile.stripe_customer_id;
-        } else {
-          console.log('⚠️ Stored customer ID was deleted in Stripe, will search by email');
         }
-      } catch (error) {
-        console.log('⚠️ Stored customer ID not found in Stripe, will search by email');
+      } catch {
+        console.log('⚠️ Stored customer ID not found in Stripe, will re-resolve');
       }
     }
-    
-    // Search for existing customer by email (this is the key deduplication step)
-    console.log('🔍 Searching for existing customer by email:', email);
-    const existingCustomerId = await findExistingCustomerByEmail(email);
-    
-    if (existingCustomerId) {
-      console.log('✅ Found existing customer by email:', existingCustomerId);
-      
-      // Update our database with this customer ID
-      console.log('🔄 Updating database with existing customer ID:', existingCustomerId);
-      const { error: updateError } = await supabase
+
+    // 2) Search by clerk_user_id metadata first (most reliable)
+    const byUserId = await searchCustomersByClerkUserId(userId);
+    let candidates: Stripe.Customer[] = byUserId;
+
+    // 3) If none found by userId, fall back to email list
+    if (candidates.length === 0) {
+      const byEmail = await listCustomersByEmail(email);
+      candidates = byEmail;
+    }
+
+    // 4) If still none, create a new primary and persist mapping
+    if (candidates.length === 0) {
+      console.log('🔧 No existing customer found, creating new one for:', email);
+      const newCustomer = await stripe.customers.create({
+        email,
+        metadata: {
+          clerk_user_id: userId,
+          created_at: new Date().toISOString(),
+          source: 'checkout_flow',
+          customer_type: 'primary',
+          consolidation_status: 'active',
+          total_niches: '1',
+          niches: '[]',
+          last_consolidation_check: new Date().toISOString(),
+          system_version: '2.1.0',
+        },
+      });
+
+      await supabase
         .from('users')
-        .update({ 
-          stripe_customer_id: existingCustomerId,
-          updated_at: new Date().toISOString()
-        })
+        .update({ stripe_customer_id: newCustomer.id, updated_at: new Date().toISOString() })
         .eq('id', userId);
-      
-      if (updateError) {
-        console.error('❌ Error updating user with customer ID:', updateError);
-        console.error('❌ Update details:', { userId, existingCustomerId, error: updateError });
-        // Don't fail here - still return the customer ID
-        console.log('⚠️ Continuing with existing customer ID despite database update failure');
-      } else {
-        console.log('✅ Successfully updated user with existing customer ID');
-      }
-      
-      return existingCustomerId;
-    } else {
-      console.log('🔍 No existing customer found by email');
+
+      return newCustomer.id;
     }
-    
-    // No existing customer found, create a new one
-    console.log('🔧 No existing customer found, creating new one for:', email);
-    
-    const newCustomer = await stripe.customers.create({
-      email: email,
-      metadata: {
-        clerk_user_id: userId,
-        created_at: new Date().toISOString(),
-        source: 'checkout_flow',
-        customer_type: 'primary',
-        consolidation_status: 'active',
-        total_niches: '1',
-        niches: '[]',
-        last_consolidation_check: new Date().toISOString(),
-        system_version: '2.0.0'
-      }
-    });
-    
-    // Update our database with the new customer ID
-    const { error: updateError } = await supabase
+
+    // 5) We have at least one candidate. Choose a primary (oldest) and tag others as duplicates
+    const primary = pickPrimaryCustomer(candidates)!;
+    const duplicates = candidates.filter((c) => c.id !== primary.id);
+
+    // Ensure primary has correct metadata mapping
+    try {
+      await stripe.customers.update(primary.id, {
+        email, // enforce correct email
+        metadata: { ...(primary.metadata || {}), clerk_user_id: userId, customer_type: 'primary' },
+      });
+    } catch (e) {
+      console.warn('⚠️ Failed to update primary customer metadata', e);
+    }
+
+    if (duplicates.length > 0) {
+      await tagDuplicates(primary, duplicates);
+      console.log(`🔎 Found ${duplicates.length} duplicate customers; tagged for consolidation`);
+    }
+
+    // Persist mapping in DB
+    await supabase
       .from('users')
-      .update({ 
-        stripe_customer_id: newCustomer.id,
-        updated_at: new Date().toISOString()
-      })
+      .update({ stripe_customer_id: primary.id, updated_at: new Date().toISOString() })
       .eq('id', userId);
-    
-    if (updateError) {
-      console.error('❌ Error updating user with new customer ID:', updateError);
-    } else {
-      console.log('✅ Created and stored new customer ID:', newCustomer.id);
-    }
-    
-    return newCustomer.id;
-    
+
+    return primary.id;
   } catch (error) {
     console.error('❌ Error ensuring single customer:', error);
     return null;

@@ -12,6 +12,8 @@ export interface PaymentLinkResult {
   sessionId?: string;
 }
 
+const IS_DEV = process.env.NODE_ENV !== 'production';
+
 /**
  * Centralized payment service that ensures all payments go through our customer consolidation logic
  * instead of hardcoded Stripe payment links that bypass our safeguards.
@@ -132,6 +134,11 @@ export class PaymentService {
    */
   static async createFallbackPaymentLink(config: PaymentLinkConfig): Promise<PaymentLinkResult> {
     try {
+      if (!IS_DEV) {
+        console.warn('🚫 Fallback payment link disabled in production to prevent duplicate customers');
+        return { success: false, error: 'Fallback disabled in production' };
+      }
+
       console.warn('⚠️ PaymentService: Using fallback payment link (bypasses customer consolidation):', config);
 
       // This is the emergency fallback - creates a payment link that bypasses our safeguards
@@ -194,6 +201,12 @@ export class PaymentService {
       if (upgradeResult.success) {
         return upgradeResult;
       }
+    }
+
+    // Only allow fallback in development to avoid duplicate customer creation in production
+    if (IS_DEV) {
+      console.warn('⚠️ Using emergency fallback payment link (dev only)');
+      return await this.createFallbackPaymentLink(config);
     }
 
     console.error('❌ PaymentService: All checkout session creation methods failed');
