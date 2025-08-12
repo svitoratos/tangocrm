@@ -97,6 +97,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create a customer portal session
+    if (!userProfile.stripe_customer_id) {
+      console.error('❌ Stripe customer ID is null after all checks');
+      return NextResponse.json({ 
+        error: 'Unable to access billing portal. Please contact support.',
+        supportEmail: 'support@gotangocrm.com'
+      }, { status: 500 });
+    }
+
     const session = await stripe.billingPortal.sessions.create({
       customer: userProfile.stripe_customer_id,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com'}/dashboard?section=settings&tab=subscription`,
