@@ -7,7 +7,7 @@ import { stripe } from '@/lib/stripe'
 // Simple in-memory rate limiting (for production, use Redis or similar)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-function checkRateLimit(userId: string, limit: number = 10, windowMs: number = 60000): boolean {
+function checkRateLimit(userId: string, limit: number = 30, windowMs: number = 60000): boolean {
   const now = Date.now();
   const userLimit = rateLimitMap.get(userId);
   
@@ -110,8 +110,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check rate limit (10 requests per minute)
-    if (!checkRateLimit(userId, 10, 60000)) {
+    // Check rate limit (30 requests per minute - more permissive for payment flows)
+    if (!checkRateLimit(userId, 30, 60000)) {
       console.warn('⚠️ Rate limit exceeded for user:', userId);
       return NextResponse.json({ 
         error: 'Too many requests. Please try again later.',
