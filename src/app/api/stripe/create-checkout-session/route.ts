@@ -260,7 +260,9 @@ export async function POST(request: NextRequest) {
     console.error('❌ Environment check:', {
       hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
       hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      origin: request.headers.get('origin'),
+      fallbackUrl: 'https://www.gotangocrm.com'
     });
     
     if (error instanceof Error) {

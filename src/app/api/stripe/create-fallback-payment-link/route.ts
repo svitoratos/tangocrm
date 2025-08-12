@@ -36,6 +36,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Get the app URL with fallback
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com';
+    
+    console.log('🔧 Using app URL for fallback payment link:', appUrl);
+
     // Create a fallback payment link as a last resort
     // This bypasses customer consolidation and should only be used in emergencies
     const paymentLink = await stripe.paymentLinks.create({
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
       after_completion: { 
         type: 'redirect', 
         redirect: { 
-          url: `${process.env.NEXT_PUBLIC_APP_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}` 
+          url: `${appUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}` 
         } 
       },
       metadata: {
@@ -98,7 +103,9 @@ export async function POST(request: NextRequest) {
     console.error('❌ Environment check:', {
       hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
       hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      fallbackUrl: 'https://www.gotangocrm.com',
+      finalUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com'
     });
     
     return NextResponse.json({ 
