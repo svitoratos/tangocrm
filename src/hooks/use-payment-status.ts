@@ -52,7 +52,7 @@ export const usePaymentStatus = () => {
         paymentStatusCache.data &&
         paymentStatusCache.userId === userId &&
         (now - paymentStatusCache.timestamp) < CACHE_DURATION &&
-        (now - lastCheckRef.current) > 1000 // Prevent multiple calls within 1 second
+        (now - lastCheckRef.current) > 2000 // Increased to 2 seconds to reduce API calls
       ) {
         setPaymentStatus(paymentStatusCache.data)
         return

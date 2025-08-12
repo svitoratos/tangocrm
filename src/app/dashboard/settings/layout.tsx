@@ -26,6 +26,8 @@ import { EventRefreshProvider } from "@/contexts/EventRefreshContext";
 import { PaymentVerification } from "@/components/app/payment-verification";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
 import PaymentService from '@/lib/payment-service';
+import { useAdmin } from '@/hooks/use-admin'
+import { isAdminEmail } from '@/lib/admin-config'
 
 // Types
 interface AppContextType {
@@ -169,8 +171,7 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
   const { user: currentUser } = useUser();
   
   // Ensure admin users always have access to all niches
-  const adminEmails = ['stevenvitoratos@gmail.com', 'svitoratos13@gmail.com'];
-  const isAdmin = currentUser?.emailAddresses?.[0]?.emailAddress && adminEmails.includes(currentUser.emailAddresses[0].emailAddress);
+  const isAdmin = currentUser?.emailAddresses?.[0]?.emailAddress && isAdminEmail(currentUser.emailAddresses[0].emailAddress);
   const availableNiches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : subscribedNiches;
 
   // Handle URL parameters for niche
