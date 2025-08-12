@@ -2167,12 +2167,12 @@ export default function DashboardOverview({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="max-w-7xl mx-auto p-6 space-y-8 overflow-hidden">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 pt-8 sm:pt-6 space-y-8 overflow-hidden">
 
 
         {/* Header */}
         <motion.div 
-          className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0"
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mt-2 sm:mt-0 dashboard-welcome-section"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}

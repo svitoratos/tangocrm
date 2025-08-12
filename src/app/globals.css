@@ -222,6 +222,18 @@
     overflow-y: auto;
   }
 
+  /* Mobile-specific top spacing for dashboard welcome section */
+  @media (max-width: 640px) {
+    .dashboard-content {
+      padding-top: 1rem;
+    }
+    
+    .dashboard-welcome-section {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+    }
+  }
+
   .flex-1:not(.sidebar-container) {
     flex: 1;
   }
