@@ -1,110 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { stripe, ensureSubscriptionCustomerConsistency } from '@/lib/stripe';
+import { stripe } from '@/lib/stripe';
 import { userOperations } from '@/lib/database';
-import { supabase } from '@/lib/supabase';
-import { isAdminEmail } from '@/lib/admin-config';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('🔧 Creating Stripe portal session for user:', userId);
+    console.log('🔗 Creating customer portal session for user:', userId);
 
-    const userEmail = sessionClaims?.email as string;
-    const isAdmin = isAdminEmail(userEmail);
-
-    // Get user profile to get Stripe customer ID
-    let userProfile = await userOperations.getProfile(userId);
-    
+    // Get user profile
+    const userProfile = await userOperations.getProfile(userId);
     if (!userProfile) {
-      console.log('❌ No user profile found for user:', userId);
-      return NextResponse.json({ 
-        error: 'User profile not found. Please contact support.' 
-      }, { status: 404 });
+      console.error('❌ User profile not found');
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
     }
 
-    // Check if user has a Stripe customer ID
     if (!userProfile.stripe_customer_id) {
-      console.log('❌ No Stripe customer ID found for user:', userId);
-      
-      // Check if user has subscription access through other means
-      const { data: user } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      const hasActiveSubscription = isAdmin || 
-        (user && (user.subscription_status === 'active' || 
-                  user.subscription_status === 'trialing' || 
-                  user.subscription_status === 'past_due'));
-
-      if (hasActiveSubscription) {
-        console.log('✅ User has active subscription but no Stripe customer ID - managed subscription');
-        return NextResponse.json({ 
-          error: 'Your subscription is managed outside of Stripe. For billing support, please contact our support team.',
-          supportEmail: 'support@gotangocrm.com',
-          isManaged: true
-        }, { status: 422 });
-      }
-      
-      // If no active subscription, check if user exists but just doesn't have a subscription yet
-      if (user) {
-        console.log('❌ User exists but no active subscription found');
-        return NextResponse.json({ 
-          error: 'No active subscription found. Please subscribe to access billing management.',
-          needsSubscription: true
-        }, { status: 404 });
-      }
-      
-      console.log('❌ User profile not found in database');
+      console.error('❌ User has no Stripe customer ID');
       return NextResponse.json({ 
-        error: 'No subscription found. Please contact support if you believe this is an error.',
+        error: 'No subscription found. Please contact support.',
         supportEmail: 'support@gotangocrm.com'
       }, { status: 404 });
     }
 
-    console.log('🔧 Found Stripe customer ID:', userProfile.stripe_customer_id);
-
-    // CRITICAL SAFEGUARD: Ensure customer consistency before portal access
-    console.log('🔍 Running customer consistency check before portal access...');
-    try {
-      const consolidationResult = await ensureSubscriptionCustomerConsistency(userId, userProfile.email);
-      
-      if (consolidationResult) {
-        console.log('✅ Customer consistency check completed');
-        
-        // Refresh user profile after consolidation
-        const refreshedProfile = await userOperations.getProfile(userId);
-        if (refreshedProfile?.stripe_customer_id && refreshedProfile.stripe_customer_id !== userProfile.stripe_customer_id) {
-          console.log('🔄 Customer ID updated after consolidation:', {
-            old: userProfile.stripe_customer_id,
-            new: refreshedProfile.stripe_customer_id
-          });
-          userProfile = refreshedProfile;
-        }
-      } else {
-        console.warn('⚠️ Customer consistency check failed, proceeding with current customer ID');
-      }
-    } catch (consistencyError) {
-      console.error('❌ Error during customer consistency check:', consistencyError);
-      console.log('⚠️ Proceeding with current customer ID despite consistency check failure');
-    }
-
-    // Create a customer portal session
-    if (!userProfile.stripe_customer_id) {
-      console.error('❌ Stripe customer ID is null after all checks');
-      return NextResponse.json({ 
-        error: 'Unable to access billing portal. Please contact support.',
-        supportEmail: 'support@gotangocrm.com'
-      }, { status: 500 });
-    }
-
+    // Create a customer portal session - Stripe handles multiple subscriptions automatically
     const session = await stripe.billingPortal.sessions.create({
       customer: userProfile.stripe_customer_id,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com'}/dashboard?section=settings&tab=subscription`,
@@ -122,19 +46,15 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error) {
       if (error.message.includes('No such customer')) {
         return NextResponse.json({ 
-          error: 'Customer not found. Please contact support.' 
+          error: 'Customer not found in Stripe. Please contact support.',
+          supportEmail: 'support@gotangocrm.com'
         }, { status: 404 });
-      }
-      if (error.message.includes('Invalid API key')) {
-        return NextResponse.json({ 
-          error: 'Billing portal temporarily unavailable. Please contact support.' 
-        }, { status: 500 });
       }
     }
     
     return NextResponse.json({ 
-      error: 'Failed to create billing portal session',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      error: 'Failed to create portal session. Please try again or contact support.',
+      supportEmail: 'support@gotangocrm.com'
     }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { createCustomerPortalSession, ensureSubscriptionCustomerConsistency } from '@/lib/stripe';
+import { createCustomerPortalSession } from '@/lib/stripe';
 import { userOperations } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
@@ -32,15 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No subscription found' }, { status: 404 });
     }
 
-    // Ensure all subscriptions are consolidated under the same customer ID
-    console.log('🔍 Ensuring subscription customer consistency...');
-    const consistencyResult = await ensureSubscriptionCustomerConsistency(userId, userProfile.email);
-    
-    if (!consistencyResult) {
-      console.warn('⚠️ Customer consistency check failed, but continuing with portal creation');
-    }
-
-    // Create customer portal session
+    // Create customer portal session - Stripe handles multiple subscriptions automatically
     const portalUrl = await createCustomerPortalSession(userProfile.stripe_customer_id, returnUrl);
     
     if (!portalUrl) {
