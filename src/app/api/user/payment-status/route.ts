@@ -195,7 +195,7 @@ export async function GET(request: NextRequest) {
       niches: user.niches 
     });
 
-    // CRITICAL FIX: Only show niches for active Stripe subscriptions
+    // CRITICAL FIX: Sync user's niches with actual Stripe subscriptions
     let finalNiches: string[] = [];
     
     if (isAdmin) {
@@ -210,12 +210,29 @@ export async function GET(request: NextRequest) {
         finalNiches = syncedNiches;
         console.log('✅ Using synced niches from active Stripe subscriptions:', finalNiches);
       } else {
-        console.log('⚠️ No active subscriptions found in Stripe - user has no niche access');
-        finalNiches = [];
+        console.log('⚠️ No active subscriptions found in Stripe - checking database niches');
+        // FALLBACK: Use database niches if Stripe sync fails
+        finalNiches = user.niches || [user.primary_niche || 'creator'];
+        
+        // CRITICAL: If database niches exist but Stripe sync failed, log this as a potential issue
+        if (finalNiches.length > 0) {
+          console.warn('⚠️ Using database niches as fallback - Stripe sync may have failed');
+          console.warn('⚠️ Database niches:', finalNiches);
+          console.warn('⚠️ This could indicate a webhook processing issue');
+        } else {
+          console.error('❌ CRITICAL: No niches found in Stripe OR database');
+          console.error('❌ User has no access to any business types');
+        }
       }
     } else {
-      console.log('⚠️ No Stripe customer ID found - user has no niche access');
-      finalNiches = [];
+      console.log('⚠️ No Stripe customer ID found - using database niches');
+      finalNiches = user.niches || [user.primary_niche || 'creator'];
+      
+      // CRITICAL: If no Stripe customer ID but user has niches, this could indicate a webhook issue
+      if (finalNiches.length > 0) {
+        console.warn('⚠️ User has niches but no Stripe customer ID - potential webhook issue');
+        console.warn('⚠️ Database niches:', finalNiches);
+      }
     }
 
     // Check subscription status

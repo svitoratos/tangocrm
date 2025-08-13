@@ -4,6 +4,15 @@ import { supabase } from '@/lib/supabase';
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
+export async function GET(request: NextRequest) {
+  // Test endpoint to verify webhook is working
+  return NextResponse.json({ 
+    status: 'Webhook endpoint is working',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
@@ -18,12 +27,15 @@ export async function POST(request: NextRequest) {
   }
 
   console.log('🔧 Processing webhook:', event.type);
+  console.log('🔧 Webhook event ID:', event.id);
+  console.log('🔧 Webhook timestamp:', new Date(event.created * 1000).toISOString());
 
   try {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object;
         console.log('✅ Checkout completed for session:', session.id);
+        console.log('🔍 Full session data:', JSON.stringify(session, null, 2));
         
         // Get email from session, but prioritize user profile email
         let customerEmail = session.customer_details?.email;
@@ -35,7 +47,22 @@ export async function POST(request: NextRequest) {
           sessionId: session.id,
           sessionEmail: customerEmail,
           metadata: session.metadata,
-          userId
+          userId,
+          customerId: session.customer,
+          subscriptionId: session.subscription,
+          amountTotal: session.amount_total,
+          paymentStatus: session.payment_status
+        });
+        
+        // CRITICAL: Check if this is a discounted or free payment
+        const isDiscountedPayment = (session.total_details?.amount_discount || 0) > 0;
+        const isFreePayment = session.amount_total === 0;
+        
+        console.log('🔍 Payment analysis:', {
+          isDiscountedPayment,
+          isFreePayment,
+          amountTotal: session.amount_total,
+          amountDiscount: session.total_details?.amount_discount || 0
         });
         
         // If we have a userId, try to get the email from the user profile first
@@ -265,8 +292,39 @@ export async function POST(request: NextRequest) {
             onboarding_completed: user.onboarding_completed,
             subscription_status: user.subscription_status,
             stripe_customer_id: user.stripe_customer_id,
-            primary_niche: user.primary_niche
+            primary_niche: user.primary_niche,
+            niches: user.niches
           });
+          
+          // CRITICAL: Ensure niches are properly unlocked by double-checking
+          if (user.niches && user.niches.length > 0) {
+            console.log('✅ Niches successfully unlocked:', user.niches);
+          } else {
+            console.error('❌ CRITICAL: No niches found after subscription creation!');
+            console.error('❌ User niches array is empty or missing');
+            
+            // FALLBACK: Force add the niche if it's missing
+            try {
+              console.log('🔄 FALLBACK: Forcing niche addition...');
+              const fallbackNiches = [newNiche || 'creator'];
+              
+              const { error: fallbackError } = await supabase
+                .from('users')
+                .update({
+                  niches: fallbackNiches,
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', existingUser.id);
+              
+              if (fallbackError) {
+                console.error('❌ FALLBACK niche addition failed:', fallbackError);
+              } else {
+                console.log('✅ FALLBACK niche addition successful:', fallbackNiches);
+              }
+            } catch (fallbackError) {
+              console.error('❌ FALLBACK niche addition error:', fallbackError);
+            }
+          }
           
           // After creating a new subscription, ensure customer consistency
           // This helps prevent future customer ID mismatches

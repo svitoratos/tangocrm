@@ -20,15 +20,25 @@ export async function POST(request: NextRequest) {
 
     console.log('🔧 Adding niche to user profile:', {
       userId,
-      nicheToAdd
+      nicheToAdd,
+      userEmail: user?.emailAddresses?.[0]?.emailAddress
     });
 
     // Get current user profile
     const currentProfile = await userOperations.getProfile(userId);
     
     if (!currentProfile) {
+      console.error('❌ User profile not found for userId:', userId);
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
     }
+
+    console.log('🔧 Current user profile:', {
+      id: currentProfile.id,
+      email: currentProfile.email,
+      existingNiches: currentProfile.niches,
+      subscriptionStatus: currentProfile.subscription_status,
+      stripeCustomerId: currentProfile.stripe_customer_id
+    });
 
     // Get existing niches and add the new one
     const existingNiches = currentProfile.niches || [];
@@ -46,7 +56,17 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString()
     });
 
-    console.log('✅ Successfully added niche to user profile:', updatedUser);
+    if (!updatedUser) {
+      console.error('❌ Failed to update user profile - updateProfile returned null');
+      return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
+    }
+
+    console.log('✅ Successfully added niche to user profile:', {
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      niches: updatedUser.niches,
+      subscriptionStatus: updatedUser.subscription_status
+    });
 
     return NextResponse.json({
       success: true,
@@ -56,6 +76,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Error adding niche to user profile:', error);
+    if (error instanceof Error) {
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
     return NextResponse.json(
       { error: 'Failed to add niche to user profile' },
       { status: 500 }
