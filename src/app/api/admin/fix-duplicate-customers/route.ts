@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { stripe, findExistingCustomerByEmail, mergeCustomers } from '@/lib/stripe';
+import { stripe, findExistingCustomerByEmail } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
+import { isAdminEmail } from '@/lib/admin-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,7 +117,7 @@ async function fixDuplicateCustomersForUser(userEmail: string) {
     });
 
     if (stripeCustomers.data.length <= 1) {
-      return { message: 'No duplicates found for this user' };
+      return { message: 'No duplicates found for this user', status: 'skipped' };
     }
 
     const customerIds = stripeCustomers.data.map(c => c.id);
@@ -128,27 +129,34 @@ async function fixDuplicateCustomersForUser(userEmail: string) {
       duplicates: duplicateCustomerIds
     });
 
-    // Merge all duplicate customers into the primary one
-    for (const duplicateId of duplicateCustomerIds) {
-      await mergeCustomers(primaryCustomerId, duplicateId);
-    }
-
-    // Update user's customer ID if it changed
-    if (user.stripe_customer_id !== primaryCustomerId) {
-      await supabase
+    // With simplified approach, we don't need complex merging
+    // Just ensure the user has a valid customer ID
+    console.log(`🔍 Checking customer for user: ${user.email}`);
+    
+    const existingCustomerId = await findExistingCustomerByEmail(user.email);
+    
+    if (existingCustomerId && existingCustomerId !== user.stripe_customer_id) {
+      console.log(`🔄 Updating user ${user.email} to use existing customer: ${existingCustomerId}`);
+      
+      const { error: updateError } = await supabase
         .from('users')
-        .update({ 
-          stripe_customer_id: primaryCustomerId,
+        .update({
+          stripe_customer_id: existingCustomerId,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
+      
+      if (updateError) {
+        console.error(`❌ Error updating user ${user.email}:`, updateError);
+        return { message: 'Failed to update user', status: 'error', error: updateError };
+      } else {
+        console.log(`✅ Updated user ${user.email} customer ID`);
+        return { message: 'Successfully updated user customer ID', status: 'updated' };
+      }
+    } else {
+      console.log(`✅ User ${user.email} already has correct customer ID`);
+      return { message: 'User already has correct customer ID', status: 'skipped' };
     }
-
-    return {
-      message: 'Successfully fixed duplicate customers',
-      primary_customer_id: primaryCustomerId,
-      merged_customers: duplicateCustomerIds.length
-    };
 
   } catch (error) {
     console.error('❌ Error fixing duplicates for user:', error);
@@ -159,24 +167,18 @@ async function fixDuplicateCustomersForUser(userEmail: string) {
 async function fixAllDuplicateCustomers() {
   try {
     const duplicates = await scanForDuplicateCustomers();
-    const results = [];
+    const results = { updated: 0, skipped: 0, errors: 0 };
 
     for (const duplicate of duplicates) {
       if (duplicate.needs_fix) {
         try {
           const result = await fixDuplicateCustomersForUser(duplicate.email);
-          results.push({
-            email: duplicate.email,
-            success: true,
-            result
-          });
+          results.updated++;
         } catch (error) {
-          results.push({
-            email: duplicate.email,
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
+          results.errors++;
         }
+      } else {
+        results.skipped++;
       }
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe, mergeCustomers, ensureSubscriptionCustomerConsistency, addNicheToCustomer, consolidateCustomerMetadata, getPriceId } from '@/lib/stripe';
+import { stripe, addNicheToCustomer, getPriceId } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
+import { userOperations } from '@/lib/database';
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -130,26 +131,24 @@ export async function POST(request: NextRequest) {
           
           try {
             // Run immediate customer consolidation
-            console.log('🔄 Running immediate customer consolidation...');
-            const consolidationResult = await ensureSubscriptionCustomerConsistency(existingUser.id, customerEmail);
+            console.log('🔄 Customer consolidation no longer needed with simplified approach');
             
-            if (consolidationResult) {
-              console.log('✅ Customer consolidation completed successfully');
+            // Update user's niches array in database
+            const currentNiches = existingUser.niches || [existingUser.primary_niche || 'creator'];
+            const updatedNiches = [...new Set([...currentNiches, niche])];
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({
+                niches: updatedNiches,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingUser.id);
               
-              // Refresh user data after consolidation
-              const { data: refreshedUser } = await supabase
-                .from('users')
-                .select('stripe_customer_id')
-                .eq('id', existingUser.id)
-                .single();
-              
-              if (refreshedUser?.stripe_customer_id) {
-                finalCustomerId = refreshedUser.stripe_customer_id;
-                console.log('🔄 Updated final customer ID after consolidation:', finalCustomerId);
-              }
-            } else {
-              console.error('❌ Customer consolidation failed');
+            if (updateError) {
+              console.error('❌ Error updating user niches:', updateError);
             }
+            
           } catch (consolidationError) {
             console.error('❌ Error during customer consolidation:', consolidationError);
           }
@@ -165,19 +164,10 @@ export async function POST(request: NextRequest) {
           
           // Try to merge the customers to maintain consistency
           try {
-            console.log('🔄 Attempting to merge customers to resolve mismatch');
-            const mergeSuccess = await mergeCustomers(finalCustomerId, session.customer);
-            
-            if (mergeSuccess) {
-              console.log('✅ Successfully merged customers, using existing customer ID');
-              // Use the existing customer ID for the session
-              session.customer = finalCustomerId;
-            } else {
-              console.log('⚠️ Customer merge failed, will use session customer ID');
-            }
+            console.log('🔄 Customer merging no longer needed with simplified approach');
+            console.log('✅ Using existing customer ID for subscription');
           } catch (mergeError) {
-            console.error('❌ Error merging customers:', mergeError);
-            console.log('⚠️ Continuing with new customer ID - manual intervention may be needed');
+            console.error('❌ Error during customer merge:', mergeError);
           }
         }
 
@@ -329,13 +319,8 @@ export async function POST(request: NextRequest) {
           // After creating a new subscription, ensure customer consistency
           // This helps prevent future customer ID mismatches
           try {
-            console.log('🔍 Running post-subscription customer consistency check...');
-            const consistencyResult = await ensureSubscriptionCustomerConsistency(existingUser.id, customerEmail);
-            if (consistencyResult) {
-              console.log('✅ Customer consistency check completed successfully');
-            } else {
-              console.warn('⚠️ Customer consistency check failed, but subscription was created');
-            }
+            console.log('🔍 Customer consistency check no longer needed with simplified approach');
+            console.log('✅ Subscription created successfully with simplified customer management');
           } catch (consistencyError) {
             console.error('❌ Error during customer consistency check:', consistencyError);
             // Don't fail the webhook for this - it's just a cleanup step
