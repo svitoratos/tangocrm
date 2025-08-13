@@ -82,8 +82,22 @@ async function diagnoseUser(userEmail) {
 
     console.log(`📊 Found ${stripeCustomers.data.length} Stripe customers for this email:`);
     
+    const userClerkId = user.id;
+    let sameUserCustomers = 0;
+    let differentUserCustomers = 0;
+    
     for (const customer of stripeCustomers.data) {
-      console.log(`   Customer ID: ${customer.id}`);
+      const customerClerkId = customer.metadata?.clerkUserId || customer.metadata?.userId;
+      const isSameUser = customerClerkId === userClerkId;
+      
+      if (isSameUser) {
+        sameUserCustomers++;
+        console.log(`   Customer ID: ${customer.id} ✅ (SAME USER)`);
+      } else {
+        differentUserCustomers++;
+        console.log(`   Customer ID: ${customer.id} ⚠️ (DIFFERENT USER: ${customerClerkId || 'no metadata'})`);
+      }
+      
       console.log(`   Created: ${new Date(customer.created * 1000).toISOString()}`);
       console.log(`   Metadata:`, customer.metadata);
       
@@ -106,6 +120,12 @@ async function diagnoseUser(userEmail) {
       }
       console.log('');
     }
+    
+    console.log(`📊 Summary:`);
+    console.log(`   Same user customers: ${sameUserCustomers}`);
+    console.log(`   Different user customers: ${differentUserCustomers}`);
+    console.log(`   Target Clerk user ID: ${userClerkId}`);
+    console.log('');
 
     // 4. Check if there are multiple customers with subscriptions
     const customersWithSubscriptions = [];

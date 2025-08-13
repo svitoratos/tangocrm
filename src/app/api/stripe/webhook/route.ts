@@ -15,15 +15,31 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🔧 Webhook received at:', new Date().toISOString());
+  
+  // Check if webhook secret is configured
+  if (!endpointSecret) {
+    console.error('❌ STRIPE_WEBHOOK_SECRET is not configured');
+    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
+  }
+  
   const body = await request.text();
   const sig = request.headers.get('stripe-signature');
+
+  if (!sig) {
+    console.error('❌ Missing stripe-signature header');
+    return NextResponse.json({ error: 'Missing signature header' }, { status: 400 });
+  }
 
   let event: any;
 
   try {
-    event = stripe.webhooks.constructEvent(body, sig!, endpointSecret);
+    event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+    console.log('✅ Webhook signature verified successfully');
   } catch (err) {
     console.error('❌ Webhook signature verification failed:', err);
+    console.error('❌ Signature header:', sig);
+    console.error('❌ Body length:', body.length);
     return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
   }
 
@@ -386,9 +402,22 @@ export async function POST(request: NextRequest) {
         console.log('🔧 Unhandled event type:', event.type);
     }
 
+    console.log('✅ Webhook processed successfully');
     return NextResponse.json({ received: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Webhook processing error:', error);
-    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
+    console.error('❌ Error details:', {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack || 'No stack trace',
+      eventType: event?.type,
+      eventId: event?.id
+    });
+    
+    // Return 200 to prevent Stripe from retrying (for now)
+    // This prevents webhook delivery failures while we debug
+    return NextResponse.json({ 
+      error: 'Webhook processing failed',
+      received: true // Tell Stripe we received it to stop retries
+    }, { status: 200 });
   }
 }

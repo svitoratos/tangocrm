@@ -74,12 +74,23 @@ async function consolidateUserSubscriptions(userEmail) {
       console.log(`🔧 Using database customer as primary: ${primaryCustomer.id}`);
     }
 
-    // 4. Collect all subscriptions from all customers
+    // 4. Collect all subscriptions from customers that belong to the SAME user
     const allSubscriptions = [];
     const customersToDelete = [];
+    const userClerkId = user.id; // This is the Clerk user ID
+
+    console.log(`🔍 Only consolidating customers that belong to Clerk user: ${userClerkId}`);
 
     for (const customer of stripeCustomers.data) {
       if (customer.id === primaryCustomer.id) continue;
+
+      // Check if this customer belongs to the same user by checking metadata
+      const customerClerkId = customer.metadata?.clerkUserId || customer.metadata?.userId;
+      
+      if (customerClerkId !== userClerkId) {
+        console.log(`⚠️ Skipping customer ${customer.id} - belongs to different user (${customerClerkId})`);
+        continue;
+      }
 
       const subscriptions = await stripe.subscriptions.list({
         customer: customer.id,
@@ -88,7 +99,7 @@ async function consolidateUserSubscriptions(userEmail) {
       });
 
       if (subscriptions.data.length > 0) {
-        console.log(`📦 Found ${subscriptions.data.length} active subscriptions in customer ${customer.id}`);
+        console.log(`📦 Found ${subscriptions.data.length} active subscriptions in customer ${customer.id} (same user)`);
         allSubscriptions.push(...subscriptions.data);
         customersToDelete.push(customer.id);
       }
@@ -106,14 +117,9 @@ async function consolidateUserSubscriptions(userEmail) {
       try {
         console.log(`🔄 Transferring subscription ${subscription.id}...`);
         
-        // Update subscription to use primary customer
+        // Transfer subscription to primary customer using the correct Stripe API
         await stripe.subscriptions.update(subscription.id, {
-          customer: primaryCustomer.id,
-          metadata: {
-            ...subscription.metadata,
-            transferred_at: new Date().toISOString(),
-            original_customer: subscription.customer
-          }
+          customer: primaryCustomer.id
         });
 
         console.log(`✅ Successfully transferred subscription ${subscription.id}`);
