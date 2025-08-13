@@ -76,12 +76,26 @@ async function syncUserNichesWithStripe(userId: string, stripeCustomerId: string
     
     console.log('🔧 Active niches from Stripe:', activeNiches);
     
-    // Update the database with the actual active niches
-    if (activeNiches.length > 0) {
+    // CRITICAL FIX: Get current database niches and merge with Stripe niches
+    const { data: currentUser } = await supabase
+      .from('users')
+      .select('niches, primary_niche')
+      .eq('id', userId)
+      .single();
+    
+    const databaseNiches = currentUser?.niches || [currentUser?.primary_niche || 'creator'];
+    console.log('🔧 Current database niches:', databaseNiches);
+    
+    // Merge Stripe niches with database niches to prevent loss
+    const mergedNiches = [...new Set([...databaseNiches, ...activeNiches])];
+    console.log('🔧 Merged niches (database + Stripe):', mergedNiches);
+    
+    // Update the database with the merged niches
+    if (mergedNiches.length > 0) {
       const { error: updateError } = await supabase
         .from('users')
         .update({
-          niches: activeNiches,
+          niches: mergedNiches,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -89,11 +103,12 @@ async function syncUserNichesWithStripe(userId: string, stripeCustomerId: string
       if (updateError) {
         console.error('❌ Error updating user niches in database:', updateError);
       } else {
-        console.log('✅ Updated user niches in database:', activeNiches);
+        console.log('✅ Updated user niches in database (merged):', mergedNiches);
       }
     }
     
-    return activeNiches;
+    // Return the merged niches to ensure no loss
+    return mergedNiches;
     
   } catch (error) {
     console.error('❌ Error syncing user niches with Stripe:', error);
@@ -210,15 +225,12 @@ export async function GET(request: NextRequest) {
         finalNiches = syncedNiches;
         console.log('✅ Using synced niches from active Stripe subscriptions:', finalNiches);
       } else {
-        console.log('⚠️ No active subscriptions found in Stripe - checking database niches');
-        // FALLBACK: Use database niches if Stripe sync fails
+        console.log('⚠️ No active subscriptions found in Stripe - using database niches');
+        // SAFETY: Use database niches if Stripe sync fails or returns empty
         finalNiches = user.niches || [user.primary_niche || 'creator'];
         
-        // CRITICAL: If database niches exist but Stripe sync failed, log this as a potential issue
         if (finalNiches.length > 0) {
-          console.warn('⚠️ Using database niches as fallback - Stripe sync may have failed');
-          console.warn('⚠️ Database niches:', finalNiches);
-          console.warn('⚠️ This could indicate a webhook processing issue');
+          console.log('✅ Using database niches as fallback:', finalNiches);
         } else {
           console.error('❌ CRITICAL: No niches found in Stripe OR database');
           console.error('❌ User has no access to any business types');
@@ -228,10 +240,10 @@ export async function GET(request: NextRequest) {
       console.log('⚠️ No Stripe customer ID found - using database niches');
       finalNiches = user.niches || [user.primary_niche || 'creator'];
       
-      // CRITICAL: If no Stripe customer ID but user has niches, this could indicate a webhook issue
       if (finalNiches.length > 0) {
-        console.warn('⚠️ User has niches but no Stripe customer ID - potential webhook issue');
-        console.warn('⚠️ Database niches:', finalNiches);
+        console.log('✅ Using database niches:', finalNiches);
+      } else {
+        console.warn('⚠️ User has no niches in database - this could indicate an onboarding issue');
       }
     }
 
