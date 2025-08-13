@@ -12,14 +12,25 @@ import { useUser } from '@clerk/nextjs';
 // Stripe components removed - will be replaced with new provider
 import { 
   CreditCard, 
-  Loader2, 
-  AlertTriangle, 
-  Info, 
+  Calendar, 
+  DollarSign, 
   CheckCircle, 
-  Crown,
+  XCircle, 
+  AlertTriangle, 
+  Info,
+  Layers,
+  Settings,
+  ExternalLink,
+  Loader2,
+  ChevronRight,
   Star,
-  Package,
-  Layers
+  Zap,
+  Users,
+  BarChart3,
+  FileText,
+  Shield,
+  Crown,
+  Package
 } from 'lucide-react';
 
 export const SubscriptionManagement = () => {
@@ -200,12 +211,27 @@ export const SubscriptionManagement = () => {
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Multiple Subscription Notice */}
+                  {subscriptionDetails.niches.length > 1 && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <p className="font-medium text-blue-900 mb-1">Multiple Subscriptions</p>
+                          <p className="text-blue-700">
+                            You have {subscriptionDetails.niches.length} active subscriptions. 
+                            When you access the billing portal, you'll be able to manage each subscription individually.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-6 text-slate-500">
-                  <Layers className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                  <Layers className="w-8 h-8 mx-auto mb-2 text-slate-400" />
                   <p>No active niches found</p>
-                  <p className="text-sm">Contact support if you believe this is an error</p>
                 </div>
               )}
             </CardContent>

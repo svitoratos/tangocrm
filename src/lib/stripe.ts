@@ -380,12 +380,26 @@ export async function createCustomerPortalSession(customerId: string, returnUrl:
   try {
     console.log('🔗 Creating customer portal session for customer:', customerId);
     
+    // Get all subscriptions for this customer to ensure they're all accessible
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+      limit: 100
+    });
+    
+    console.log('🔍 Found subscriptions for customer:', {
+      customerId,
+      subscriptionCount: subscriptions.data.length,
+      subscriptionIds: subscriptions.data.map(sub => sub.id)
+    });
+    
+    // Create portal session - Stripe automatically shows all subscriptions for the customer
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: returnUrl,
     });
     
-    console.log('✅ Customer portal session created:', session.url);
+    console.log('✅ Customer portal session created with multiple subscription support:', session.url);
     return session.url;
     
   } catch (error) {
