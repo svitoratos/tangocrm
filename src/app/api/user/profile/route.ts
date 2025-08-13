@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { userOperations } from '@/lib/database';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,33 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Test database connection first
+    try {
+      console.log('🔧 Testing database connection...');
+      const { data: testData, error: testError } = await supabase
+        .from('users')
+        .select('id')
+        .limit(1);
+      
+      if (testError) {
+        console.error('❌ Database connection test failed:', testError);
+        return NextResponse.json({ 
+          error: 'Database connection failed',
+          details: testError.message
+        }, { status: 500 });
+      } else {
+        console.log('✅ Database connection test successful');
+      }
+    } catch (connectionError) {
+      console.error('❌ Database connection error:', connectionError);
+      return NextResponse.json({ 
+        error: 'Database connection failed',
+        details: connectionError instanceof Error ? connectionError.message : 'Unknown connection error'
+      }, { status: 500 });
+    }
+
     // Get user profile from database
+    console.log('🔧 Fetching user profile from database...');
     const user = await userOperations.getProfile(userId);
     
     console.log('🔧 User profile from database:', {
@@ -39,6 +66,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(user);
   } catch (error) {
     console.error('❌ Error fetching user profile:', error);
+    if (error instanceof Error) {
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
     return NextResponse.json(
       { error: 'Failed to fetch user profile' },
       { status: 500 }

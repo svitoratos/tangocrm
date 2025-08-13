@@ -79,6 +79,46 @@ function SettingsPage() {
     }
   }, [profileTimezone, userTimezone, updateTimezone]);
 
+  // Debug logging for API failures
+  useEffect(() => {
+    if (profileError) {
+      console.error('❌ Profile API error:', profileError);
+    }
+    if (notificationsError) {
+      console.error('❌ Notifications API error:', notificationsError);
+    }
+  }, [profileError, notificationsError]);
+
+  // Test API endpoints to identify which one is failing
+  useEffect(() => {
+    const testAPIs = async () => {
+      console.log('🔧 Testing API endpoints...');
+      
+      try {
+        // Test health endpoint
+        const healthResponse = await fetch('/api/health');
+        console.log('🔧 Health API status:', healthResponse.status);
+        
+        // Test profile endpoint
+        const profileResponse = await fetch('/api/user/profile');
+        console.log('🔧 Profile API status:', profileResponse.status);
+        
+        // Test notifications endpoint
+        const notificationsResponse = await fetch('/api/user/notifications');
+        console.log('🔧 Notifications API status:', notificationsResponse.status);
+        
+        // Test timezone endpoint
+        const timezoneResponse = await fetch('/api/user/timezone');
+        console.log('🔧 Timezone API status:', timezoneResponse.status);
+        
+      } catch (error) {
+        console.error('❌ API test failed:', error);
+      }
+    };
+    
+    testAPIs();
+  }, []);
+
   const handleNotificationChange = async (key: string, value: boolean) => {
     try {
       setIsSavingNotifications(true);
