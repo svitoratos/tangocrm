@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { stripe, getPriceId } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
@@ -38,14 +38,40 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user email to store in metadata for webhook consolidation
+    // Try database first, then fall back to Clerk for onboarding users
+    let userEmail: string | null = null;
+    
     const { data: userProfile } = await supabase
       .from('users')
       .select('email')
       .eq('id', userId)
       .single();
 
-    if (!userProfile?.email) {
-      return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+    if (userProfile?.email) {
+      userEmail = userProfile.email;
+      console.log('✅ Found user email in database:', userEmail);
+    } else {
+      console.log('⚠️ User not found in database, fetching from Clerk...');
+      
+      try {
+        const clerkUser = await clerkClient.users.getUser(userId);
+        userEmail = clerkUser.emailAddresses?.[0]?.emailAddress || null;
+        
+        if (userEmail) {
+          console.log('✅ Found user email in Clerk:', userEmail);
+        } else {
+          console.error('❌ No email found in Clerk user data');
+        }
+      } catch (clerkError) {
+        console.error('❌ Error fetching user from Clerk:', clerkError);
+      }
+    }
+
+    if (!userEmail) {
+      return NextResponse.json({ 
+        error: 'User email not found in database or Clerk', 
+        details: 'Unable to retrieve email for customer consolidation'
+      }, { status: 400 });
     }
 
     // Get the app URL with fallback
@@ -74,7 +100,7 @@ export async function POST(request: NextRequest) {
         billing_cycle: billingCycle,
         is_niche_upgrade: isNicheUpgrade.toString(),
         user_id: userId,
-        user_email: userProfile.email,
+        user_email: userEmail,
         source: 'fallback_payment_link',
         requires_consolidation: 'true',
         created_at: new Date().toISOString()
