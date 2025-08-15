@@ -264,15 +264,11 @@ export async function GET(request: NextRequest) {
     };
 
     console.log('✅ Payment status response:', response);
-    // Add cache headers to reduce server load from frequent polling
-    const headers = new Headers();
-    headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
-    headers.set('Content-Type', 'application/json');
+    // Create response with cache headers to reduce server load
+    const jsonResponse = NextResponse.json(response);
+    jsonResponse.headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
     
-    return new NextResponse(JSON.stringify(response), {
-      status: 200,
-      headers
-    });
+    return jsonResponse;
   } catch (error) {
     console.error('❌ Payment status error:', error)
     if (error instanceof Error) {
