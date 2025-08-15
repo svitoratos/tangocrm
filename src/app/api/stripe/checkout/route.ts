@@ -41,10 +41,26 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('✅ ensureSingleCustomer returned customer ID:', customerId);
+    
+    // Verify the customer exists in Stripe before using it
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (customer.deleted) {
+        throw new Error('Customer was deleted');
+      }
+      console.log('✅ Verified customer exists:', customerId);
+    } catch (error) {
+      console.error('❌ Customer verification failed:', error);
+      return NextResponse.json({ error: 'Invalid customer ID' }, { status: 500 });
+    }
 
-    // Create checkout session ALWAYS using the existing/found customer ID
+    // Create checkout session with explicit customer configuration
     const sessionOptions: any = {
-      customer: customerId, // Always use the customer ID
+      customer: customerId, // Always use the consolidated customer ID
+      customer_update: {
+        name: 'auto',
+        address: 'auto'
+      },
       payment_method_types: ['card'],
       line_items: [
         {
@@ -59,8 +75,11 @@ export async function POST(request: NextRequest) {
         clerk_user_id: userId,
         niche: niche,
         billing_cycle: billingCycle,
-        existing_customer_id: customerId, // Track that we're using existing customer
+        consolidated_customer_id: customerId,
+        force_customer_reuse: 'true'
       },
+      // Prevent Stripe from creating a new customer
+      customer_creation: 'never'
     };
 
     console.log('✅ Using customer ID for checkout:', customerId);

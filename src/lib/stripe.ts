@@ -63,29 +63,84 @@ export function getPriceId(niche: string, billingCycle: 'monthly' | 'yearly' = '
   return priceId;
 }
 
-// Remove the complex consolidation functions and keep only the simple ones
-export async function findExistingCustomerByEmail(email: string): Promise<string | null> {
+// Improved customer consolidation functions
+export async function findAllCustomersByEmail(email: string): Promise<string[]> {
   try {
-    console.log('🔍 Searching for existing customer by email:', email);
+    console.log('🔍 Searching for ALL customers by email:', email);
     
     const customers = await stripe.customers.list({
       email: email,
-      limit: 1
+      limit: 100 // Get all customers, not just the first one
     });
     
-    if (customers.data.length > 0) {
-      const customer = customers.data[0];
-      console.log('✅ Found existing customer:', customer.id);
-      return customer.id;
-    }
+    const customerIds = customers.data.map(customer => customer.id);
+    console.log('✅ Found customers:', customerIds);
     
-    console.log('🔍 No existing customer found for email:', email);
-    return null;
-    
+    return customerIds;
   } catch (error) {
-    console.error('❌ Error searching for existing customer:', error);
-    return null;
+    console.error('❌ Error searching for customers:', error);
+    return [];
   }
+}
+
+export async function consolidateCustomers(customerIds: string[], email: string, userId: string): Promise<string> {
+  if (customerIds.length === 0) {
+    console.log('🔧 No existing customers found, creating new one');
+    const newCustomer = await stripe.customers.create({
+      email: email,
+      metadata: {
+        clerk_user_id: userId,
+        created_at: new Date().toISOString(),
+        source: 'consolidation_flow'
+      }
+    });
+    return newCustomer.id;
+  }
+  
+  if (customerIds.length === 1) {
+    console.log('✅ Single customer found, using:', customerIds[0]);
+    return customerIds[0];
+  }
+  
+  // Multiple customers found - consolidate them
+  console.log('🔄 Multiple customers found, consolidating:', customerIds);
+  
+  const primaryCustomerId = customerIds[0];
+  const secondaryCustomerIds = customerIds.slice(1);
+  
+  // Move all subscriptions to the primary customer
+  for (const secondaryCustomerId of secondaryCustomerIds) {
+    try {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: secondaryCustomerId,
+        status: 'all'
+      });
+      
+      for (const subscription of subscriptions.data) {
+        if (subscription.status === 'active') {
+          await stripe.subscriptions.update(subscription.id, {
+            customer: primaryCustomerId
+          });
+          console.log('✅ Moved subscription to primary customer:', subscription.id);
+        }
+      }
+      
+      // Delete the secondary customer
+      await stripe.customers.del(secondaryCustomerId);
+      console.log('✅ Deleted secondary customer:', secondaryCustomerId);
+      
+    } catch (error) {
+      console.error('❌ Error consolidating customer:', secondaryCustomerId, error);
+    }
+  }
+  
+  return primaryCustomerId;
+}
+
+// Legacy function for backward compatibility
+export async function findExistingCustomerByEmail(email: string): Promise<string | null> {
+  const customers = await findAllCustomersByEmail(email);
+  return customers.length > 0 ? customers[0] : null;
 }
 
 export async function ensureSingleCustomer(email: string, userId: string): Promise<string | null> {
@@ -99,63 +154,35 @@ export async function ensureSingleCustomer(email: string, userId: string): Promi
       .eq('id', userId)
       .single();
     
+    // Find ALL customers by email
+    const allCustomerIds = await findAllCustomersByEmail(email);
+    
+    // If user has a customer ID in database, make sure it's included
     if (existingUser?.stripe_customer_id) {
-      console.log('✅ Found existing customer ID in database:', existingUser.stripe_customer_id);
-      return existingUser.stripe_customer_id;
+      if (!allCustomerIds.includes(existingUser.stripe_customer_id)) {
+        allCustomerIds.unshift(existingUser.stripe_customer_id);
+      }
     }
     
-    // If no customer ID in database, look for existing customer by email
-    const existingCustomerId = await findExistingCustomerByEmail(email);
+    // Consolidate all customers into one
+    const finalCustomerId = await consolidateCustomers(allCustomerIds, email, userId);
     
-    if (existingCustomerId) {
-      console.log('✅ Found existing customer by email:', existingCustomerId);
-      
-      // Update our database with this customer ID
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ 
-          stripe_customer_id: existingCustomerId,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
-      
-      if (updateError) {
-        console.error('❌ Error updating user with customer ID:', updateError);
-      } else {
-        console.log('✅ Successfully updated user with existing customer ID');
-      }
-      
-      return existingCustomerId;
-    }
-    
-    // No existing customer found, create a new one
-    console.log('🔧 Creating new customer for:', email);
-    
-    const newCustomer = await stripe.customers.create({
-      email: email,
-      metadata: {
-        clerk_user_id: userId,
-        created_at: new Date().toISOString(),
-        source: 'checkout_flow'
-      }
-    });
-    
-    // Update our database with the new customer ID
+    // Update our database with the final customer ID
     const { error: updateError } = await supabase
       .from('users')
       .update({ 
-        stripe_customer_id: newCustomer.id,
+        stripe_customer_id: finalCustomerId,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);
     
     if (updateError) {
-      console.error('❌ Error updating user with new customer ID:', updateError);
+      console.error('❌ Error updating user with customer ID:', updateError);
     } else {
-      console.log('✅ Successfully updated user with new customer ID');
+      console.log('✅ Successfully updated user with consolidated customer ID');
     }
     
-    return newCustomer.id;
+    return finalCustomerId;
     
   } catch (error) {
     console.error('❌ Error ensuring single customer:', error);
