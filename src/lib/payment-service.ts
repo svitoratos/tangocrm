@@ -5,6 +5,13 @@ export interface PaymentLinkConfig {
   userId?: string;
 }
 
+export interface MultiNichePaymentConfig {
+  niches: string[];
+  billingCycle: 'monthly' | 'yearly';
+  isNicheUpgrade?: boolean;
+  userId?: string;
+}
+
 export interface PaymentLinkResult {
   success: boolean;
   url?: string;
@@ -118,6 +125,75 @@ export class PaymentService {
       }
     } catch (error) {
       console.error('❌ PaymentService: Error creating niche upgrade session:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Creates a checkout session for multiple niches at once
+   * This enables users to subscribe to multiple niches during onboarding
+   */
+  static async createMultiNicheCheckoutSession(config: MultiNichePaymentConfig): Promise<PaymentLinkResult> {
+    try {
+      console.log('🔧 PaymentService: Creating multi-niche checkout session for:', config);
+
+      if (!config.userId) {
+        return {
+          success: false,
+          error: 'User ID is required for multi-niche checkout session creation'
+        };
+      }
+
+      if (!config.niches || config.niches.length === 0) {
+        return {
+          success: false,
+          error: 'At least one niche is required'
+        };
+      }
+
+      if (config.niches.length > 4) {
+        return {
+          success: false,
+          error: 'Maximum 4 niches allowed'
+        };
+      }
+
+      // Use our multi-niche API endpoint
+      const response = await fetch('/api/stripe/checkout-multi-niche', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          niches: config.niches,
+          billingCycle: config.billingCycle,
+          isNicheUpgrade: config.isNicheUpgrade || false,
+          successUrl: `${window.location.origin}/payment-success`,
+          cancelUrl: `${window.location.origin}/onboarding`
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.url) {
+        console.log('✅ PaymentService: Multi-niche checkout session created successfully');
+        return {
+          success: true,
+          url: data.url,
+          sessionId: data.sessionId
+        };
+      } else {
+        console.error('❌ PaymentService: Failed to create multi-niche checkout session:', data.error);
+        return {
+          success: false,
+          error: data.error || 'Failed to create multi-niche checkout session'
+        };
+      }
+    } catch (error) {
+      console.error('❌ PaymentService: Error creating multi-niche checkout session:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'

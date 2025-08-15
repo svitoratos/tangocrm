@@ -62,6 +62,12 @@ export async function POST(request: NextRequest) {
         const requiresConsolidation = session.metadata?.requires_consolidation === 'true';
         const userEmailFromMetadata = session.metadata?.user_email;
         
+        // Check for multi-niche checkout
+        const isMultiNiche = session.metadata?.is_multi_niche === 'true';
+        const nichesFromMetadata = session.metadata?.niches ? JSON.parse(session.metadata.niches) : null;
+        const primaryNiche = session.metadata?.primary_niche;
+        const nicheCount = parseInt(session.metadata?.niche_count || '1');
+        
         console.log('🔍 Session data:', {
           sessionId: session.id,
           sessionEmail: customerEmail,
@@ -70,7 +76,11 @@ export async function POST(request: NextRequest) {
           customerId: session.customer,
           subscriptionId: session.subscription,
           amountTotal: session.amount_total,
-          paymentStatus: session.payment_status
+          paymentStatus: session.payment_status,
+          isMultiNiche,
+          nichesFromMetadata,
+          primaryNiche,
+          nicheCount
         });
         
         // CRITICAL: Check if this is a discounted or free payment
@@ -264,13 +274,31 @@ export async function POST(request: NextRequest) {
           
           // CRITICAL FIX: Preserve existing niches when creating new subscription
           const existingNiches = existingUser.niches || [];
-          const newNiche = niche || 'creator';
-          const updatedNiches = existingNiches.includes(newNiche) ? existingNiches : [...existingNiches, newNiche];
+          
+          // Handle multi-niche or single niche subscription
+          let newNiches: string[] = [];
+          let primaryNicheToUse: string = '';
+          
+          if (isMultiNiche && nichesFromMetadata && Array.isArray(nichesFromMetadata)) {
+            console.log('🔧 Processing multi-niche subscription:', nichesFromMetadata);
+            newNiches = nichesFromMetadata;
+            primaryNicheToUse = primaryNiche || nichesFromMetadata[0] || 'creator';
+          } else {
+            console.log('🔧 Processing single-niche subscription:', niche);
+            const singleNiche = niche || 'creator';
+            newNiches = [singleNiche];
+            primaryNicheToUse = singleNiche;
+          }
+          
+          // Merge existing niches with new niches, removing duplicates
+          const updatedNiches = [...new Set([...existingNiches, ...newNiches])];
           
           console.log('🔧 Preserving existing niches:', {
             existingNiches,
-            newNiche,
-            updatedNiches
+            newNiches,
+            primaryNicheToUse,
+            updatedNiches,
+            isMultiNiche
           });
           
           const { data: user, error: updateError } = await supabase
@@ -281,7 +309,7 @@ export async function POST(request: NextRequest) {
               stripe_subscription_id: session.subscription,
               subscription_status: 'active',
               subscription_tier: 'core',
-              primary_niche: newNiche,
+              primary_niche: primaryNicheToUse,
               niches: updatedNiches, // Use updated niches that preserve existing ones
               updated_at: new Date().toISOString()
             })
@@ -314,7 +342,7 @@ export async function POST(request: NextRequest) {
             // FALLBACK: Force add the niche if it's missing
             try {
               console.log('🔄 FALLBACK: Forcing niche addition...');
-              const fallbackNiches = [newNiche || 'creator'];
+              const fallbackNiches = [primaryNicheToUse || 'creator'];
               
               const { error: fallbackError } = await supabase
                 .from('users')

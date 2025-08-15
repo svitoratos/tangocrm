@@ -25,7 +25,7 @@ import {
   Check
 } from "lucide-react";
 import { useUser } from '@clerk/nextjs';
-import PaymentService from '@/lib/payment-service';
+import PaymentService, { MultiNichePaymentConfig } from '@/lib/payment-service';
 
 
 interface OnboardingProps {
@@ -205,8 +205,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       if (prev.includes(roleId)) {
         return prev.filter(id => id !== roleId);
       } else {
-        // Allow up to 2 additional niches (excluding existing niche)
-        if (prev.length < 2) {
+        // Allow up to 4 niches total
+        if (prev.length < 4) {
           return [...prev, roleId];
         }
         return prev;
@@ -255,15 +255,36 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
 
       const primaryRole = selectedRoles[0] || 'creator';
       
-      console.log('🔧 Creating checkout session for onboarding:', { primaryRole, billingCycle, userId: user.id });
-
-      // Use our centralized PaymentService instead of hardcoded links
-      const result = await PaymentService.createCheckoutSessionWithFallbacks({
-        niche: primaryRole,
-        billingCycle,
-        isNicheUpgrade: false,
-        userId: user.id
+      console.log('🔧 Creating checkout session for onboarding:', { 
+        selectedRoles, 
+        primaryRole, 
+        billingCycle, 
+        userId: user.id, 
+        isMultiNiche: selectedRoles.length > 1 
       });
+
+      let result;
+      
+      if (selectedRoles.length > 1) {
+        // Use multi-niche checkout for multiple niches
+        console.log('🔧 Using multi-niche checkout for:', selectedRoles);
+        const multiNicheConfig: MultiNichePaymentConfig = {
+          niches: selectedRoles,
+          billingCycle,
+          isNicheUpgrade: false,
+          userId: user.id
+        };
+        result = await PaymentService.createMultiNicheCheckoutSession(multiNicheConfig);
+      } else {
+        // Use single niche checkout for one niche
+        console.log('🔧 Using single-niche checkout for:', primaryRole);
+        result = await PaymentService.createCheckoutSessionWithFallbacks({
+          niche: primaryRole,
+          billingCycle,
+          isNicheUpgrade: false,
+          userId: user.id
+        });
+      }
       
       if (result.success && result.url) {
         console.log('✅ Redirecting to checkout session for onboarding:', result.url);
@@ -342,7 +363,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
   const canContinue = () => {
     switch (currentStep) {
       case 1:
-        return selectedRoles.length > 0 && selectedRoles.length <= 2;
+        return selectedRoles.length > 0 && selectedRoles.length <= 4;
       case 2:
         return selectedGoals.length > 0;
       case 3:
@@ -432,8 +453,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     </h1>
                     <p className="text-slate-600 text-lg">
                       {existingNiche 
-                        ? `Add 1 additional niche to your existing ${roleOptions.find(r => r.id === existingNiche)?.label} plan`
-                        : 'Choose 1 niche to start — you can add more after signing up'
+                        ? `Add up to 3 additional niches to your existing ${roleOptions.find(r => r.id === existingNiche)?.label} plan`
+                        : 'Choose 1-4 niches to start your Tango journey'
                       }
                     </p>
                   </div>
@@ -444,8 +465,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     </p>
                     <p className="text-sm text-emerald-700 mb-1 text-center">
                       {existingNiche 
-                        ? `Add 1 additional niche to your existing plan.`
-                        : 'Choose 1 niche to start — you can upgrade and add more after signing up.'
+                        ? `Add up to 3 additional niches to your existing plan.`
+                        : 'Choose 1-4 niches to start — save by selecting multiple niches upfront.'
                       }
                     </p>
                     <p className="text-sm text-emerald-700 text-center">
@@ -463,8 +484,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                   <div className="text-center mb-4">
                     <p className="text-sm text-slate-600">
                       {selectedRoles.length === 0 
-                        ? 'No niche selected' 
-                        : '1 niche selected'
+                        ? 'No niches selected' 
+                        : `${selectedRoles.length} niche${selectedRoles.length > 1 ? 's' : ''} selected`
                       }
                     </p>
                     {existingNiche && (
@@ -479,7 +500,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                       const IconComponent = role.icon;
                       const isSelected = selectedRoles.includes(role.id);
                       const isExistingNiche = existingNiche === role.id;
-                      const isDisabled = isExistingNiche || (!isSelected && selectedRoles.length >= 1);
+                      const isDisabled = isExistingNiche || (!isSelected && selectedRoles.length >= 4);
                       
                       return (
                         <motion.div
