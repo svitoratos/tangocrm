@@ -108,7 +108,9 @@ export async function consolidateCustomers(customerIds: string[], email: string,
   const primaryCustomerId = customerIds[0];
   const secondaryCustomerIds = customerIds.slice(1);
   
-  // Move all subscriptions to the primary customer
+  // Note: Stripe doesn't allow moving active subscriptions between customers
+  // Instead, we'll use the primary customer for all future subscriptions
+  // and mark secondary customers for tracking purposes
   for (const secondaryCustomerId of secondaryCustomerIds) {
     try {
       const subscriptions = await stripe.subscriptions.list({
@@ -116,21 +118,28 @@ export async function consolidateCustomers(customerIds: string[], email: string,
         status: 'all'
       });
       
-      for (const subscription of subscriptions.data) {
-        if (subscription.status === 'active') {
-          await stripe.subscriptions.update(subscription.id, {
-            customer: primaryCustomerId
-          });
-          console.log('✅ Moved subscription to primary customer:', subscription.id);
-        }
+      console.log(`📋 Customer ${secondaryCustomerId} has ${subscriptions.data.length} subscriptions`);
+      
+      // Only delete customers with no active subscriptions
+      const activeSubscriptions = subscriptions.data.filter(sub => sub.status === 'active');
+      if (activeSubscriptions.length === 0) {
+        await stripe.customers.del(secondaryCustomerId);
+        console.log('✅ Deleted empty secondary customer:', secondaryCustomerId);
+      } else {
+        console.log(`⚠️ Keeping customer ${secondaryCustomerId} with ${activeSubscriptions.length} active subscriptions`);
+        
+        // Update metadata to mark as secondary customer
+        await stripe.customers.update(secondaryCustomerId, {
+          metadata: {
+            consolidation_status: 'secondary_customer',
+            primary_customer_id: primaryCustomerId,
+            marked_for_consolidation: new Date().toISOString()
+          }
+        });
       }
       
-      // Delete the secondary customer
-      await stripe.customers.del(secondaryCustomerId);
-      console.log('✅ Deleted secondary customer:', secondaryCustomerId);
-      
     } catch (error) {
-      console.error('❌ Error consolidating customer:', secondaryCustomerId, error);
+      console.error('❌ Error processing customer:', secondaryCustomerId, error);
     }
   }
   
