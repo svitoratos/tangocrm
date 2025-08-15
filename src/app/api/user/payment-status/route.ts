@@ -6,6 +6,7 @@ import { stripe } from '@/lib/stripe'
 
 // Simple in-memory rate limiting (for production, use Redis or similar)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const cacheMap = new Map<string, { data: any; expiresAt: number }>();
 
 function checkRateLimit(userId: string, limit: number = 100, windowMs: number = 60000): boolean {
   const now = Date.now();
@@ -263,7 +264,15 @@ export async function GET(request: NextRequest) {
     };
 
     console.log('✅ Payment status response:', response);
-    return NextResponse.json(response)
+    // Add cache headers to reduce server load from frequent polling
+    const headers = new Headers();
+    headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+    headers.set('Content-Type', 'application/json');
+    
+    return new NextResponse(JSON.stringify(response), {
+      status: 200,
+      headers
+    });
   } catch (error) {
     console.error('❌ Payment status error:', error)
     if (error instanceof Error) {
