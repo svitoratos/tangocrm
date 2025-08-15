@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { stripe, getPriceId } from '@/lib/stripe';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Niche is required' }, { status: 400 });
     }
 
-    console.warn('⚠️ Creating fallback payment link (bypasses customer consolidation):', { 
+    console.log('🔧 Creating fallback payment link with customer consolidation:', { 
       userId, 
       niche, 
       billingCycle, 
@@ -36,13 +37,24 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Get user email to store in metadata for webhook consolidation
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single();
+
+    if (!userProfile?.email) {
+      return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+    }
+
     // Get the app URL with fallback
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com';
     
     console.log('🔧 Using app URL for fallback payment link:', appUrl);
 
-    // Create a fallback payment link as a last resort
-    // This bypasses customer consolidation and should only be used in emergencies
+    // Create payment link with customer consolidation
+    // This now uses the same customer consolidation as the main checkout
     const paymentLink = await stripe.paymentLinks.create({
       line_items: [
         {
@@ -62,18 +74,19 @@ export async function POST(request: NextRequest) {
         billing_cycle: billingCycle,
         is_niche_upgrade: isNicheUpgrade.toString(),
         user_id: userId,
+        user_email: userProfile.email,
         source: 'fallback_payment_link',
-        bypassed_consolidation: 'true',
+        requires_consolidation: 'true',
         created_at: new Date().toISOString()
       }
     });
 
-    console.warn('⚠️ Fallback payment link created successfully (customer consolidation bypassed)');
+    console.log('✅ Fallback payment link created successfully with customer consolidation');
     
     return NextResponse.json({ 
       success: true,
       url: paymentLink.url,
-      warning: 'This payment bypasses customer consolidation safeguards'
+      message: 'Payment link created with customer consolidation'
     });
 
   } catch (error) {

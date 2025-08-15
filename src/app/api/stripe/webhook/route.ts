@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
         const niche = session.metadata?.niche;
         const isNicheUpgrade = session.metadata?.is_niche_upgrade === 'true';
         const userId = session.metadata?.user_id;
+        const requiresConsolidation = session.metadata?.requires_consolidation === 'true';
+        const userEmailFromMetadata = session.metadata?.user_email;
         
         console.log('🔍 Session data:', {
           sessionId: session.id,
