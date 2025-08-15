@@ -54,7 +54,8 @@ export async function POST(request: NextRequest) {
       console.log('⚠️ User not found in database, fetching from Clerk...');
       
       try {
-        const clerkUser = await clerkClient().users.getUser(userId);
+        const client = await clerkClient();
+        const clerkUser = await client.users.getUser(userId);
         userEmail = clerkUser.emailAddresses?.[0]?.emailAddress || null;
         
         if (userEmail) {
