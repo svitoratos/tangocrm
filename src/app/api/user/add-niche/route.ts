@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { userOperations } from '@/lib/database';
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-    const user = await currentUser();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get user info from Clerk using clerkClient (correct approach for API routes)
+    let userEmail: string;
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      userEmail = user.emailAddresses?.[0]?.emailAddress || '';
+    } catch (clerkError) {
+      console.error('❌ Error fetching user from Clerk:', clerkError);
+      userEmail = 'unknown@email.com'; // Fallback for logging
     }
 
     const body = await request.json();
@@ -21,7 +31,7 @@ export async function POST(request: NextRequest) {
     console.log('🔧 Adding niche to user profile:', {
       userId,
       nicheToAdd,
-      userEmail: user?.emailAddresses?.[0]?.emailAddress
+      userEmail
     });
 
     // Get current user profile

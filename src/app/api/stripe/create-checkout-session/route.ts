@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { getPriceId, ensureSingleCustomer } from '@/lib/stripe';
 import { stripe } from '@/lib/stripe';
 import { userOperations } from '@/lib/database';
@@ -28,41 +28,46 @@ export async function POST(request: NextRequest) {
     if (!userProfile) {
       console.log('🔧 User profile not found, creating new profile for:', userId);
       
-      // Get user info from Clerk using currentUser
-      const { currentUser } = await import('@clerk/nextjs/server');
-      const user = await currentUser();
-      
-      if (!user) {
-        console.error('❌ Could not get Clerk user for:', userId);
-        return NextResponse.json({ error: 'Could not authenticate user' }, { status: 401 });
-      }
-      
-      // Get email from Clerk user
-      const userEmail = user.emailAddresses?.[0]?.emailAddress;
-      
-      if (userEmail) {
-        console.log('🔧 Creating user profile with email from Clerk:', userEmail);
+      // Get user info from Clerk using clerkClient (correct approach for API routes)
+      try {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
         
-        // Create user profile
-        userProfile = await userOperations.upsertProfile(userId, {
-          id: userId,
-          email: userEmail,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          onboarding_completed: false,
-          subscription_status: 'inactive',
-          subscription_tier: 'none',
-          primary_niche: niche,
-          niches: [niche]
-        });
-        
-        if (!userProfile) {
-          console.error('❌ Failed to create user profile');
-          return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
+        if (!user) {
+          console.error('❌ Could not get Clerk user for:', userId);
+          return NextResponse.json({ error: 'Could not authenticate user' }, { status: 401 });
         }
-      } else {
-        console.error('❌ No email found in Clerk user');
-        return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+        
+        // Get email from Clerk user
+        const userEmail = user.emailAddresses?.[0]?.emailAddress;
+        
+        if (userEmail) {
+          console.log('🔧 Creating user profile with email from Clerk:', userEmail);
+          
+          // Create user profile
+          userProfile = await userOperations.upsertProfile(userId, {
+            id: userId,
+            email: userEmail,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            onboarding_completed: false,
+            subscription_status: 'inactive',
+            subscription_tier: 'none',
+            primary_niche: niche,
+            niches: [niche]
+          });
+          
+          if (!userProfile) {
+            console.error('❌ Failed to create user profile');
+            return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
+          }
+        } else {
+          console.error('❌ No email found in Clerk user');
+          return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+        }
+      } catch (clerkError) {
+        console.error('❌ Error fetching user from Clerk:', clerkError);
+        return NextResponse.json({ error: 'Failed to retrieve user information' }, { status: 500 });
       }
     }
     

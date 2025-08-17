@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { supabase } from '@/lib/supabase';
 
 // Get supported timezones from Intl API
@@ -29,7 +29,7 @@ const isValidTimezone = (timezone: string): boolean => {
   return supportedTimezones.includes(timezone);
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
     
@@ -40,9 +40,17 @@ export async function GET() {
       );
     }
 
-    // Get user details from Clerk
-    const user = await currentUser();
-    
+    // Get user details from Clerk using clerkClient (correct approach for API routes)
+    let userEmail: string;
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      userEmail = user.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.tango`;
+    } catch (clerkError) {
+      console.error('❌ Error fetching user from Clerk:', clerkError);
+      userEmail = `${userId}@placeholder.tango`; // Fallback
+    }
+
     // First, try to find the user by Clerk ID
     let { data, error } = await supabase
       .from('users')
@@ -54,7 +62,7 @@ export async function GET() {
     if (error && error.code === 'PGRST116') {
       try {
         // Use a unique placeholder email if no email is available
-        const email = user?.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.tango`;
+        const email = userEmail;
         
         const { data: userData, error: createError } = await supabase
           .from('users')
@@ -152,8 +160,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user details from Clerk
-    const user = await currentUser();
+    // Get user details from Clerk using clerkClient (correct approach for API routes)
+    let userEmail: string;
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      userEmail = user.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.tango`;
+    } catch (clerkError) {
+      console.error('❌ Error fetching user from Clerk:', clerkError);
+      userEmail = `${userId}@placeholder.tango`; // Fallback
+    }
 
     // First, try to find the user by Clerk ID
     let { data: existingUser, error: fetchError } = await supabase
@@ -166,7 +182,7 @@ export async function POST(request: NextRequest) {
     if (fetchError && fetchError.code === 'PGRST116') {
       try {
         // Use a unique placeholder email if no email is available
-        const email = user?.emailAddresses?.[0]?.emailAddress || `${userId}@placeholder.tango`;
+        const email = userEmail;
         
         const { error: createError } = await supabase
           .from('users')

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
-import { userOperations } from '@/lib/database'
+import { NextRequest, NextResponse } from 'next/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { userOperations } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,9 +59,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await currentUser()
-    console.log('🔧 Current user:', user?.emailAddresses?.[0]?.emailAddress);
-    
+    // Get user info from Clerk using clerkClient (correct approach for API routes)
+    let userEmail: string;
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      userEmail = user.emailAddresses?.[0]?.emailAddress || '';
+      console.log('🔧 User email from Clerk:', userEmail);
+    } catch (clerkError) {
+      console.error('❌ Error fetching user from Clerk:', clerkError);
+      return NextResponse.json(
+        { error: 'Failed to retrieve user information' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.json()
     console.log('🔧 Request body:', body);
     
@@ -108,7 +120,7 @@ export async function POST(request: NextRequest) {
     
     try {
       const updatedUser = await userOperations.upsertProfile(userId, {
-        email: user?.emailAddresses[0]?.emailAddress || '',
+        email: userEmail,
         onboarding_completed: onboardingCompleted,
         primary_niche: primaryNiche,
         niches: updatedNiches,

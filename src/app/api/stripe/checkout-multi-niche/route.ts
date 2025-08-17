@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { stripe, getPriceId, ensureSingleCustomer } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 
@@ -28,22 +28,44 @@ export async function POST(request: NextRequest) {
     console.log('🔧 Creating multi-niche checkout session:', { niches, billingCycle, isNicheUpgrade, userId });
 
     // Get user email for customer deduplication
+    let userEmail: string;
+    
+    // First try to get email from our database
     const { data: userProfile } = await supabase
       .from('users')
       .select('email')
       .eq('id', userId)
       .single();
 
-    if (!userProfile?.email) {
-      return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+    if (userProfile?.email) {
+      userEmail = userProfile.email;
+      console.log('✅ Found user email in database:', userEmail);
+    } else {
+      // If not found in database, get it from Clerk (e.g., during onboarding)
+      console.log('⚠️ User email not found in database, fetching from Clerk...');
+      try {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        userEmail = user.emailAddresses?.[0]?.emailAddress;
+        
+        if (!userEmail) {
+          console.error('❌ No email found in Clerk for user:', userId);
+          return NextResponse.json({ error: 'User email not found' }, { status: 400 });
+        }
+        
+        console.log('✅ Found user email in Clerk:', userEmail);
+      } catch (error) {
+        console.error('❌ Failed to fetch user from Clerk:', error);
+        return NextResponse.json({ error: 'Failed to retrieve user information' }, { status: 500 });
+      }
     }
 
     // ALWAYS find or create a single customer ID for this user
-    console.log('🔍 Calling ensureSingleCustomer for multi-niche checkout:', { email: userProfile.email, userId });
-    const customerId = await ensureSingleCustomer(userProfile.email, userId);
+    console.log('🔍 Calling ensureSingleCustomer for multi-niche checkout:', { email: userEmail, userId });
+    const customerId = await ensureSingleCustomer(userEmail, userId);
     
     if (!customerId) {
-      console.error('❌ ensureSingleCustomer returned null for multi-niche checkout:', { email: userProfile.email, userId });
+      console.error('❌ ensureSingleCustomer returned null for multi-niche checkout:', { email: userEmail, userId });
       return NextResponse.json({ error: 'Failed to create or find customer ID' }, { status: 500 });
     }
     
