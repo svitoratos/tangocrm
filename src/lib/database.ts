@@ -43,6 +43,8 @@ export const userOperations = {
 
   async upsertProfile(userId: string, profile: Partial<User>): Promise<User | null> {
     console.log('🔧 upsertProfile called with:', { userId, profile });
+    console.log('🔧 Using supabaseAdmin client:', !!supabaseAdmin);
+    console.log('🔧 Service role key available:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
     
     try {
       // First, try to get the existing user by ID
