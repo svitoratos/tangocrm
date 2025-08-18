@@ -103,9 +103,10 @@ const NICHE_GOALS = {
   ],
 };
 
-// Niche-specific features for pricing section
+// Niche-specific features for pricing section - Updated for Tango Core (all niches included)
 const NICHE_FEATURES = {
   "creator": [
+    "Access to all 4 business types",
     "Unlimited clients & opportunities",
     "Content planning & scheduling",
     "Goal tracking & analytics",
@@ -113,13 +114,15 @@ const NICHE_FEATURES = {
     "Brand deal management"
   ],
   "coach": [
+    "Access to all 4 business types",
     "Unlimited clients & opportunities",
     "Programs/content planning & scheduling",
     "Goal tracking & analytics",
     "Calendar management",
-    "Journal & reflection tools"
+    "Client progress tracking"
   ],
   "podcaster": [
+    "Access to all 4 business types",
     "Unlimited guests/clients & opportunities",
     "Episode/content planning & scheduling",
     "Goal tracking & analytics",
@@ -127,6 +130,7 @@ const NICHE_FEATURES = {
     "Sponsorship tracking"
   ],
   "freelancer": [
+    "Access to all 4 business types",
     "Unlimited clients & opportunities",
     "Projects/content planning & scheduling",
     "Goal tracking & analytics",
@@ -135,27 +139,35 @@ const NICHE_FEATURES = {
   ],
 };
 
-// Niche-specific "Plus" features
+// Niche-specific "Plus" features - Updated for Tango Core
 const NICHE_PLUS_FEATURES = {
   "creator": [
     "Journal & reflection tools",
-    "Email support",
-    "Mobile responsive dashboard"
+    "Email support & priority assistance",
+    "Mobile responsive dashboard",
+    "Advanced analytics & reporting",
+    "14-day money-back guarantee"
   ],
   "coach": [
     "Journal & reflection tools",
-    "Email support",
-    "Mobile responsive dashboard"
+    "Email support & priority assistance",
+    "Mobile responsive dashboard",
+    "Advanced analytics & reporting",
+    "14-day money-back guarantee"
   ],
   "podcaster": [
     "Journal & reflection tools",
-    "Email support",
-    "Mobile responsive dashboard"
+    "Email support & priority assistance",
+    "Mobile responsive dashboard",
+    "Advanced analytics & reporting",
+    "14-day money-back guarantee"
   ],
   "freelancer": [
     "Journal & reflection tools",
-    "Email support",
-    "Mobile responsive dashboard"
+    "Email support & priority assistance",
+    "Mobile responsive dashboard",
+    "Advanced analytics & reporting",
+    "14-day money-back guarantee"
   ],
 };
 
@@ -873,11 +885,6 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
               )}
 
               <div className="flex space-x-3">
-                {currentStep === 2 && (
-                  <Button variant="outline" onClick={handleContinue}>
-                    Skip for now
-                  </Button>
-                )}
                 <Button
                   onClick={currentStep === 3 ? handleContinue : handleContinue}
                   disabled={!canContinue()}
