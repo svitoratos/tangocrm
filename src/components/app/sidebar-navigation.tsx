@@ -114,18 +114,21 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
 }
 
 const AdminNavigationItem: React.FC<{ isCollapsed?: boolean }> = ({ isCollapsed = false }) => {
-  const { isAdmin, isLoaded, user } = useAdmin();
+  const { user } = useUser();
   const router = useRouter();
+  
+  // Only show admin link for specific email
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress;
+  const isAdmin = userEmail === 'stevenvitoratos@gmail.com';
   
   console.log('AdminNavigationItem render:', { 
     isAdmin, 
-    isLoaded, 
-    userEmail: user?.emailAddresses?.[0]?.emailAddress,
+    userEmail,
     userId: user?.id
   });
   
-  // Only show admin link if user is loaded and has admin role
-  if (!isLoaded || !isAdmin) return null;
+  // Only show admin link if user has the specific email
+  if (!isAdmin) return null;
   
   const handleAdminClick = (e: React.MouseEvent) => {
     e.preventDefault();
