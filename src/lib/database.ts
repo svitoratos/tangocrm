@@ -180,6 +180,12 @@ export const userOperations = {
         
         // User doesn't exist at all, create new profile
         console.log('🔧 User doesn\'t exist, creating new profile...');
+        console.log('🔧 Profile data to insert:', {
+          id: userId,
+          ...profile,
+          updated_at: new Date().toISOString()
+        });
+        
         const { data, error } = await supabaseAdmin
           .from('users')
           .insert({
@@ -196,9 +202,30 @@ export const userOperations = {
             code: error.code,
             message: error.message,
             details: error.details,
-            hint: error.hint
+            hint: error.hint,
+            table: 'users',
+            userId: userId
           });
-          return null
+          
+          // Try with regular client as fallback
+          console.log('🔧 Trying with regular client as fallback...');
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('users')
+            .insert({
+              id: userId,
+              ...profile,
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single()
+          
+          if (fallbackError) {
+            console.error('❌ Fallback also failed:', fallbackError);
+            return null;
+          }
+          
+          console.log('✅ Fallback successful:', fallbackData);
+          return fallbackData;
         }
         
         console.log('✅ createProfile successful:', data);
