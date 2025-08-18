@@ -265,64 +265,47 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
         throw new Error('Please select at least one goal');
       }
 
-      const primaryRole = selectedRoles[0] || 'creator';
-      
-      console.log('🔧 Creating checkout session for onboarding:', { 
+      console.log('🔧 Starting Tango Core subscription with direct payment link:', { 
         selectedRoles, 
-        primaryRole, 
         billingCycle, 
-        userId: user.id, 
-        isMultiNiche: selectedRoles.length > 1 
+        userId: user.id 
       });
 
-      let result;
+      // Use direct Stripe payment links for Tango Core
+      console.log('🔧 Creating payment link for billing cycle:', billingCycle);
       
-      if (selectedRoles.length > 1) {
-        // Use multi-niche checkout for multiple niches
-        console.log('🔧 Using multi-niche checkout for:', selectedRoles);
-        const multiNicheConfig: MultiNichePaymentConfig = {
-          niches: selectedRoles,
-          billingCycle,
-          isNicheUpgrade: false,
-          userId: user.id
-        };
-        result = await PaymentService.createMultiNicheCheckoutSession(multiNicheConfig);
-      } else {
-        // Use single niche checkout for one niche
-        console.log('🔧 Using single-niche checkout for:', primaryRole);
-        result = await PaymentService.createCheckoutSessionWithFallbacks({
-          niche: primaryRole,
-          billingCycle,
-          isNicheUpgrade: false,
-          userId: user.id
-        });
+      const response = await fetch('/api/create-payment-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billingCycle
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success || !result.url) {
+        throw new Error(result.error || 'Failed to create payment link');
       }
       
-      if (result.success && result.url) {
-        console.log('✅ Redirecting to checkout session for onboarding:', result.url);
-        
-        // Check if this was a fallback payment link (bypasses consolidation)
-        if (result.error && result.error.includes('bypasses customer consolidation')) {
-          console.warn('⚠️ Using fallback payment link for onboarding - customer consolidation bypassed');
-          // You could show a warning to the user here if desired
-        }
-        
-        // Save onboarding data and Clerk user ID to sessionStorage for after payment
-        sessionStorage.setItem('pendingOnboarding', JSON.stringify({
-          selectedRoles,
-          selectedGoals,
-          selectedSetupTask,
-          billingCycle,
-          clerkUserId: user?.id, // Store Clerk user ID
-          timestamp: Date.now()
-        }));
-        
-        // Redirect to Stripe checkout
-        window.location.href = result.url;
-      } else {
-        console.error('❌ Failed to create checkout session for onboarding:', result.error);
-        throw new Error(`Failed to create checkout session: ${result.error}`);
-      }
+      const paymentUrl = result.url;
+      
+      console.log('✅ Redirecting to direct payment link:', paymentUrl);
+      
+      // Save onboarding data and Clerk user ID to sessionStorage for after payment
+      sessionStorage.setItem('pendingOnboarding', JSON.stringify({
+        selectedRoles,
+        selectedGoals,
+        selectedSetupTask,
+        billingCycle,
+        clerkUserId: user?.id, // Store Clerk user ID
+        timestamp: Date.now()
+      }));
+      
+      // Redirect to Stripe payment link
+      window.location.href = paymentUrl;
       
     } catch (err) {
       console.error('Payment error:', err);
