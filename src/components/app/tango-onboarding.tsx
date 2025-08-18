@@ -449,29 +449,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     <p className="text-slate-600 text-lg">
                       {existingNiche 
                         ? `You already have access to all niches with your Tango Core plan`
-                        : 'Choose your primary niche to get started — Tango Core includes all 4 business types'
+                        : 'You\'ll have full access to all 4 business types. Select any — or all — to tailor your workspace.'
                       }
-                    </p>
-                  </div>
-
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6 max-w-xl mx-auto">
-                    <p className="text-sm font-semibold text-emerald-800 mb-3 text-center">
-                      Start your Tango journey
-                    </p>
-                    <p className="text-sm text-emerald-700 mb-1 text-center">
-                      {existingNiche 
-                        ? `You already have access to all niches with Tango Core.`
-                        : 'Choose your primary niche — Tango Core includes all 4 business types.'
-                      }
-                    </p>
-                    <p className="text-sm text-emerald-700 text-center">
-                      $39.99/month for Tango Core — all niches included
-                    </p>
-                    <p className="text-xs text-slate-500 text-center mt-3">
-                      No setup fees · Cancel anytime · Billed immediately
-                    </p>
-                    <p className="text-xs text-emerald-600 text-center mt-1">
-                      ✅ 14-day satisfaction guarantee — full refund if you're not happy
                     </p>
                   </div>
 
