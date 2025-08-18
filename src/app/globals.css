@@ -216,21 +216,35 @@
 
   .main-content-container {
     overflow-y: auto;
+    padding-left: 1rem; /* Add left padding to prevent text cutoff */
   }
 
   .dashboard-content {
     overflow-y: auto;
+    padding-left: 1rem; /* Add left padding to prevent text cutoff */
   }
 
   /* Mobile-specific top spacing for dashboard welcome section */
   @media (max-width: 640px) {
     .dashboard-content {
       padding-top: 1rem;
+      padding-left: 0.5rem; /* Less padding on mobile */
     }
     
     .dashboard-welcome-section {
       margin-top: 0.5rem;
       padding-top: 0.5rem;
+    }
+  }
+
+  /* Desktop-specific padding for main content */
+  @media (min-width: 1024px) {
+    .main-content-container {
+      padding-left: 1.5rem; /* More padding on desktop */
+    }
+    
+    .dashboard-content {
+      padding-left: 1.5rem; /* More padding on desktop */
     }
   }
 
