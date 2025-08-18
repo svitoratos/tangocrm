@@ -453,8 +453,8 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     </h1>
                     <p className="text-slate-600 text-lg">
                       {existingNiche 
-                        ? `Add up to 3 additional niches to your existing ${roleOptions.find(r => r.id === existingNiche)?.label} plan`
-                        : 'Choose 1-4 niches to start your Tango journey'
+                        ? `You already have access to all niches with your Tango Core plan`
+                        : 'Choose your primary niche to get started — Tango Core includes all 4 business types'
                       }
                     </p>
                   </div>
@@ -465,12 +465,12 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                     </p>
                     <p className="text-sm text-emerald-700 mb-1 text-center">
                       {existingNiche 
-                        ? `Add up to 3 additional niches to your existing plan.`
-                        : 'Choose 1-4 niches to start — save by selecting multiple niches upfront.'
+                        ? `You already have access to all niches with Tango Core.`
+                        : 'Choose your primary niche — Tango Core includes all 4 business types.'
                       }
                     </p>
                     <p className="text-sm text-emerald-700 text-center">
-                      $39.99/month for your first niche $9.99/month for each additional niche
+                      $39.99/month for Tango Core — all niches included
                     </p>
                     <p className="text-xs text-slate-500 text-center mt-3">
                       No setup fees · Cancel anytime · Billed immediately
@@ -760,24 +760,24 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                           <div className="text-sm text-emerald-700">
                             {billingCycle === 'monthly' ? (
                               <>
-                                <p>$39.99/month for first niche</p>
-                                <p>+$9.99/month for each additional niche</p>
+                                <p>$39.99/month for Tango Core</p>
+                                <p className="text-xs text-emerald-600">All 4 business types included</p>
                                 <p className="font-semibold mt-1">
-                                  Total: ${(39.99 + (selectedRoles.length - 1) * 9.99).toFixed(2)}/month
+                                  Total: $39.99/month
                                 </p>
                               </>
                             ) : (
                               <>
-                                <p>${(39.99 * 12).toFixed(2)}/year for first niche</p>
-                                <p>+${(9.99 * 12).toFixed(2)}/year for each additional niche</p>
+                                <p>${(39.99 * 12).toFixed(2)}/year for Tango Core</p>
+                                <p className="text-xs text-emerald-600">All 4 business types included</p>
                                 <p className="line-through text-emerald-500 mt-1">
-                                  Total: ${((39.99 + (selectedRoles.length - 1) * 9.99) * 12).toFixed(2)}/year
+                                  Total: ${(39.99 * 12).toFixed(2)}/year
                                 </p>
                                 <p className="font-semibold text-lg">
-                                  Total: ${(((39.99 + (selectedRoles.length - 1) * 9.99) * 12) * 0.8).toFixed(2)}/year
+                                  Total: ${((39.99 * 12) * 0.8).toFixed(2)}/year
                                 </p>
                                 <p className="text-xs text-emerald-600">
-                                  Save ${(((39.99 + (selectedRoles.length - 1) * 9.99) * 12) * 0.2).toFixed(2)} annually
+                                  Save ${((39.99 * 12) * 0.2).toFixed(2)} annually
                                 </p>
                               </>
                             )}

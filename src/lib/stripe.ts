@@ -6,43 +6,43 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-07-30.basil',
 });
 
-// Price IDs - Updated with actual price IDs from Stripe Dashboard
+// Price IDs - Updated with single Tango Core price ID for all niches
 export const STRIPE_PRICES = {
   creator: {
     monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
     yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   coach: {
-    monthly: 'price_1Rt8u9IvVfTNGbwu0UI52sRR',
-    yearly: 'price_1Rt8u9IvVfTNGbwuH88MMC8I',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   podcaster: {
-    monthly: 'price_1Rt8uAIvVfTNGbwuiwPUarlw',
-    yearly: 'price_1Rt8uAIvVfTNGbwu9nXGrotw',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   freelancer: {
-    monthly: 'price_1Rt8uAIvVfTNGbwupN9yBl9U',
-    yearly: 'price_1Rt8uBIvVfTNGbwuWxLrbFPu',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
 };
 
-// Price IDs for niche upgrades (different from initial signups)
+// Price IDs for niche upgrades (now using same Tango Core pricing)
 export const STRIPE_NICHE_UPGRADE_PRICES = {
   creator: {
-    monthly: 'price_1RqIA2IvVfTNGbwujqF5AXfU',
-    yearly: 'price_1RqIAoIvVfTNGbwuXswPztfk',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   coach: {
-    monthly: 'price_1RjmO3IvVfTNGbwuU9KTk44N',
-    yearly: 'price_1RkCcMIvVfTNGbwuyFeyMlbZ',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   podcaster: {
-    monthly: 'price_1RqII9IvVfTNGbwuhApqysHX',
-    yearly: 'price_1RqIIXIvVfTNGbwu8EMGv4OG',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
   freelancer: {
-    monthly: 'price_1RqIK7IvVfTNGbwuAiFKM7is',
-    yearly: 'price_1RqIKNIvVfTNGbwuHONiyPQ7',
+    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
+    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
   },
 };
 
