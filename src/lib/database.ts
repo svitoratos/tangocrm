@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, supabaseAdmin } from '@/lib/supabase'
 import { Database } from '@/lib/supabase'
 
 export type User = Database['public']['Tables']['users']['Row']
@@ -66,7 +66,7 @@ export const userOperations = {
           });
         }
         
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
           .from('users')
           .update({
             ...updatedProfile,
@@ -125,7 +125,7 @@ export const userOperations = {
               console.log('🔧 Updating existing user with new data...');
               const mergedData = this.mergeUserData(existingByEmail, profile);
               
-              const { data, error } = await supabase
+              const { data, error } = await supabaseAdmin
                 .from('users')
                 .update({
                   ...mergedData,
@@ -155,7 +155,7 @@ export const userOperations = {
               
               const mergedData = this.mergeUserData(existingByEmail, profile);
               
-              const { data, error } = await supabase
+              const { data, error } = await supabaseAdmin
                 .from('users')
                 .update({
                   ...mergedData,
@@ -178,7 +178,7 @@ export const userOperations = {
         
         // User doesn't exist at all, create new profile
         console.log('🔧 User doesn\'t exist, creating new profile...');
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
           .from('users')
           .insert({
             id: userId,
