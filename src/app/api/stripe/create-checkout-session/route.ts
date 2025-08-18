@@ -105,6 +105,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session configuration
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://www.gotangocrm.com';
+    
     const sessionConfig: any = {
       payment_method_types: ['card'],
       line_items: [
@@ -115,8 +117,8 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'subscription',
       allow_promotion_codes: true, // Enable discount code field
-      success_url: `${request.headers.get('origin')}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.headers.get('origin')}/pricing`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/pricing`,
       metadata: {
         niche,
         billing_cycle: billingCycle,
@@ -189,6 +191,21 @@ export async function POST(request: NextRequest) {
     if (!sessionConfig.customer_email) {
       sessionConfig.customer_email = userEmail;
     }
+
+    console.log('🔧 Final session configuration:', {
+      payment_method_types: sessionConfig.payment_method_types,
+      line_items: sessionConfig.line_items,
+      mode: sessionConfig.mode,
+      success_url: sessionConfig.success_url,
+      cancel_url: sessionConfig.cancel_url,
+      customer: sessionConfig.customer,
+      customer_email: sessionConfig.customer_email,
+      customer_creation: sessionConfig.customer_creation,
+      billing_address_collection: sessionConfig.billing_address_collection,
+      payment_method_collection: sessionConfig.payment_method_collection,
+      metadata: sessionConfig.metadata,
+      subscription_data: sessionConfig.subscription_data
+    });
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
