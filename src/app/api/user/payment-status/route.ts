@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
     const isAdmin = isAdminEmail(userEmail)
 
     // Check rate limit (more permissive for admin users)
-    const rateLimit = isAdmin ? 200 : 100; // Admin users get higher rate limit
+    const rateLimit = isAdmin ? 500 : 100; // Admin users get higher rate limit (increased from 200 to 500)
     if (!checkRateLimit(userId, rateLimit, 60000)) {
       console.warn('⚠️ Rate limit exceeded for user:', userId, { isAdmin, rateLimit });
       return NextResponse.json({ 

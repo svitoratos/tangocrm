@@ -2,6 +2,7 @@
 export const ADMIN_EMAILS = [
   "stevenvitoratos@gmail.com", // Your email
   "svitoratos13@gmail.com", // Admin email for testing/development
+  "stephanosvitoratos13@gmail.com", // Admin email
   // Add more admin emails here as needed
   // "admin2@example.com",
   // "admin3@example.com",

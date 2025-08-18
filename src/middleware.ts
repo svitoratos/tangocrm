@@ -9,7 +9,7 @@ function getRateLimit(pathname: string) {
   // Strict limits for sensitive endpoints
   if (pathname.startsWith('/api/auth')) return { limit: 5, window: 60 };
   if (pathname.startsWith('/api/stripe')) return { limit: 10, window: 60 };
-  if (pathname.startsWith('/api/admin')) return { limit: 20, window: 60 };
+  if (pathname.startsWith('/api/admin')) return { limit: 50, window: 60 }; // Increased from 20 to 50 for admin endpoints
   if (pathname.startsWith('/api/contact')) return { limit: 3, window: 60 };
   
   // Moderate limits for user data
@@ -128,6 +128,7 @@ async function isAdminUser(sessionClaims: any, userId: string): Promise<boolean>
   const adminEmails = [
     "stevenvitoratos@gmail.com", // Your email
     "svitoratos13@gmail.com", // Admin user
+    "stephanosvitoratos13@gmail.com", // Admin email
   ];
   
   // First try to get email from session claims
