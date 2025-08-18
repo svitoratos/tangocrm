@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       after_completion: { 
         type: 'redirect', 
         redirect: { 
-          url: `${request.headers.get('origin') || 'https://tangocrm.vercel.app'}/payment-success` 
+          url: `${request.headers.get('origin') || 'https://www.gotangocrm.com'}/payment-success` 
         } 
       },
     });
