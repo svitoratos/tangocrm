@@ -133,19 +133,12 @@ export class PaymentService {
   }
 
   /**
-   * Creates a checkout session for multiple niches at once
-   * This enables users to subscribe to multiple niches during onboarding
+   * Creates a multi-niche checkout session for onboarding or niche upgrades
+   * Since Tango Core includes all niches, we now use single-niche checkout with the primary niche
    */
-  static async createMultiNicheCheckoutSession(config: MultiNichePaymentConfig): Promise<PaymentLinkResult> {
+  static async createMultiNicheCheckoutSession(config: MultiNichePaymentConfig): Promise<PaymentResult> {
     try {
       console.log('🔧 PaymentService: Creating multi-niche checkout session for:', config);
-
-      if (!config.userId) {
-        return {
-          success: false,
-          error: 'User ID is required for multi-niche checkout session creation'
-        };
-      }
 
       if (!config.niches || config.niches.length === 0) {
         return {
@@ -161,14 +154,20 @@ export class PaymentService {
         };
       }
 
-      // Use our multi-niche API endpoint
-      const response = await fetch('/api/stripe/checkout-multi-niche', {
+      // Since Tango Core includes all niches, we use the primary niche for checkout
+      // All niches will be unlocked automatically after payment
+      const primaryNiche = config.niches[0];
+      
+      console.log('🔧 PaymentService: Using single-niche checkout for Tango Core with primary niche:', primaryNiche);
+
+      // Use the single-niche checkout endpoint instead
+      const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          niches: config.niches,
+          niche: primaryNiche,
           billingCycle: config.billingCycle,
           isNicheUpgrade: config.isNicheUpgrade || false,
           successUrl: `${window.location.origin}/payment-success`,
@@ -179,21 +178,21 @@ export class PaymentService {
       const data = await response.json();
 
       if (response.ok && data.url) {
-        console.log('✅ PaymentService: Multi-niche checkout session created successfully');
+        console.log('✅ PaymentService: Single-niche checkout session created successfully for Tango Core');
         return {
           success: true,
           url: data.url,
           sessionId: data.sessionId
         };
       } else {
-        console.error('❌ PaymentService: Failed to create multi-niche checkout session:', data.error);
+        console.error('❌ PaymentService: Failed to create single-niche checkout session:', data.error);
         return {
           success: false,
-          error: data.error || 'Failed to create multi-niche checkout session'
+          error: data.error || 'Failed to create checkout session'
         };
       }
     } catch (error) {
-      console.error('❌ PaymentService: Error creating multi-niche checkout session:', error);
+      console.error('❌ PaymentService: Error creating single-niche checkout session:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
