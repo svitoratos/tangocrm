@@ -136,7 +136,7 @@ export class PaymentService {
    * Creates a multi-niche checkout session for onboarding or niche upgrades
    * Since Tango Core includes all niches, we now use single-niche checkout with the primary niche
    */
-  static async createMultiNicheCheckoutSession(config: MultiNichePaymentConfig): Promise<PaymentResult> {
+  static async createMultiNicheCheckoutSession(config: MultiNichePaymentConfig): Promise<PaymentLinkResult> {
     try {
       console.log('🔧 PaymentService: Creating multi-niche checkout session for:', config);
 
