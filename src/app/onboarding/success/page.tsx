@@ -159,29 +159,32 @@ function OnboardingSuccessContent() {
             }
             
             try {
+              // NEW: Since Tango Core includes all niches, unlock all niches automatically
+              const allNiches = ['creator', 'coach', 'podcaster', 'freelancer'];
+              
               const addNicheResponse = await fetch('/api/user/add-niche', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  nicheToAdd: specificNiche
+                  nicheToAdd: allNiches.join(',') // Add all niches at once
                 }),
               });
               
               if (addNicheResponse.ok) {
-                console.log('✅ Successfully added specific niche:', specificNiche);
+                console.log('✅ Successfully unlocked all niches for Tango Core:', allNiches);
                 // Persist selection and refresh payment status cache
                 localStorage.setItem('selectedNiche', specificNiche);
                 clearCache();
                 await forceRefreshAfterPayment();
               } else {
-                console.error('❌ Failed to add specific niche');
+                console.error('❌ Failed to unlock all niches');
                 const errorData = await addNicheResponse.json();
                 console.error('❌ Add niche error details:', errorData);
               }
             } catch (error) {
-              console.error('❌ Error adding specific niche:', error);
+              console.error('❌ Error unlocking all niches:', error);
             }
           } else if (isNicheUpgradeFromLink || isNicheUpgradeFromSidebar) {
             // If this is a niche upgrade from hardcoded payment link OR sidebar upgrade

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Niche to add is required' }, { status: 400 });
     }
 
-    console.log('🔧 Adding niche to user profile:', {
+    console.log('🔧 Adding niche(s) to user profile:', {
       userId,
       nicheToAdd,
       userEmail
@@ -50,13 +50,18 @@ export async function POST(request: NextRequest) {
       stripeCustomerId: currentProfile.stripe_customer_id
     });
 
-    // Get existing niches and add the new one
+    // Handle multiple niches (comma-separated)
+    const nichesToAdd = nicheToAdd.includes(',') 
+      ? nicheToAdd.split(',').map((n: string) => n.trim()).filter((n: string) => n)
+      : [nicheToAdd];
+
+    // Get existing niches and add the new ones
     const existingNiches = currentProfile.niches || [];
-    const updatedNiches = [...new Set([...existingNiches, nicheToAdd])];
+    const updatedNiches = [...new Set([...existingNiches, ...nichesToAdd])];
 
     console.log('🔧 Updating niches:', {
       existing: existingNiches,
-      new: nicheToAdd,
+      new: nichesToAdd,
       updated: updatedNiches
     });
 
@@ -71,7 +76,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update user profile' }, { status: 500 });
     }
 
-    console.log('✅ Successfully added niche to user profile:', {
+    console.log('✅ Successfully added niche(s) to user profile:', {
       userId: updatedUser.id,
       email: updatedUser.email,
       niches: updatedUser.niches,
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully added ${nicheToAdd} niche`,
+      message: `Successfully added ${nichesToAdd.length > 1 ? 'niches' : 'niche'}: ${nichesToAdd.join(', ')}`,
       user: updatedUser
     });
 

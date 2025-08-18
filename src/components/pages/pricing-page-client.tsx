@@ -30,10 +30,10 @@ function PricingContent() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Build Your Perfect CRM
+            One Plan. All Niches.
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose the niches that match your business. Start with one, scale as you grow.
+            Tango Core gives you access to all business types. Start with one, switch anytime.
           </p>
           
           {requirePayment && (

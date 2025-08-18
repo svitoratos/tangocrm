@@ -455,50 +455,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   </div>
                 )}
 
-                {/* Only show separator and add niche button if there are available niches */}
-                {availableNiches.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    
-                    <DropdownMenuItem
-                      onClick={onAddNiche}
-                      disabled={subscribedNiches.length >= 4}
-                      className={cn(
-                        "flex items-center gap-3 p-3 cursor-pointer text-primary hover:text-primary",
-                        subscribedNiches.length >= 4 && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <div className={cn(
-                        "flex-shrink-0 text-primary",
-                        subscribedNiches.length >= 4 && "text-muted-foreground"
-                      )}>
-                        <Plus size={16} />
-                      </div>
-                      <div className="flex-1">
-                        <div className={cn(
-                          "text-sm font-medium text-primary",
-                          subscribedNiches.length >= 4 && "text-muted-foreground"
-                        )}>
-                          {subscribedNiches.length >= 4 
-                            ? 'All Niches Added' 
-                            : hasCorePlan() 
-                              ? 'Add Niche' 
-                              : 'Get Core Plan'
-                          }
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {subscribedNiches.length >= 4
-                            ? 'You have access to all business types'
-                            : hasCorePlan() 
-                              ? 'Add another business type' 
-                              : 'Start with Tango Core first'
-                          }
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-                  </>
-                )}
-
+                {/* Remove the separator and add niche button since all niches are included in Tango Core */}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

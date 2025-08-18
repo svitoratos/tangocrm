@@ -293,11 +293,16 @@ export async function POST(request: NextRequest) {
           // Merge existing niches with new niches, removing duplicates
           const updatedNiches = [...new Set([...existingNiches, ...newNiches])];
           
+          // NEW: Since Tango Core includes all niches, automatically unlock all niches
+          const allNiches = ['creator', 'coach', 'podcaster', 'freelancer'];
+          const finalNiches = [...new Set([...updatedNiches, ...allNiches])];
+          
           console.log('🔧 Preserving existing niches:', {
             existingNiches,
             newNiches,
             primaryNicheToUse,
             updatedNiches,
+            finalNiches,
             isMultiNiche
           });
           
@@ -310,7 +315,7 @@ export async function POST(request: NextRequest) {
               subscription_status: 'active',
               subscription_tier: 'core',
               primary_niche: primaryNicheToUse,
-              niches: updatedNiches, // Use updated niches that preserve existing ones
+              niches: finalNiches, // Use all niches since Tango Core includes everything
               updated_at: new Date().toISOString()
             })
             .eq('id', existingUser.id)

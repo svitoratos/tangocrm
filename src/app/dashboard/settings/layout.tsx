@@ -4,7 +4,6 @@ import React, { useState, createContext, useContext, useEffect, Suspense } from 
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { SidebarNavigation } from "@/components/app/sidebar-navigation";
-import { NicheUpgradeModal } from "@/components/app/niche-upgrade-modal";
 import DashboardOverview from "@/components/app/dashboard-overview";
 import CRMPipelineView from "@/components/app/crm-pipeline-view";
 import { CalendarComponent } from "@/components/app/calendar-view";
@@ -12,6 +11,7 @@ import AnalyticsDashboard from "@/components/app/analytics-dashboard";
 import { ProgramsContentHub } from "@/components/app/programs-content-hub";
 import { BulletproofCreatorJournal } from "@/components/app/BulletproofCreatorJournal";
 import ClientsPage from "../clients/page";
+import SettingsPage from "./page";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -164,7 +164,6 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   // Get actual subscribed niches from payment status
   const { niches: subscribedNiches, primaryNiche, isLoading: paymentStatusLoading, refreshPaymentStatus, clearCache } = usePaymentStatus();
@@ -369,53 +368,7 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
     signOut({ redirectUrl: '/' });
   };
 
-  const handleAddNiche = () => {
-    // For local storage version, allow access to all niches
-    setIsUpgradeModalOpen(true);
-  };
-
-  const handleNicheUpgrade = async (nicheId: string, billingCycle: 'monthly' | 'yearly') => {
-    try {
-      console.log('🔧 Starting niche upgrade process for:', nicheId);
-      setIsLoading(true);
-      setError(null);
-      
-      // Store the selected niche in sessionStorage so we can retrieve it after payment
-      sessionStorage.setItem('pendingNicheUpgrade', nicheId);
-      
-      // Use our centralized PaymentService instead of hardcoded links
-      const result = await PaymentService.createCheckoutSessionWithFallbacks({
-        niche: nicheId,
-        billingCycle,
-        isNicheUpgrade: true,
-        userId: user?.id
-      });
-      
-      if (result.success && result.url) {
-        console.log('✅ Redirecting to checkout session for niche upgrade:', result.url);
-        
-        // Check if this was a fallback payment link (bypasses consolidation)
-        if (result.error && result.error.includes('bypasses customer consolidation')) {
-          console.warn('⚠️ Using fallback payment link for niche upgrade - customer consolidation bypassed');
-          // You could show a warning to the user here if desired
-        }
-        
-        // Redirect to Stripe checkout
-        window.location.href = result.url;
-      } else {
-        console.error('❌ Failed to create niche upgrade session:', result.error);
-        setError(`Failed to process niche upgrade: ${result.error}`);
-      }
-      
-      setIsUpgradeModalOpen(false);
-    } catch (error) {
-      console.error('❌ Error upgrading niche:', error);
-      setError('Failed to process upgrade request');
-    } finally {
-      setIsLoading(false);
-      setIsUpgradeModalOpen(false);
-    }
-  };
+  // Remove handleAddNiche and handleNicheUpgrade since all niches are included in Tango Core
 
   // Show loading state while checking onboarding status or during mounting
   if (isCheckingOnboarding || !mounted || !user) {
@@ -457,7 +410,7 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
                 activeNiche={selectedNiche}
                 onNavigationChange={handleNavigationChange}
                 onNicheChange={handleNicheChange}
-                onAddNiche={handleAddNiche}
+                onAddNiche={() => {}} // Removed handleAddNiche
                 onSettings={handleSettings}
                 onLogout={handleLogout}
                 subscribedNiches={availableNiches}
@@ -521,13 +474,7 @@ function SettingsLayoutWithSidebar({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Niche Upgrade Modal */}
-      <NicheUpgradeModal
-        isOpen={isUpgradeModalOpen}
-        onClose={() => setIsUpgradeModalOpen(false)}
-        currentNiche={selectedNiche}
-        hasCorePlan={hasCorePlan()}
-        subscribedNiches={subscribedNiches}
-      />
+      {/* Removed NicheUpgradeModal */}
     </AppContext.Provider>
   );
 }
