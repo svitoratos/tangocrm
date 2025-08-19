@@ -59,6 +59,7 @@ const NicheDetector: React.FC<{ onNicheDetected: (niche: string) => void }> = ({
     };
     
     const niche = detectNiche();
+    console.log('🎯 NicheContext - Detected niche from URL:', searchParams?.get('niche'), '-> mapped to:', niche);
     onNicheDetected(niche);
   }, [searchParams, isClient, onNicheDetected]);
   
@@ -69,6 +70,7 @@ export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
   const [currentNiche, setCurrentNiche] = useState<string>('creators');
   
   const handleNicheDetected = (niche: string) => {
+    console.log('🎯 NicheContext - Setting current niche to:', niche);
     setCurrentNiche(niche);
   };
   
