@@ -1136,9 +1136,12 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
     
     // Create a comprehensive data object that includes all form fields
     const userTimezone = DateUtils.getUserTimezone();
+    // Ensure title is never empty - this is required by the database
+    const title = formData.campaignName || formData.clientName || formData.guestOrSponsorName || formData.companyName || "Untitled Opportunity";
+    
     const comprehensiveData = {
       // Basic database fields
-      title: formData.campaignName || formData.clientName || formData.guestOrSponsorName || formData.companyName || "",
+      title: title,
       description: formData.brandName || formData.programName || formData.episodeTitle || formData.projectTitle || "",
       value: formData.dealValue || formData.proposedValue || formData.sponsorshipValue || formData.projectValue || 0,
       status: mapStageIdToDatabaseStatus(formData.status, userNiche),
@@ -1146,6 +1149,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
             userNiche === 'podcaster' ? 'sponsorship' : 
             userNiche === 'freelancer' ? 'consulting' : 
             'brand_deal', // default for creator
+      niche: userNiche, // Ensure niche is always set
       probability: formData.sessionCount || 50,
       expected_close_date: (() => {
         // Use bulletproof date handler for all niches
@@ -1258,6 +1262,14 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
     });
     console.log('Opportunity Modal - Calling onSave with comprehensiveData:', comprehensiveData);
     console.log('Script being saved:', comprehensiveData.customFields.script);
+    console.log('=== FINAL DATA BEING SENT TO API ===');
+    console.log('Title:', comprehensiveData.title);
+    console.log('Status:', comprehensiveData.status);
+    console.log('Type:', comprehensiveData.type);
+    console.log('Niche:', comprehensiveData.niche);
+    console.log('Value:', comprehensiveData.value);
+    console.log('Expected close date:', comprehensiveData.expected_close_date);
+    console.log('Custom fields:', comprehensiveData.customFields);
     
     
     try {
