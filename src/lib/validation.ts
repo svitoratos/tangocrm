@@ -65,7 +65,7 @@ export const opportunityUpdateSchema = opportunityCreateSchema.extend({
 export const clientCreateSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200).transform(sanitizeText),
   email: emailSchema.optional(),
-  company: z.string().optional().max(200).transform((val) => val ? sanitizeText(val) : undefined),
+  company: z.string().max(200).optional().transform((val) => val ? sanitizeText(val) : undefined),
   phone: phoneSchema,
   website: urlSchema,
   social_media: z.record(z.string()).optional(),
