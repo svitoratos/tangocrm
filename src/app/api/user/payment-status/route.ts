@@ -41,10 +41,9 @@ async function syncUserNichesWithStripe(userId: string, stripeCustomerId: string
     console.log('🔧 Found active Stripe subscriptions:', subscriptions.data.length);
     
     // Map price IDs to niches
-    const priceToNiche = {
-      // Initial signup prices
-      'price_1Rt8u9IvVfTNGbwuoAxHpYSj': 'creator',
-      'price_1Rt8u9IvVfTNGbwug424qIjh': 'creator',
+          const priceToNiche = {
+        // Initial signup prices
+        'price_1RxsWxIvVfTNGbwulG7qCbnS': 'creator',
       'price_1Rt8u9IvVfTNGbwu0UI52sRR': 'coach',
       'price_1Rt8u9IvVfTNGbwuH88MMC8I': 'coach',
       'price_1Rt8uAIvVfTNGbwuiwPUarlw': 'podcaster',

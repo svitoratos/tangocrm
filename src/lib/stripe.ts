@@ -9,40 +9,40 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // Price IDs - Updated with single Tango Core price ID for all niches
 export const STRIPE_PRICES = {
   creator: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
   coach: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
   podcaster: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
   freelancer: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
 };
 
 // Price IDs for niche upgrades (now using same Tango Core pricing)
 export const STRIPE_NICHE_UPGRADE_PRICES = {
   creator: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
   coach: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
   podcaster: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
   freelancer: {
-    monthly: 'price_1Rt8u9IvVfTNGbwuoAxHpYSj',
-    yearly: 'price_1Rt8u9IvVfTNGbwug424qIjh',
+    monthly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
+    yearly: 'price_1RxsWxIvVfTNGbwulG7qCbnS',
   },
 };
 

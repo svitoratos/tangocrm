@@ -25,7 +25,7 @@ async function createPaymentLinks() {
     const yearlyLink = await stripe.paymentLinks.create({
       line_items: [
         {
-          price: 'price_1Rt8u9IvVfTNGbwug424qIjh', // Yearly
+          price: 'price_1RxsWxIvVfTNGbwulG7qCbnS', // Yearly
           quantity: 1,
         },
       ],

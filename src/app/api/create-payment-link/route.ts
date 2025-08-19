@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     
     // Get the correct price ID based on billing cycle
     const priceId = billingCycle === 'yearly' 
-      ? 'price_1Rt8u9IvVfTNGbwug424qIjh'  // Yearly
-      : 'price_1Rt8u9IvVfTNGbwuoAxHpYSj'; // Monthly
+      ? 'price_1RxsWxIvVfTNGbwulG7qCbnS'  // Yearly
+      : 'price_1RxsWxIvVfTNGbwulG7qCbnS'; // Monthly
     
     // Create payment link
     const paymentLink = await stripe.paymentLinks.create({
