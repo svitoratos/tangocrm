@@ -674,8 +674,8 @@ export default function DashboardOverview({
   // Function to load calendar events
   const loadCalendarEvents = async () => {
     try {
-      // Load calendar events from calendar_events table
-      const calendarResponse = await fetch('/api/calendar-events');
+      // Load calendar events from calendar_events table - FILTER BY NICHE
+      const calendarResponse = await fetch(`/api/calendar-events?niche=${activeNiche}`);
       let events: any[] = [];
       
       if (calendarResponse.ok) {

@@ -189,8 +189,9 @@ export async function POST(request: NextRequest) {
         client_id: body.client_id,
         opportunity_id: body.deal_id, // Changed from 'deal_id' to 'opportunity_id'
         location: body.location,
-        user_timezone: userTimezone
-        // Removed: color, niche, notes, tags, meeting_url (not in schema)
+        user_timezone: userTimezone,
+        niche: body.niche || 'creator' // CRITICAL: Store niche for data isolation
+        // Removed: color, notes, tags, meeting_url (not in schema)
       })
       .select()
       .single();

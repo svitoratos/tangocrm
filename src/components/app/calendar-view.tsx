@@ -75,13 +75,13 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
           };
         });
 
-      // Load calendar events from calendar_events table
-      const calendarResponse = await fetch('/api/calendar-events');
+      // Load calendar events from calendar_events table - FILTER BY NICHE
+      const calendarResponse = await fetch(`/api/calendar-events?niche=${activeNiche}`);
       let calendarEvents: any[] = [];
       
       if (calendarResponse.ok) {
         const calendarData = await calendarResponse.json();
-        console.log('Calendar data from API:', calendarData);
+        console.log('Calendar data from API for niche:', activeNiche, calendarData);
         
         calendarEvents = calendarData.map((event: any) => {
           // Convert the stored dates to user timezone for display
@@ -393,7 +393,8 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
         status: 'scheduled',
         location: eventData.location || '',
         client_id: eventData.client_id || null,
-        opportunity_id: eventData.opportunity_id || null
+        opportunity_id: eventData.opportunity_id || null,
+        niche: activeNiche // CRITICAL: Pass niche for data isolation
       };
 
       // Add event ID for updates
