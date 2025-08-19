@@ -218,7 +218,8 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
 
   // Drag and Drop Handlers
   const handleDragStart = (e: React.DragEvent, event: any) => {
-    console.log('Drag started for event:', event.title, 'ID:', event.id, 'Type:', event.type);
+    console.log('🎯 DRAG START - Event:', event.title, 'ID:', event.id, 'Type:', event.type);
+    console.log('🎯 DRAG START - DataTransfer:', e.dataTransfer);
     setDraggedEvent(event);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', event.id);
@@ -230,7 +231,7 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDragOverDate(date);
-    console.log('Dragging over date:', date.toDateString());
+    console.log('🎯 DRAG OVER - Date:', date.toDateString(), 'Event:', e);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
@@ -243,12 +244,14 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
     e.stopPropagation();
     setDragOverDate(null);
     
+    console.log('🎯 DROP - Event:', e, 'Drop date:', dropDate);
+    
     if (!draggedEvent) {
-      console.log('No dragged event found');
+      console.log('❌ No dragged event found');
       return;
     }
 
-    console.log('Dropping event:', draggedEvent.title, 'on date:', dropDate);
+    console.log('🎯 DROP - Dropping event:', draggedEvent.title, 'on date:', dropDate);
 
     try {
       // Calculate the time difference to maintain the same time
@@ -262,19 +265,19 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
       console.log('New date calculated:', newDate);
 
       if (draggedEvent.type === 'calendar') {
-        // Update calendar event using content-items API
+        // Update calendar event using calendar-events API
         const eventId = draggedEvent.id.replace('event-', '');
         console.log('Updating calendar event with ID:', eventId);
         
-        const response = await fetch(`/api/content-items`, {
+        const response = await fetch(`/api/calendar-events`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             id: eventId,
-            creation_date: DateUtils.toISOString(newDate),
-            post_date: DateUtils.toISOString(newDate),
+            start_time: DateUtils.toISOString(newDate),
+            end_time: new Date(newDate.getTime() + (draggedEvent.end.getTime() - draggedEvent.start.getTime())).toISOString(),
           }),
         });
 
@@ -348,8 +351,8 @@ export const CalendarComponent = ({ activeNiche = "creator" }) => {
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      // Delete from content_items table since that's where we're storing calendar events
-      const response = await fetch(`/api/content-items?id=${eventId}`, {
+      // Delete from calendar_events table since that's where we're storing calendar events
+      const response = await fetch(`/api/calendar-events?id=${eventId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

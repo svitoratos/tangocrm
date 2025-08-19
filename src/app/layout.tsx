@@ -52,8 +52,8 @@ export default function RootLayout({
         },
       }}
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      signInUrl="https://accounts.gotangocrm.com/sign-in"
-      signUpUrl="https://accounts.gotangocrm.com/sign-up"
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
       signUpFallbackRedirectUrl="/onboarding"
       signInFallbackRedirectUrl="/dashboard"
     >
