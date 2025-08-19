@@ -29,11 +29,21 @@ export async function GET(request: NextRequest) {
     const correctUserId = userId;
     console.log('Journal GET - Using authenticated user ID:', correctUserId);
     
-    const { data: entries, error } = await supabaseAdmin
+    // Get niche filter from query parameters
+    const { searchParams } = new URL(request.url);
+    const niche = searchParams.get('niche');
+    
+    let query = supabaseAdmin
       .from('journal_entries')
       .select('*')
-      .eq('user_id', correctUserId)
-      .order('created_at', { ascending: false });
+      .eq('user_id', correctUserId);
+    
+    // Filter by niche if provided
+    if (niche) {
+      query = query.eq('tags', [niche]);
+    }
+    
+    const { data: entries, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching journal entries:', error);

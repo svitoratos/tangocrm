@@ -29,11 +29,21 @@ export async function GET(request: NextRequest) {
     const correctUserId = userId;
     console.log('Goals GET - Using authenticated user ID:', correctUserId);
     
-    const { data: goals, error } = await supabaseAdmin
+    // Get niche filter from query parameters
+    const { searchParams } = new URL(request.url);
+    const niche = searchParams.get('niche');
+    
+    let query = supabaseAdmin
       .from('goals')
       .select('*')
-      .eq('user_id', correctUserId)
-      .order('created_at', { ascending: false });
+      .eq('user_id', correctUserId);
+    
+    // Filter by niche if provided
+    if (niche) {
+      query = query.eq('niche', niche);
+    }
+    
+    const { data: goals, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching goals:', error);
@@ -66,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, target_date, status = 'pending', category = 'general', niche = 'creator' } = body;
+    const { title, description, deadline, status = 'active', category = 'general', niche = 'creator' } = body;
 
     if (!title) {
       return NextResponse.json(
@@ -101,7 +111,7 @@ export async function POST(request: NextRequest) {
         user_id: correctUserId,
         title,
         description,
-        target_date,
+        deadline,
         status,
         category,
         niche

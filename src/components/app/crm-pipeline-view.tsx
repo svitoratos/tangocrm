@@ -669,6 +669,180 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
     setAddOpportunityStage(null);
   }, []);
 
+  // Function to refresh opportunities data
+  const refreshOpportunities = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // Fetch fresh opportunities from API
+      const response = await fetch(`/api/opportunities?niche=${activeNiche}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch opportunities: ${response.status} ${response.statusText}`);
+      }
+      
+      const opportunities = await response.json();
+      console.log('CRM Pipeline - Refreshed opportunities from database:', opportunities.length);
+      
+      // Process raw opportunities to include custom fields for modal editing
+      const processedRawOpportunities = opportunities.map((opp: any) => {
+        let customFields = opp.customFields || {};
+        
+        // Fallback to parsing from notes for backward compatibility
+        if (!customFields || Object.keys(customFields).length === 0) {
+          try {
+            if (opp.notes && opp.notes.startsWith('{')) {
+              const parsed = JSON.parse(opp.notes);
+              if (parsed.customFields) {
+                customFields = parsed.customFields;
+              }
+            }
+          } catch (error) {
+            console.log('Could not parse custom fields from notes for raw opportunity:', opp.id);
+          }
+        }
+        
+        // Add expected_close_date to custom fields for freelancer opportunities
+        if (activeNiche === 'freelancer' && opp.expected_close_date) {
+          customFields = {
+            ...customFields,
+            dueDate: opp.expected_close_date
+          };
+        }
+        
+        return {
+          ...opp,
+          customFields
+        };
+      });
+      
+      // Update raw opportunities state
+      setRawOpportunities(processedRawOpportunities);
+      
+      // Simple mapping function (same as analytics dashboard)
+      const mapDatabaseStatusToStageId = (dbStatus: string, niche: string): string => {
+        const statusMap: Record<string, Record<string, string>> = {
+          creator: {
+            'prospecting': 'outreach',
+            'qualification': 'awaiting',
+            'proposal': 'contract',
+            'negotiation': 'negotiation',
+            'won': 'paid',
+            'lost': 'archived'
+          },
+          coach: {
+            'prospecting': 'new-lead',
+            'qualification': 'discovery-scheduled',
+            'proposal': 'proposal',
+            'negotiation': 'negotiation',
+            'won': 'paid',
+            'lost': 'archived'
+          },
+          podcaster: {
+            'prospecting': 'outreach',
+            'qualification': 'conversation',
+            'proposal': 'agreement',
+            'negotiation': 'negotiation',
+            'won': 'recorded',
+            'lost': 'archived'
+          },
+          freelancer: {
+            'prospecting': 'new-inquiry',
+            'qualification': 'discovery',
+            'proposal': 'proposal',
+            'negotiation': 'contract',
+            'won': 'delivered',
+            'lost': 'archived'
+          }
+        };
+        return statusMap[niche]?.[dbStatus] || 'outreach';
+      };
+      
+      // Map database opportunities to UI format
+      const uiOpportunities: Opportunity[] = opportunities.map((opp: any) => {
+        let stageId = mapDatabaseStatusToStageId(opp.status || 'prospecting', activeNiche);
+        console.log('🎯 REFRESH MAPPING:', opp.title, 'status:', opp.status, '-> stageId:', stageId);
+        
+        let notes = opp.notes || '';
+        let extractedCustomFields: Record<string, any> = {};
+        
+        // Extract notes and custom fields from metadata
+        try {
+          if (opp.notes && opp.notes.startsWith('{')) {
+            const metadata = JSON.parse(opp.notes);
+            notes = metadata.notes || '';
+            if (metadata.customFields) {
+              extractedCustomFields = metadata.customFields;
+            }
+          }
+        } catch (error) {
+          console.log('Could not parse notes metadata, using default mapping');
+        }
+        
+        // Extract custom fields from the opportunity data
+        let customFields: Record<string, any> = {
+          notes: notes,
+          tags: opp.tags,
+          ...extractedCustomFields
+        };
+
+        // If the opportunity has customFields property, merge them
+        if (opp.customFields) {
+          customFields = {
+            ...customFields,
+            ...opp.customFields
+          };
+        }
+        
+        // Add expected_close_date to custom fields for freelancer opportunities
+        if (activeNiche === 'freelancer' && opp.expected_close_date) {
+          customFields = {
+            ...customFields,
+            dueDate: opp.expected_close_date
+          };
+        }
+
+        return {
+          id: opp.id,
+          clientName: opp.title,
+          dealValue: opp.value,
+          probability: opp.probability,
+          nextAction: notes || 'Follow up',
+          assignee: 'You',
+          createdDate: opp.created_at,
+          stageId: stageId,
+          priority: 'medium',
+          tags: opp.tags || [],
+          niche: opp.niche,
+          customFields: customFields,
+          expected_close_date: opp.expected_close_date
+        };
+      });
+
+      const nicheStages = getNicheStages(activeNiche);
+      
+      // Distribute opportunities across stages
+      const stagesWithOpportunities = nicheStages.map(stage => {
+        const stageOpportunities = uiOpportunities.filter(opp => opp.stageId === stage.id);
+        console.log(`CRM Pipeline - Stage "${stage.name}" (${stage.id}): ${stageOpportunities.length} opportunities`);
+        return {
+          ...stage,
+          opportunities: stageOpportunities
+        };
+      });
+      
+      setStages(stagesWithOpportunities);
+      console.log('CRM Pipeline - Total opportunities refreshed:', uiOpportunities.length);
+      
+    } catch (error) {
+      console.error('Error refreshing opportunities:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [activeNiche]);
+
   const handleOpportunitySave = useCallback(async (formData: any) => {
     console.log('CRM Pipeline - handleOpportunitySave called with formData:', formData);
     setIsLoading(true);
@@ -742,8 +916,9 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
       }
 
       console.log('Successfully saved opportunity:', savedOpportunity);
-
-      // Reload all opportunities from database to ensure UI is in sync
+      
+      // Refresh opportunities data immediately after saving
+      await refreshOpportunities();
       const response = await fetch(`/api/opportunities?niche=${activeNiche}`);
       if (!response.ok) {
         throw new Error('Failed to fetch opportunities');
@@ -969,7 +1144,7 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
       console.log('CRM Pipeline - handleOpportunitySave finally block executed');
       setIsLoading(false);
     }
-  }, [selectedOpportunity, handleModalClose, clientConversionStages, activeNiche]);
+  }, [selectedOpportunity, handleModalClose, clientConversionStages, activeNiche, refreshOpportunities, stages]);
 
   const handleSaveContact = async (formData: any) => {
     try {
