@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // DISABLE ALL CACHING FOR DEVELOPMENT
+  generateEtags: false,
+  compress: false,
+  poweredByHeader: false,
+  
   images: {
     remotePatterns: [
       {
@@ -26,13 +31,10 @@ const nextConfig: NextConfig = {
       // Add other trusted domains as needed
     ],
   },
-  // SEO optimizations
-  compress: true,
-  poweredByHeader: false,
-  generateEtags: false,
+  
   // Enable static optimization
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
   },
   // Headers for security and performance
   async headers() {
@@ -40,6 +42,18 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
           {
             key: 'X-Frame-Options',
             value: 'DENY',

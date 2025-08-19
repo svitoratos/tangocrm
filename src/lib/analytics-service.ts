@@ -1,5 +1,50 @@
 import { supabase } from './supabase';
 
+// Helper function to map database status to UI stage ID
+function mapDatabaseStatusToStageId(dbStatus: string, niche: string): string {
+  if (niche === 'creator') {
+    if (dbStatus === 'prospecting') return 'outreach';
+    if (dbStatus === 'qualification') return 'awaiting';
+    if (dbStatus === 'proposal') return 'contract';
+    if (dbStatus === 'negotiation') return 'negotiation';
+    if (dbStatus === 'won') return 'paid';
+    if (dbStatus === 'lost') return 'archived';
+    return 'outreach';
+  }
+  
+  if (niche === 'coach') {
+    if (dbStatus === 'prospecting') return 'new-lead';
+    if (dbStatus === 'qualification') return 'discovery-scheduled';
+    if (dbStatus === 'proposal') return 'proposal';
+    if (dbStatus === 'negotiation') return 'negotiation';
+    if (dbStatus === 'won') return 'paid';
+    if (dbStatus === 'lost') return 'archived';
+    return 'new-lead';
+  }
+  
+  if (niche === 'podcaster') {
+    if (dbStatus === 'prospecting') return 'outreach';
+    if (dbStatus === 'qualification') return 'conversation';
+    if (dbStatus === 'proposal') return 'agreement';
+    if (dbStatus === 'negotiation') return 'negotiation';
+    if (dbStatus === 'won') return 'recorded';
+    if (dbStatus === 'lost') return 'archived';
+    return 'outreach';
+  }
+  
+  if (niche === 'freelancer') {
+    if (dbStatus === 'prospecting') return 'new-inquiry';
+    if (dbStatus === 'qualification') return 'discovery';
+    if (dbStatus === 'proposal') return 'proposal';
+    if (dbStatus === 'negotiation') return 'contract';
+    if (dbStatus === 'won') return 'delivered';
+    if (dbStatus === 'lost') return 'archived';
+    return 'new-inquiry';
+  }
+  
+  return 'outreach';
+}
+
 export interface AnalyticsData {
   opportunities: {
     total: number;
@@ -161,7 +206,9 @@ class AnalyticsService {
 
       const total = opportunities.length;
       const byStage = opportunities.reduce((acc: Record<string, number>, opp: any) => {
-        acc[opp.stage] = (acc[opp.stage] || 0) + 1;
+        // Map database status to stage ID for grouping
+        const stageId = mapDatabaseStatusToStageId(opp.status || 'prospecting', niche);
+        acc[stageId] = (acc[stageId] || 0) + 1;
         return acc;
       }, {});
 

@@ -137,43 +137,56 @@ function getNicheStages(niche?: string): PipelineStage[] {
 }
 
 // Helper function to map database status to UI stage ID
-function mapDatabaseStatusToStageId(dbStatus: string, niche: string): string {
-  const statusMap: Record<string, Record<string, string>> = {
-    creator: {
-      'prospecting': 'outreach',
-      'qualification': 'awaiting',
-      'proposal': 'contract',
-      'negotiation': 'negotiation',
-      'won': 'paid',
-      'lost': 'archived'
-    },
-    coach: {
-      'prospecting': 'new-lead',
-      'qualification': 'discovery-scheduled',
-      'proposal': 'proposal',
-      'negotiation': 'negotiation',
-      'won': 'paid',
-      'lost': 'archived'
-    },
-    podcaster: {
-      'prospecting': 'outreach',
-      'qualification': 'conversation',
-      'proposal': 'agreement',
-      'negotiation': 'negotiation',
-      'won': 'recorded',
-      'lost': 'archived'
-    },
-    freelancer: {
-      'prospecting': 'new-inquiry',
-      'qualification': 'discovery',
-      'proposal': 'proposal',
-      'negotiation': 'contract',
-      'won': 'delivered',
-      'lost': 'archived'
-    }
-  };
+// CACHE BUSTER - FORCE FRESH MAPPING FUNCTION
+function mapDatabaseStatusToStageId_FIXED_2024(dbStatus: string, niche: string): string {
+  console.log('🔧 MAPPING FUNCTION CALLED:', dbStatus, '->', niche);
+  
+  if (niche === 'creator') {
+    if (dbStatus === 'prospecting') return 'outreach';
+    if (dbStatus === 'qualification') return 'awaiting';
+    if (dbStatus === 'proposal') return 'contract';
+    if (dbStatus === 'negotiation') return 'negotiation';
+    if (dbStatus === 'won') return 'paid';
+    if (dbStatus === 'lost') return 'archived';
+    return 'outreach';
+  }
+  
+  if (niche === 'coach') {
+    if (dbStatus === 'prospecting') return 'new-lead';
+    if (dbStatus === 'qualification') return 'discovery-scheduled';
+    if (dbStatus === 'proposal') return 'proposal';
+    if (dbStatus === 'negotiation') return 'negotiation';
+    if (dbStatus === 'won') return 'paid';
+    if (dbStatus === 'lost') return 'archived';
+    return 'new-lead';
+  }
+  
+  if (niche === 'podcaster') {
+    if (dbStatus === 'prospecting') return 'outreach';
+    if (dbStatus === 'qualification') return 'conversation';
+    if (dbStatus === 'proposal') return 'agreement';
+    if (dbStatus === 'negotiation') return 'negotiation';
+    if (dbStatus === 'won') return 'recorded';
+    if (dbStatus === 'lost') return 'archived';
+    return 'outreach';
+  }
+  
+  if (niche === 'freelancer') {
+    if (dbStatus === 'prospecting') return 'new-inquiry';
+    if (dbStatus === 'qualification') return 'discovery';
+    if (dbStatus === 'proposal') return 'proposal';
+    if (dbStatus === 'negotiation') return 'contract';
+    if (dbStatus === 'won') return 'delivered';
+    if (dbStatus === 'lost') return 'archived';
+    return 'new-inquiry';
+  }
+  
+  return 'outreach';
+}
 
-  return statusMap[niche]?.[dbStatus] || 'outreach';
+// Keep old function for backward compatibility but mark as deprecated
+function mapDatabaseStatusToStageId(dbStatus: string, niche: string): string {
+  return mapDatabaseStatusToStageId_FIXED_2024(dbStatus, niche);
 }
 
 const getNicheName = (niche?: string) => {
@@ -186,6 +199,7 @@ const getNicheName = (niche?: string) => {
 };
 
 export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipelineViewProps) {
+  console.log('🚀 CRM PIPELINE COMPONENT LOADED - TIMESTAMP:', new Date().toISOString());
   const router = useRouter();
 
   const [view, setView] = useState<'board' | 'list'>('board');
@@ -242,64 +256,103 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
         }
         const opportunities = await response.json();
         
-              // Process raw opportunities to include custom fields for modal editing
-      const processedRawOpportunities = opportunities.map((opp: any) => {
-        // Use customFields from API response, fallback to parsing from notes if needed
-        let customFields = opp.customFields || {};
-        
-        // If no customFields from API, try to parse from notes (legacy fallback)
-        if (!opp.customFields || Object.keys(opp.customFields).length === 0) {
-          try {
-            if (opp.notes && opp.notes.startsWith('{')) {
-              const parsed = JSON.parse(opp.notes);
-              if (parsed.customFields) {
-                customFields = parsed.customFields;
+        // Process raw opportunities to include custom fields for modal editing
+        const processedRawOpportunities = opportunities.map((opp: any) => {
+          // Use customFields from API response, fallback to parsing from notes if needed
+          let customFields = opp.customFields || {};
+          
+          // If no customFields from API, try to parse from notes (legacy fallback)
+          if (!opp.customFields || Object.keys(opp.customFields).length === 0) {
+            try {
+              if (opp.notes && opp.notes.startsWith('{')) {
+                const parsed = JSON.parse(opp.notes);
+                if (parsed.customFields) {
+                  customFields = parsed.customFields;
+                }
               }
+            } catch (error) {
+              console.log('Could not parse custom fields from notes for raw opportunity:', opp.id);
             }
-          } catch (error) {
-            console.log('Could not parse custom fields from notes for raw opportunity:', opp.id);
           }
-        }
-        
-        // Add expected_close_date to custom fields for freelancer opportunities
-        if (activeNiche === 'freelancer' && opp.expected_close_date) {
-          console.log('CRM Pipeline - Adding dueDate to customFields for freelancer in save:', {
-            opportunityId: opp.id,
-            expected_close_date: opp.expected_close_date,
-            expected_close_date_type: typeof opp.expected_close_date
-          });
-          customFields = {
-            ...customFields,
-            dueDate: opp.expected_close_date
+          
+          // Add expected_close_date to custom fields for freelancer opportunities
+          if (activeNiche === 'freelancer' && opp.expected_close_date) {
+            console.log('CRM Pipeline - Adding dueDate to customFields for freelancer in save:', {
+              opportunityId: opp.id,
+              expected_close_date: opp.expected_close_date,
+              expected_close_date_type: typeof opp.expected_close_date
+            });
+            customFields = {
+              ...customFields,
+              dueDate: opp.expected_close_date
+            };
+          }
+          
+          return {
+            ...opp,
+            customFields
           };
-        }
-        
-
-        
-        return {
-          ...opp,
-          customFields
-        };
-      });
+        });
       
       // Store processed raw opportunities for modal editing
       setRawOpportunities(processedRawOpportunities);
         
-        // Map database opportunities to UI format
+        // Use the EXACT SAME LOGIC as analytics dashboard - it works!
+        console.log('🔧 USING ANALYTICS DASHBOARD LOGIC - SIMPLE AND EFFECTIVE');
+        
+        // Simple mapping function (same as analytics)
+        const mapDatabaseStatusToStageId = (dbStatus: string, niche: string): string => {
+          const statusMap: Record<string, Record<string, string>> = {
+            creator: {
+              'prospecting': 'outreach',
+              'qualification': 'awaiting',
+              'proposal': 'contract',
+              'negotiation': 'negotiation',
+              'won': 'paid',
+              'lost': 'archived'
+            },
+            coach: {
+              'prospecting': 'new-lead',
+              'qualification': 'discovery-scheduled',
+              'proposal': 'proposal',
+              'negotiation': 'negotiation',
+              'won': 'paid',
+              'lost': 'archived'
+            },
+            podcaster: {
+              'prospecting': 'outreach',
+              'qualification': 'conversation',
+              'proposal': 'agreement',
+              'negotiation': 'negotiation',
+              'won': 'recorded',
+              'lost': 'archived'
+            },
+            freelancer: {
+              'prospecting': 'new-inquiry',
+              'qualification': 'discovery',
+              'proposal': 'proposal',
+              'negotiation': 'contract',
+              'won': 'delivered',
+              'lost': 'archived'
+            }
+          };
+          return statusMap[niche]?.[dbStatus] || 'outreach';
+        };
+
+        // Map database opportunities to UI format using simple logic
         const uiOpportunities: Opportunity[] = opportunities.map((opp: any) => {
-          // Try to get the original stage ID from notes metadata
-          let stageId = mapDatabaseStatusToStageId(opp.status, activeNiche);
+          // Use the status column and map it to stage ID using the simple mapping function
+          let stageId = mapDatabaseStatusToStageId(opp.status || 'prospecting', activeNiche);
+          console.log('🎯 SIMPLE MAPPING:', opp.title, 'status:', opp.status, '-> stageId:', stageId);
+          
           let notes = opp.notes || '';
           let extractedCustomFields: Record<string, any> = {};
           
+          // Extract notes and custom fields from metadata
           try {
             if (opp.notes && opp.notes.startsWith('{')) {
               const metadata = JSON.parse(opp.notes);
-              if (metadata.stageId && metadata.niche === activeNiche) {
-                stageId = metadata.stageId;
-                notes = metadata.notes || '';
-              }
-              // Extract custom fields from metadata
+              notes = metadata.notes || '';
               if (metadata.customFields) {
                 extractedCustomFields = metadata.customFields;
               }
@@ -339,12 +392,22 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
             expected_close_date: opp.expected_close_date
           };
         });
+
         const nicheStages = getNicheStages(activeNiche);
-        // Distribute opportunities across stages
-        const stagesWithOpportunities = nicheStages.map(stage => ({
-          ...stage,
-          opportunities: uiOpportunities.filter(opp => opp.stageId === stage.id)
-        }));
+        
+        // Distribute opportunities across stages using the same logic as analytics
+        const stagesWithOpportunities = nicheStages.map(stage => {
+          const stageOpportunities = uiOpportunities.filter(opp => opp.stageId === stage.id);
+          console.log(`CRM Pipeline - Stage "${stage.name}" (${stage.id}): ${stageOpportunities.length} opportunities`, 
+                     stageOpportunities.map(opp => ({ title: opp.clientName, stageId: opp.stageId })));
+          return {
+            ...stage,
+            opportunities: stageOpportunities
+          };
+        });
+        
+        console.log('CRM Pipeline - Total opportunities loaded:', uiOpportunities.length);
+        console.log('CRM Pipeline - Opportunities by stage:', uiOpportunities.map(opp => ({ title: opp.clientName, stageId: opp.stageId })));
         setStages(stagesWithOpportunities);
       } catch (error) {
         console.error('Error loading opportunities:', error);
@@ -771,23 +834,32 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
       
               // Map database opportunities to UI format
         const uiOpportunities: Opportunity[] = opportunities.map((opp: any) => {
-          // Try to get the original stage ID from notes metadata
-          let stageId = mapDatabaseStatusToStageId(opp.status, activeNiche);
+          // INLINE MAPPING TO BYPASS CACHE - SAVE HANDLER
+          let stageId = 'outreach'; // default
+          if (activeNiche === 'creator') {
+            if (opp.status === 'prospecting') stageId = 'outreach';
+            else if (opp.status === 'qualification') stageId = 'awaiting';
+            else if (opp.status === 'proposal') stageId = 'contract';
+            else if (opp.status === 'negotiation') stageId = 'negotiation';
+            else if (opp.status === 'won') stageId = 'paid';
+            else if (opp.status === 'lost') stageId = 'archived';
+          }
+          console.log('🎯 SAVE HANDLER MAPPING:', opp.title, opp.status, '->', stageId);
           let notes = opp.notes || '';
           
+          // Extract just the notes text from metadata, but don't override stageId
           try {
             if (opp.notes && opp.notes.startsWith('{')) {
               const metadata = JSON.parse(opp.notes);
-              if (metadata.stageId && metadata.niche === activeNiche) {
-                stageId = metadata.stageId;
-                notes = metadata.notes || '';
-              }
+              notes = metadata.notes || '';
+              // Log the mapping for debugging
+              console.log('CRM Pipeline - Using correct mapping:', opp.status, '->', stageId, 'for opportunity:', opp.title);
             }
           } catch (error) {
-            console.log('Could not parse notes metadata, using default mapping');
+            console.log('Could not parse notes metadata, using notes as-is');
           }
           
-          console.log('CRM Pipeline - Mapping opportunity:', { id: opp.id, dbStatus: opp.status, mappedStageId: stageId, niche: activeNiche, title: opp.title });
+          console.log(`CRM - ${opp.title}: ${opp.status} -> ${stageId}`);
         
         // Use custom fields directly from the API response
         let customFields = opp.customFields || {};
@@ -838,13 +910,19 @@ export default function CRMPipelineView({ activeNiche = 'creator' }: CRMPipeline
       const nicheStages = getNicheStages(activeNiche);
       
       // Distribute opportunities across stages
-      const stagesWithOpportunities = nicheStages.map(stage => ({
-        ...stage,
-        opportunities: uiOpportunities.filter(opp => opp.stageId === stage.id)
-      }));
+      const stagesWithOpportunities = nicheStages.map(stage => {
+        const stageOpportunities = uiOpportunities.filter(opp => opp.stageId === stage.id);
+        console.log(`CRM Pipeline - Stage "${stage.name}" (${stage.id}): ${stageOpportunities.length} opportunities`, 
+                   stageOpportunities.map(opp => ({ title: opp.clientName, stageId: opp.stageId })));
+        return {
+          ...stage,
+          opportunities: stageOpportunities
+        };
+      });
       
       setStages(stagesWithOpportunities);
-      console.log('Reloaded opportunities:', uiOpportunities.length);
+      console.log('CRM Pipeline - Total opportunities loaded:', uiOpportunities.length);
+      console.log('CRM Pipeline - Opportunities by stage:', uiOpportunities.map(opp => ({ title: opp.clientName, stageId: opp.stageId })));
       
       // Check if this is an existing opportunity and the stage has changed to a trigger stage
       const stageChanged = selectedOpportunity && selectedOpportunity.stageId !== savedOpportunity.status;
