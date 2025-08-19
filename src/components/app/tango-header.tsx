@@ -60,21 +60,16 @@ const DesktopNav = ({ navItems, hovered, setHovered }: any) => {
         ))}
       </div>
       <div className="flex items-center space-x-4">
-        <SignedOut>
-          <Link href="https://accounts.gotangocrm.com/sign-in">
-            <button className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-slate-50">
-              Sign In
-            </button>
-          </Link>
-          <Link href="https://accounts.gotangocrm.com/sign-up">
-            <button className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200">
-              Get Started
-            </button>
-          </Link>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
+        <Link href="https://accounts.gotangocrm.com/sign-in">
+          <button className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200 px-3 py-2 rounded-md hover:bg-slate-50">
+            Sign In
+          </button>
+        </Link>
+        <Link href="https://accounts.gotangocrm.com/sign-up">
+          <button className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200">
+            Get Started
+          </button>
+        </Link>
       </div>
     </motion.div>
   );
@@ -136,27 +131,22 @@ const MobileNav = ({ navItems, open, setOpen }: any) => {
               </Link>
             ))}
             <div className="flex flex-col items-center gap-4 w-full max-w-xs mt-4">
-              <SignedOut>
-                <Link href="https://accounts.gotangocrm.com/sign-in">
-                  <button 
-                    className="w-full text-center py-3 px-4 text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 rounded-md hover:bg-slate-50"
-                    onClick={() => setOpen(false)}
-                  >
-                    Sign In
-                  </button>
-                </Link>
-                <Link href="https://accounts.gotangocrm.com/sign-up">
-                  <button 
-                    className="w-full text-center rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
-                    onClick={() => setOpen(false)}
-                  >
-                    Get Started
-                  </button>
-                </Link>
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
+              <Link href="https://accounts.gotangocrm.com/sign-in">
+                <button 
+                  className="w-full text-center py-3 px-4 text-slate-600 hover:text-slate-900 font-medium transition-colors duration-200 rounded-md hover:bg-slate-50"
+                  onClick={() => setOpen(false)}
+                >
+                  Sign In
+                </button>
+              </Link>
+              <Link href="https://accounts.gotangocrm.com/sign-up">
+                <button 
+                  className="w-full text-center rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors duration-200"
+                  onClick={() => setOpen(false)}
+                >
+                  Get Started
+                </button>
+              </Link>
             </div>
           </motion.div>
         )}
