@@ -245,7 +245,7 @@ export const structuredData = {
         name: 'How much does Tango CRM cost?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Tango CRM starts at $39.99/month. No setup fees, cancel anytime. 15-day satisfaction guarantee — full refund if you\'re not happy.'
+          text: 'Tango CRM starts at $49.99/month. No setup fees, cancel anytime. 15-day satisfaction guarantee — full refund if you\'re not happy.'
         }
       }
     ]

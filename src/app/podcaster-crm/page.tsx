@@ -180,7 +180,7 @@ export default function PodcasterCRMPage() {
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need to grow your podcast business, starting at just $39.99/month
+              Everything you need to grow your podcast business, starting at just $49.99/month
             </p>
           </div>
           
@@ -188,7 +188,7 @@ export default function PodcasterCRMPage() {
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Tango Core</h3>
-                <div className="text-4xl font-bold text-emerald-600 mb-2">$39.99</div>
+                <div className="text-4xl font-bold text-emerald-600 mb-2">$49.99</div>
                 <p className="text-gray-600">per month</p>
               </div>
               

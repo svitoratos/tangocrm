@@ -37,8 +37,8 @@ const nichePlans: NichePlan[] = [
       'Revenue tracking',
       'Content performance metrics'
     ],
-    monthlyPrice: 29,
-    yearlyPrice: 290
+    monthlyPrice: 49.99,
+    yearlyPrice: 479
   },
   {
     id: 'coach',
@@ -55,8 +55,8 @@ const nichePlans: NichePlan[] = [
       'Client communication hub',
       'Performance reports'
     ],
-    monthlyPrice: 39,
-    yearlyPrice: 390,
+    monthlyPrice: 49.99,
+    yearlyPrice: 479,
     popular: true
   },
   {
@@ -74,8 +74,8 @@ const nichePlans: NichePlan[] = [
       'Revenue optimization',
       'Show notes automation'
     ],
-    monthlyPrice: 34,
-    yearlyPrice: 340
+    monthlyPrice: 49.99,
+    yearlyPrice: 479
   },
   {
     id: 'freelancer',
@@ -92,8 +92,8 @@ const nichePlans: NichePlan[] = [
       'Proposal management',
       'Contract management'
     ],
-    monthlyPrice: 32,
-    yearlyPrice: 320
+    monthlyPrice: 49.99,
+    yearlyPrice: 479
   }
 ];
 

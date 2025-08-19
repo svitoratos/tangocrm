@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
 
 export const TangoSimplePricing = () => {
+  const [isYearly, setIsYearly] = useState(false);
+
   const handleGetStarted = () => {
     // Redirect to external sign up
     window.location.href = 'https://accounts.gotangocrm.com/sign-up';
   };
+
+  const monthlyPrice = 49.99;
+  const yearlyPrice = 479.00;
+  const savings = (monthlyPrice * 12) - yearlyPrice;
 
   return (
     <section id="pricing" className="py-20 bg-white">
@@ -20,6 +26,31 @@ export const TangoSimplePricing = () => {
           <p className="mt-6 text-xl text-slate-600">
             One plan. All niches. Everything you need to grow your creator business.
           </p>
+          
+          {/* Billing Toggle */}
+          <div className="mt-8 flex items-center justify-center">
+            <span className={`text-sm font-medium ${!isYearly ? 'text-slate-900' : 'text-slate-500'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setIsYearly(!isYearly)}
+              className="relative mx-3 inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isYearly ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`text-sm font-medium ${isYearly ? 'text-slate-900' : 'text-slate-500'}`}>
+              Yearly
+            </span>
+            {isYearly && (
+              <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-emerald-200">
+                Save ${savings.toFixed(0)}
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Pricing Grid - Single Plan */}
@@ -42,12 +73,17 @@ export const TangoSimplePricing = () => {
                 <div className="mt-4 flex flex-col items-center">
                   <div className="flex items-baseline justify-center">
                     <span className="text-4xl font-bold text-slate-800">
-                      $39.99
+                      ${isYearly ? yearlyPrice.toFixed(0) : monthlyPrice.toFixed(2)}
                     </span>
                     <span className="ml-1 text-lg font-medium text-slate-500">
-                      /month
+                      /{isYearly ? 'year' : 'month'}
                     </span>
                   </div>
+                  {isYearly && (
+                    <p className="mt-2 text-sm text-slate-500">
+                      ${(yearlyPrice / 12).toFixed(2)}/month when billed annually
+                    </p>
+                  )}
                 </div>
 
                 <p className="mt-4 text-base text-slate-600 font-medium">
@@ -99,7 +135,7 @@ export const TangoSimplePricing = () => {
                   Get Started with Tango Core
                 </Button>
                 <p className="text-xs text-slate-500 text-center mt-3">
-                  No setup fees • Cancel anytime • 14-day free trial
+                  No setup fees • Cancel anytime • 14-day money back guarantee
                 </p>
               </div>
             </div>

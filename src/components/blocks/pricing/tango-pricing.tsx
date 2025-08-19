@@ -10,7 +10,7 @@ export const PricingSection = () => {
     {
       name: 'Creator Plan',
       planType: 'creator' as const,
-      price: '$47',
+      price: '$49.99',
       period: '/month',
       description: 'Perfect for content creators',
       subtitle: 'Manage your content creation business',
@@ -22,7 +22,7 @@ export const PricingSection = () => {
     {
       name: 'Coach Plan', 
       planType: 'coach' as const,
-      price: '$47',
+      price: '$49.99',
       period: '/month',
       description: 'Built for coaches and consultants',
       subtitle: 'Track clients and grow your coaching business',
@@ -34,7 +34,7 @@ export const PricingSection = () => {
     {
       name: 'Podcaster Plan',
       planType: 'podcaster' as const, 
-      price: '$47',
+      price: '$49.99',
       period: '/month',
       description: 'Designed for podcast creators',
       subtitle: 'Organize your podcast production',
@@ -46,7 +46,7 @@ export const PricingSection = () => {
     {
       name: 'Freelancer Plan',
       planType: 'freelancer' as const,
-      price: '$47', 
+      price: '$49.99', 
       period: '/month',
       description: 'Made for freelancers',
       subtitle: 'Manage projects and clients efficiently',

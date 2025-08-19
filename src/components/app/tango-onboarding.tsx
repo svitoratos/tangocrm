@@ -721,12 +721,12 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                         {selectedRoles.length === 1 ? (
                           <div className="text-sm text-emerald-700">
                             {billingCycle === 'monthly' ? (
-                              <p>$39.99/month</p>
+                              <p>$49.99/month</p>
                             ) : (
                               <div>
-                                <p className="line-through text-emerald-500">$479.88/year</p>
-                                <p className="font-semibold text-lg">$383.90/year</p>
-                                <p className="text-xs text-emerald-600">Save $95.98 annually</p>
+                                <p className="line-through text-emerald-500">$599.88/year</p>
+                                <p className="font-semibold text-lg">$479.00/year</p>
+                                <p className="text-xs text-emerald-600">Save $120.88 annually</p>
                               </div>
                             )}
                           </div>
@@ -734,24 +734,24 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                           <div className="text-sm text-emerald-700">
                             {billingCycle === 'monthly' ? (
                               <>
-                                <p>$39.99/month for Tango Core</p>
+                                <p>$49.99/month for Tango Core</p>
                                 <p className="text-xs text-emerald-600">All 4 business types included</p>
                                 <p className="font-semibold mt-1">
-                                  Total: $39.99/month
+                                  Total: $49.99/month
                                 </p>
                               </>
                             ) : (
                               <>
-                                <p>${(39.99 * 12).toFixed(2)}/year for Tango Core</p>
+                                <p>${(49.99 * 12).toFixed(2)}/year for Tango Core</p>
                                 <p className="text-xs text-emerald-600">All 4 business types included</p>
                                 <p className="line-through text-emerald-500 mt-1">
-                                  Total: ${(39.99 * 12).toFixed(2)}/year
+                                  Total: ${(49.99 * 12).toFixed(2)}/year
                                 </p>
                                 <p className="font-semibold text-lg">
-                                  Total: ${((39.99 * 12) * 0.8).toFixed(2)}/year
+                                  Total: $479.00/year
                                 </p>
                                 <p className="text-xs text-emerald-600">
-                                  Save ${((39.99 * 12) * 0.2).toFixed(2)} annually
+                                  Save ${((49.99 * 12) - 479).toFixed(2)} annually
                                 </p>
                               </>
                             )}
