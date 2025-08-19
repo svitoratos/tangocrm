@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     // Here you can also:
     // 1. Send email notification
     // 2. Send to CRM system
-    // await sendContactEmail({ name, email, company, subject, message });
+    // await sendContactEmail({ name, email, company: company, subject, message });
 
     return NextResponse.json(
       { success: true, message: 'Contact form submitted successfully' },
