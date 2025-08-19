@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { Metadata } from 'next'
 import { generateMetadata } from '@/lib/metadata'
@@ -9,25 +11,7 @@ import { TangoHeader } from '@/components/app/tango-header'
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = generateMetadata({
-  title: 'Creator CRM Platform - The #1 CRM for Content Creators & Influencers',
-  description: 'Tango CRM is the leading creator CRM platform designed specifically for content creators, influencers, coaches, podcasters, and freelancers. Manage brand deals, track revenue, and grow your creator business.',
-  keywords: [
-    'creator CRM platform',
-    'best creator CRM',
-    'influencer CRM platform',
-    'content creator CRM',
-    'podcaster CRM platform',
-    'CRM for creators',
-    'CRM for influencers',
-    'CRM for podcasters',
-    'creator business management',
-    'influencer management platform',
-    'brand deals management',
-    'creator workflow management'
-  ],
-  image: '/creator-crm-og-image.jpg'
-})
+
 
 const features = [
   {

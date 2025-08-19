@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { Metadata } from 'next'
 import { generateMetadata } from '@/lib/metadata'
@@ -9,23 +11,7 @@ import { TangoHeader } from '@/components/app/tango-header'
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = generateMetadata({
-  title: 'Coach CRM Platform - The #1 CRM for Life Coaches, Business Coaches & Online Coaches',
-  description: 'Tango CRM is the leading coach CRM platform designed specifically for life coaches, business coaches, and online coaches. Manage clients, track sessions, and grow your coaching business.',
-  keywords: [
-    'coach CRM',
-    'online coach CRM',
-    'life coach CRM',
-    'business coach CRM',
-    'coaching CRM platform',
-    'coach client management',
-    'coaching session tracking',
-    'coach business tools',
-    'online coaching platform',
-    'coach workflow management'
-  ],
-  image: '/coach-crm-og-image.jpg'
-})
+
 
 const features = [
   {

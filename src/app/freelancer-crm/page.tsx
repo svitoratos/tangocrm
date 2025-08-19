@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { Metadata } from 'next'
 import { generateMetadata } from '@/lib/metadata'
@@ -9,23 +11,7 @@ import { TangoHeader } from '@/components/app/tango-header'
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = generateMetadata({
-  title: 'Freelancer CRM Platform - The #1 CRM for Freelancers, Consultants & Independent Professionals',
-  description: 'Tango CRM is the leading freelancer CRM platform designed specifically for freelancers, consultants, and independent professionals. Manage clients, track projects, and grow your freelance business.',
-  keywords: [
-    'freelancer CRM',
-    'consultant CRM',
-    'freelance CRM platform',
-    'independent consultant CRM',
-    'freelancer client management',
-    'freelance project tracking',
-    'consultant business tools',
-    'freelance workflow management',
-    'independent professional CRM',
-    'freelance business management'
-  ],
-  image: '/freelancer-crm-og-image.jpg'
-})
+
 
 const features = [
   {

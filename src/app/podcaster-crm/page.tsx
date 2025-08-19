@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import { Metadata } from 'next'
 import { generateMetadata } from '@/lib/metadata'
@@ -9,23 +11,7 @@ import { TangoHeader } from '@/components/app/tango-header'
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = generateMetadata({
-  title: 'Podcaster CRM Platform - The #1 CRM for Podcast Hosts & Audio Creators',
-  description: 'Tango CRM is the leading podcaster CRM platform designed specifically for podcast hosts, audio creators, and podcast networks. Manage sponsorships, track guests, and grow your podcast business.',
-  keywords: [
-    'podcaster CRM',
-    'podcast CRM platform',
-    'podcast host CRM',
-    'audio creator CRM',
-    'podcast sponsorship management',
-    'podcast guest management',
-    'podcast business tools',
-    'podcast revenue tracking',
-    'podcast network CRM',
-    'podcast workflow management'
-  ],
-  image: '/podcaster-crm-og-image.jpg'
-})
+
 
 const features = [
   {
