@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     
     // Filter by niche if provided
     if (niche) {
-      query = query.eq('tags', [niche]);
+      query = query.contains('tags', [niche]);
     }
     
     const { data: entries, error } = await query.order('created_at', { ascending: false });
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, content, mood, tags } = body;
+    const { title, content, mood, tags, niche } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -105,6 +105,12 @@ export async function POST(request: NextRequest) {
       console.log('Journal POST - Error finding existing user, using Clerk ID:', correctUserId);
     }
     
+    // Ensure niche is included in tags array for proper filtering
+    const entryTags = tags || [];
+    if (niche && !entryTags.includes(niche)) {
+      entryTags.push(niche);
+    }
+    
     const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')
       .insert({
@@ -112,7 +118,7 @@ export async function POST(request: NextRequest) {
         title,
         content,
         mood,
-        tags: tags || []
+        tags: entryTags
       })
       .select()
       .single();
@@ -148,7 +154,16 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, ...updateData } = body;
+    const { id, niche, ...updateData } = body;
+    
+    // Ensure niche is included in tags array for proper filtering
+    if (niche && updateData.tags) {
+      if (!updateData.tags.includes(niche)) {
+        updateData.tags.push(niche);
+      }
+    } else if (niche) {
+      updateData.tags = [niche];
+    }
     
     if (!id) {
       return NextResponse.json(
