@@ -45,11 +45,16 @@ export async function GET(request: NextRequest) {
       console.log('Journal GET - Adding niche filter for:', niche);
       // Use the correct Supabase array containment syntax
       query = query.contains('tags', [niche]);
+      console.log('Journal GET - Query after niche filter:', query);
     }
     
     console.log('Journal GET - Executing query...');
     const { data: entries, error } = await query.order('created_at', { ascending: false });
     console.log('Journal GET - Query result:', { entriesCount: entries?.length || 0, error: error?.message });
+    
+    if (entries && entries.length > 0) {
+      console.log('Journal GET - Sample entry tags:', entries[0].tags);
+    }
 
     if (error) {
       console.error('Error fetching journal entries:', error);
@@ -116,6 +121,9 @@ export async function POST(request: NextRequest) {
     if (niche && !entryTags.includes(niche)) {
       entryTags.push(niche);
     }
+    
+    console.log('📝 Journal POST - Final tags array:', entryTags);
+    console.log('📝 Journal POST - Inserting with user_id:', correctUserId);
     
     const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')

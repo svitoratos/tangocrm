@@ -117,14 +117,17 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       setIsLoading(true);
       setError(null);
       
+      console.log('🔄 Fetching journal entries for niche:', currentNiche);
       const response = await fetch(`/api/journal-entries?niche=${currentNiche}`);
       if (!response.ok) {
         throw new Error('Failed to fetch journal entries');
       }
       
       const data = await response.json();
+      console.log('📥 Journal entries API response:', data);
       
       setEntries(Array.isArray(data) ? data : []);
+      console.log('📝 Set entries state with', data.length, 'entries');
     } catch (error) {
       console.error('Error fetching journal entries:', error);
       setError('Failed to load journal entries');
@@ -215,6 +218,8 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
         prompt: selectedEntry.prompt,
         niche: currentNiche
       };
+      
+      console.log('🎯 Saving journal entry with data:', entryData);
 
       let response;
       if (isCreating) {
@@ -238,13 +243,16 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       }
 
       const data = await response.json();
+      console.log('✅ Journal entry saved successfully:', data);
       
       if (isCreating) {
         setEntries(prev => [data, ...prev]);
+        console.log('📝 Updated local entries state, new count:', entries.length + 1);
       } else {
         setEntries(prev => prev.map(entry => 
           entry.id === selectedEntry.id ? data : entry
         ));
+        console.log('📝 Updated existing entry in local state');
       }
 
       setIsCreating(false);
