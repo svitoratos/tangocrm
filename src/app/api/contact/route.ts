@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     }
     
     const { name, email, subject, message } = validation.data;
+    const company = body.company || null;
 
     // Store in database
     const { data, error } = await supabase
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
       id: data[0].id,
       name,
       email,
-      company,
+      company: company,
       subject,
       message,
       timestamp: new Date().toISOString()
