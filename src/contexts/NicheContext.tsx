@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 interface NicheContextType {
   currentNiche: string;
   setCurrentNiche: (niche: string) => void;
+  updateNiche: (niche: string) => void;
 }
 
 const NicheContext = createContext<NicheContextType | undefined>(undefined);
@@ -69,13 +70,31 @@ const NicheDetector: React.FC<{ onNicheDetected: (niche: string) => void }> = ({
 export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
   const [currentNiche, setCurrentNiche] = useState<string>('creators');
   
+  // Initialize from localStorage if available
+  useEffect(() => {
+    const savedNiche = localStorage.getItem('selectedNiche');
+    if (savedNiche) {
+      console.log('🎯 NicheContext - Restoring niche from localStorage:', savedNiche);
+      setCurrentNiche(savedNiche);
+    }
+  }, []);
+  
   const handleNicheDetected = (niche: string) => {
     console.log('🎯 NicheContext - Setting current niche to:', niche);
     setCurrentNiche(niche);
+    // Persist to localStorage
+    localStorage.setItem('selectedNiche', niche);
+  };
+  
+  const updateNiche = (niche: string) => {
+    console.log('🎯 NicheContext - Manually updating niche to:', niche);
+    setCurrentNiche(niche);
+    // Persist to localStorage
+    localStorage.setItem('selectedNiche', niche);
   };
   
   return (
-    <NicheContext.Provider value={{ currentNiche, setCurrentNiche }}>
+    <NicheContext.Provider value={{ currentNiche, setCurrentNiche, updateNiche }}>
       <Suspense fallback={null}>
         <NicheDetector onNicheDetected={handleNicheDetected} />
       </Suspense>

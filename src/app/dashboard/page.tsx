@@ -19,7 +19,7 @@ import { AlertCircle, Menu, Share2, Trophy, User, Settings, LogOut } from "lucid
 import { cn } from "@/lib/utils";
 import { SignedIn, SignedOut, RedirectToSignIn, useClerk, useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { NicheProvider } from "@/contexts/NicheContext";
+import { NicheProvider, useNiche } from "@/contexts/NicheContext";
 import { TimezoneProvider } from "@/contexts/TimezoneContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { EventRefreshProvider } from "@/contexts/EventRefreshContext";
@@ -247,7 +247,8 @@ function MainDashboardWithSearchParams() {
   // Ensure admin users always have access to all niches
   const userEmail = currentUser?.emailAddresses?.[0]?.emailAddress;
   const isAdmin = userEmail && isAdminEmail(userEmail);
-  const availableNiches = isAdmin ? ['creator', 'coach', 'podcaster', 'freelancer'] : subscribedNiches;
+  // Use plural forms for consistency with NicheContext
+  const availableNiches = isAdmin ? ['creators', 'coaches', 'podcasters', 'freelancers'] : subscribedNiches;
 
   // Handle URL parameters for section and niche
   useEffect(() => {
@@ -260,7 +261,15 @@ function MainDashboardWithSearchParams() {
     
     // Only allow switching to subscribed niches
     if (nicheParam && AVAILABLE_NICHES.find(niche => niche.id === nicheParam) && availableNiches.includes(nicheParam)) {
-      setSelectedNiche(nicheParam);
+      // Map singular niche IDs to plural forms for consistency
+      const nicheMap: { [key: string]: string } = {
+        'creator': 'creators',
+        'coach': 'coaches',
+        'podcaster': 'podcasters',
+        'freelancer': 'freelancers'
+      };
+      const mappedNiche = nicheMap[nicheParam] || nicheParam;
+      setSelectedNiche(mappedNiche);
     }
   }, [searchParams, subscribedNiches]);
 
@@ -301,20 +310,34 @@ function MainDashboardWithSearchParams() {
     if (mounted && !paymentStatusLoading && availableNiches.length > 0) {
       const localStorageNiche = localStorage.getItem('selectedNiche');
       
+      // Map singular niche IDs to plural forms for consistency
+      const nicheMap: { [key: string]: string } = {
+        'creator': 'creators',
+        'coach': 'coaches',
+        'podcaster': 'podcasters',
+        'freelancer': 'freelancers'
+      };
+      
       // Only set niche if no niche is selected at all
       if (!selectedNiche) {
         // Always prioritize localStorage over primaryNiche
-        const preferredNiche = localStorageNiche && availableNiches.includes(localStorageNiche) 
+        let preferredNiche = localStorageNiche && availableNiches.includes(localStorageNiche) 
           ? localStorageNiche 
           : (primaryNiche || availableNiches[0]);
+        
+        // Map to plural form if it's a singular form
+        preferredNiche = nicheMap[preferredNiche] || preferredNiche;
         
         setSelectedNiche(preferredNiche);
       } else {
         // If a niche is already selected, only change it if it's not available
         if (!availableNiches.includes(selectedNiche)) {
-          const fallbackNiche = localStorageNiche && availableNiches.includes(localStorageNiche)
+          let fallbackNiche = localStorageNiche && availableNiches.includes(localStorageNiche)
             ? localStorageNiche
             : (primaryNiche || availableNiches[0]);
+          
+          // Map to plural form if it's a singular form
+          fallbackNiche = nicheMap[fallbackNiche] || fallbackNiche;
           
           setSelectedNiche(fallbackNiche);
         }
@@ -584,17 +607,27 @@ function MainDashboardWithSearchParams() {
   };
 
   const handleNicheChange = (niche: string) => {
+    // Map singular niche IDs to plural forms for consistency with NicheContext
+    const nicheMap: { [key: string]: string } = {
+      'creator': 'creators',
+      'coach': 'coaches',
+      'podcaster': 'podcasters',
+      'freelancer': 'freelancers'
+    };
+    
+    const mappedNiche = nicheMap[niche] || niche;
+    
     // Only allow switching to available niches
     if (!availableNiches.includes(niche)) {
       console.warn(`User not subscribed to niche: ${niche}`);
       return;
     }
     
-    setSelectedNiche(niche);
+    setSelectedNiche(mappedNiche);
     
     // Save the selected niche to localStorage
     if (mounted) {
-      localStorage.setItem('selectedNiche', niche);
+      localStorage.setItem('selectedNiche', mappedNiche);
     }
     
     // Auto-switch to analytics dashboard for coach niche
@@ -672,7 +705,7 @@ function MainDashboardWithSearchParams() {
   return (
     <AppContext.Provider value={contextValue}>
       <div className={`h-screen flex overflow-hidden ${
-        selectedNiche === 'creator' || selectedNiche === 'coach' || selectedNiche === 'podcaster' || selectedNiche === 'freelancer'
+        selectedNiche === 'creators' || selectedNiche === 'coaches' || selectedNiche === 'podcasters' || selectedNiche === 'freelancers'
           ? 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100' 
           : 'bg-background'
       }`} style={{ touchAction: 'manipulation' }}>
@@ -727,8 +760,8 @@ function MainDashboardWithSearchParams() {
           {/* Main Content Area */}
           <div className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out">
             {/* Mobile Menu Toggle */}
-            <div className={`lg:hidden flex items-center justify-between p-4 border-b flex-shrink-0 ${
-              selectedNiche === 'creator' || selectedNiche === 'coach' || selectedNiche === 'podcaster' || selectedNiche === 'freelancer'
+            <div             className={`lg:hidden flex items-center justify-between p-4 border-b flex-shrink-0 ${
+              selectedNiche === 'creators' || selectedNiche === 'coaches' || selectedNiche === 'podcasters' || selectedNiche === 'freelancers'
                 ? 'border-slate-200 bg-white/80 backdrop-blur-sm' 
                 : 'border-border bg-card'
             }`}>
