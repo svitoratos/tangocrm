@@ -1,3 +1,4 @@
+import React from 'react'
 import { Metadata } from 'next'
 import { generateMetadata } from '@/lib/metadata'
 import Link from 'next/link'
@@ -6,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Check, Star, Users, Target, TrendingUp, Calendar, DollarSign, Zap, Mic, Headphones, Radio } from 'lucide-react'
 import { TangoHeader } from '@/components/app/tango-header'
 import { FooterWithGrid } from '@/components/blocks/footers/footer-with-grid'
+import { Badge } from '@/components/ui/badge'
 
 export const metadata: Metadata = generateMetadata({
   title: 'Podcaster CRM Platform - The #1 CRM for Podcast Hosts & Audio Creators',
@@ -99,6 +101,12 @@ const faqs = [
 ]
 
 export default function PodcasterCRMPage() {
+  const [isYearly, setIsYearly] = React.useState(false);
+  
+  const monthlyPrice = 49.99;
+  const yearlyPrice = 479.00;
+  const savings = (monthlyPrice * 12) - yearlyPrice;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <TangoHeader />
@@ -180,16 +188,48 @@ export default function PodcasterCRMPage() {
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need to grow your podcast business, starting at just $49.99/month
+              One plan. All niches. Everything you need to grow your creator business.
             </p>
+            
+            {/* Billing Toggle */}
+            <div className="mt-8 flex items-center justify-center">
+              <span className={`text-sm font-medium ${!isYearly ? 'text-gray-900' : 'text-gray-500'}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setIsYearly(!isYearly)}
+                className="relative mx-3 inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isYearly ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${isYearly ? 'text-gray-900' : 'text-gray-500'}`}>
+                Yearly
+              </span>
+              {isYearly && (
+                <Badge className="ml-2 bg-emerald-100 text-emerald-700 border-emerald-200">
+                  Save ${savings.toFixed(0)}
+                </Badge>
+              )}
+            </div>
           </div>
           
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Tango Core</h3>
-                <div className="text-4xl font-bold text-emerald-600 mb-2">$49.99</div>
-                <p className="text-gray-600">per month</p>
+                <div className="text-4xl font-bold text-emerald-600 mb-2">
+                  ${isYearly ? yearlyPrice.toFixed(0) : monthlyPrice.toFixed(2)}
+                </div>
+                <p className="text-gray-600">per {isYearly ? 'year' : 'month'}</p>
+                {isYearly && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    ${(yearlyPrice / 12).toFixed(2)}/month when billed annually
+                  </p>
+                )}
               </div>
               
               <div className="grid md:grid-cols-2 gap-6 mb-8">
