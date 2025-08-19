@@ -481,6 +481,8 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
         
         return statusMap[niche]?.[dbStatus] || 'outreach';
       };
+
+
       
       const formDataToSet = {
         status: mapDatabaseStatusToStageId(opportunity.status || "prospecting", userNiche),
@@ -657,7 +659,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
           
           return statusMap[niche]?.[dbStatus] || 'outreach';
         };
-        
+
         const formDataToSet = {
           status: mapDatabaseStatusToStageId(opportunity.status || "prospecting", userNiche),
           priority: customFields.priority || "medium",
@@ -978,6 +980,46 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
     return Object.keys(newErrors).length === 0;
   };
 
+  // Map UI stage ID to database status
+  const mapStageIdToDatabaseStatus = (stageId: string, niche: string): string => {
+    const reverseStatusMap: Record<string, Record<string, string>> = {
+      creator: {
+        'outreach': 'prospecting',
+        'awaiting': 'qualification',
+        'contract': 'proposal',
+        'negotiation': 'negotiation',
+        'paid': 'won',
+        'archived': 'lost'
+      },
+      coach: {
+        'new-lead': 'prospecting',
+        'discovery-scheduled': 'qualification',
+        'proposal': 'proposal',
+        'negotiation': 'negotiation',
+        'paid': 'won',
+        'archived': 'lost'
+      },
+      podcaster: {
+        'outreach': 'prospecting',
+        'conversation': 'qualification',
+        'agreement': 'proposal',
+        'negotiation': 'negotiation',
+        'recorded': 'won',
+        'archived': 'lost'
+      },
+      freelancer: {
+        'new-inquiry': 'prospecting',
+        'discovery': 'qualification',
+        'proposal': 'proposal',
+        'contract': 'negotiation',
+        'delivered': 'won',
+        'archived': 'lost'
+      }
+    };
+    
+    return reverseStatusMap[niche]?.[stageId] || 'prospecting';
+  };
+
   // Check if form is complete (all mandatory fields filled)
   const isFormComplete = () => {
     
@@ -1099,7 +1141,7 @@ const OpportunityModal = ({ isOpen, onClose, opportunity, onSave, userNiche = "g
       title: formData.campaignName || formData.clientName || formData.guestOrSponsorName || formData.companyName || "",
       description: formData.brandName || formData.programName || formData.episodeTitle || formData.projectTitle || "",
       value: formData.dealValue || formData.proposedValue || formData.sponsorshipValue || formData.projectValue || 0,
-      status: formData.status,
+      status: mapStageIdToDatabaseStatus(formData.status, userNiche),
       type: userNiche === 'coach' ? 'coaching' : 
             userNiche === 'podcaster' ? 'sponsorship' : 
             userNiche === 'freelancer' ? 'consulting' : 
