@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const niche = searchParams.get('niche');
     
+    console.log('Journal GET - Building query for user:', correctUserId, 'niche:', niche);
+    
     let query = supabaseAdmin
       .from('journal_entries')
       .select('*')
@@ -40,10 +42,14 @@ export async function GET(request: NextRequest) {
     
     // Filter by niche if provided
     if (niche) {
+      console.log('Journal GET - Adding niche filter for:', niche);
+      // Use the correct Supabase array containment syntax
       query = query.contains('tags', [niche]);
     }
     
+    console.log('Journal GET - Executing query...');
     const { data: entries, error } = await query.order('created_at', { ascending: false });
+    console.log('Journal GET - Query result:', { entriesCount: entries?.length || 0, error: error?.message });
 
     if (error) {
       console.error('Error fetching journal entries:', error);
