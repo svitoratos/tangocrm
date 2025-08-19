@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { contactFormSchema, validateInput } from '@/lib/validation';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -9,15 +10,17 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, company, subject, message } = body;
-
-    // Validate required fields
-    if (!name || !email || !subject || !message) {
+    
+    // Validate input data
+    const validation = validateInput(contactFormSchema, body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Invalid input', details: validation.errors },
         { status: 400 }
       );
     }
+    
+    const { name, email, subject, message } = validation.data;
 
     // Store in database
     const { data, error } = await supabase
@@ -26,7 +29,7 @@ export async function POST(request: NextRequest) {
         {
           name,
           email,
-          company: company || null,
+          company: body.company || null,
           subject,
           message,
           status: 'new'

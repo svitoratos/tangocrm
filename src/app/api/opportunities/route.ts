@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { OpportunityDateUtils } from '@/lib/timezone-utils';
 import { opportunityActivityService, ActivityChange } from '@/lib/opportunity-activity-service';
+import { opportunityCreateSchema, opportunityUpdateSchema, validateInput } from '@/lib/validation';
 
 
 export interface Opportunity {
@@ -184,14 +185,17 @@ export async function POST(request: NextRequest) {
     console.log('Opportunity create request body:', body);
     console.log('User ID:', userId);
     
-    // Validate required fields
-    if (!body.title) {
-      console.log('Missing title field');
+    // Validate input data
+    const validation = validateInput(opportunityCreateSchema, body);
+    if (!validation.success) {
+      console.log('Validation errors:', validation.errors);
       return NextResponse.json(
-        { error: 'Title is required' },
+        { error: 'Invalid input', details: validation.errors },
         { status: 400 }
       );
     }
+    
+    const validatedData = validation.data;
     
     // Get user's timezone for proper date handling
     let userTimezone = 'UTC';
@@ -205,21 +209,8 @@ export async function POST(request: NextRequest) {
       
       if (userError) {
         console.log('User lookup error:', userError);
-        // Try to find user by email as fallback
-        try {
-          const { data: userDataByEmail } = await supabaseAdmin
-            .from('users')
-            .select('timezone')
-            .eq('email', 'stevenvitoratos@getbondlyapp.com')
-            .single();
-          
-          if (userDataByEmail?.timezone) {
-            userTimezone = userDataByEmail.timezone;
-            console.log('Found user timezone by email fallback:', userTimezone);
-          }
-        } catch (emailError) {
-          console.log('Email fallback also failed, using UTC');
-        }
+        // Continue with UTC as fallback - no hardcoded email lookups
+        console.log('User not found by ID, using UTC timezone as fallback');
       } else if (userData?.timezone) {
         userTimezone = userData.timezone;
         console.log('Found user timezone:', userTimezone);
@@ -233,11 +224,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Convert all date fields to UTC for storage using proper timezone conversion
-    const expectedCloseDate = localDateToUTC(body.expected_close_date, userTimezone);
-    const actualCloseDate = localDateToUTC(body.actual_close_date, userTimezone);
-    const followUpDate = localDateToUTC(body.follow_up_date, userTimezone);
-    const discoveryCallDate = localDateToUTC(body.discovery_call_date, userTimezone);
-    const scheduledDate = localDateToUTC(body.scheduled_date, userTimezone);
+    const expectedCloseDate = localDateToUTC(validatedData.expected_close_date, userTimezone);
+    const actualCloseDate = localDateToUTC(validatedData.actual_close_date, userTimezone);
+    const followUpDate = localDateToUTC(validatedData.follow_up_date, userTimezone);
+    const discoveryCallDate = localDateToUTC(validatedData.discovery_call_date, userTimezone);
+    const scheduledDate = localDateToUTC(validatedData.scheduled_date, userTimezone);
     
 
     
@@ -252,46 +243,30 @@ export async function POST(request: NextRequest) {
       scheduledDate
     });
     
-    // Get the correct user_id for database insertion
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@getbondlyapp.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('Using existing user ID for database:', correctUserId);
-      } else {
-        console.log('No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - never override with hardcoded lookups
+    const correctUserId = userId;
+    console.log('POST - Using authenticated user ID:', correctUserId);
     
     const insertData = {
       user_id: correctUserId,
-      client_id: body.client_id,
-      title: body.title,
-      description: body.description,
-      value: body.value || 0,
-      status: body.status || 'prospecting',
-      stage: body.status || 'prospecting',
-      type: body.type || 'other',
-      niche: body.niche || 'creator',
-      probability: body.probability || 0,
+      client_id: validatedData.client_id,
+      title: validatedData.title,
+      description: validatedData.description,
+      value: validatedData.value,
+      status: validatedData.status,
+      stage: validatedData.status,
+      type: validatedData.type,
+      niche: validatedData.niche,
+      probability: validatedData.probability,
       expected_close_date: expectedCloseDate,
       actual_close_date: actualCloseDate,
       follow_up_date: followUpDate,
       discovery_call_date: discoveryCallDate,
       scheduled_date: scheduledDate,
       user_timezone: userTimezone,
-      notes: body.notes,
-      tags: body.tags || [],
-      custom_fields: body.customFields || {}
+      notes: validatedData.notes,
+      tags: validatedData.tags,
+      custom_fields: validatedData.customFields
     };
     
     console.log('Insert data being sent to database:', insertData);
@@ -318,7 +293,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating opportunity:', error);
       return NextResponse.json(
-        { error: 'Failed to create opportunity', details: error },
+        { error: 'Failed to create opportunity' },
         { status: 500 }
       );
     }
@@ -469,7 +444,7 @@ export async function POST(request: NextRequest) {
     console.error('Error in POST /api/opportunities:', error);
     console.error('Error details:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -493,44 +468,32 @@ export async function PUT(request: NextRequest) {
     console.log('Opportunity update request body:', body);
     console.log('User ID:', userId);
     
-    if (!body.id) {
-      console.log('Missing opportunity ID');
+    // Validate input data
+    const validation = validateInput(opportunityUpdateSchema, body);
+    if (!validation.success) {
+      console.log('Validation errors:', validation.errors);
       return NextResponse.json(
-        { error: 'Opportunity ID is required' },
+        { error: 'Invalid input', details: validation.errors },
         { status: 400 }
       );
     }
     
-    // Get the correct user_id for database query (same logic as GET/POST)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@getbondlyapp.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('PUT - Using existing user ID for query:', correctUserId);
-      } else {
-        console.log('PUT - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('PUT - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    const validatedData = validation.data;
+    
+    // Use authenticated user ID directly - never override with hardcoded lookups
+    const correctUserId = userId;
+    console.log('PUT - Using authenticated user ID:', correctUserId);
     
     // Get current opportunity data for change detection
     const { data: currentOpportunity, error: fetchError } = await supabaseAdmin
       .from('opportunities')
       .select('*')
-      .eq('id', body.id)
+      .eq('id', validatedData.id)
       .eq('user_id', correctUserId)
       .single();
 
     if (fetchError || !currentOpportunity) {
-      console.log('PUT - Opportunity not found with ID:', body.id, 'and user_id:', correctUserId);
+      console.log('PUT - Opportunity not found with ID:', validatedData.id, 'and user_id:', correctUserId);
       return NextResponse.json(
         { error: 'Opportunity not found' },
         { status: 404 }
@@ -654,7 +617,7 @@ export async function PUT(request: NextRequest) {
     if (error) {
       console.error('Error updating opportunity:', error);
       return NextResponse.json(
-        { error: 'Failed to update opportunity', details: error },
+        { error: 'Failed to update opportunity' },
         { status: 500 }
       );
     }
@@ -843,25 +806,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    // Get the correct user_id for database query (same logic as GET/POST/PUT)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@getbondlyapp.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('DELETE - Using existing user ID for query:', correctUserId);
-      } else {
-        console.log('DELETE - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('DELETE - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - never override with hardcoded lookups
+    const correctUserId = userId;
+    console.log('DELETE - Using authenticated user ID:', correctUserId);
     
     // Delete opportunity from database
     const { error } = await supabaseAdmin

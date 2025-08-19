@@ -441,18 +441,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error: any) {
     console.error('❌ Webhook processing error:', error);
-    console.error('❌ Error details:', {
-      message: error?.message || 'Unknown error',
-      stack: error?.stack || 'No stack trace',
-      eventType: event?.type,
-      eventId: event?.id
+    
+    // Log minimal error details without exposing sensitive information
+    const errorMessage = error?.message || 'Unknown error';
+    const eventType = event?.type || 'unknown';
+    const eventId = event?.id || 'unknown';
+    
+    console.error('❌ Webhook error summary:', {
+      message: errorMessage,
+      eventType,
+      eventId
     });
     
-    // Return 200 to prevent Stripe from retrying (for now)
-    // This prevents webhook delivery failures while we debug
+    // Return 500 to allow Stripe to retry failed webhooks
+    // This ensures legitimate webhook failures are retried by Stripe
     return NextResponse.json({ 
-      error: 'Webhook processing failed',
-      received: true // Tell Stripe we received it to stop retries
-    }, { status: 200 });
+      error: 'Webhook processing failed'
+    }, { status: 500 });
   }
 }
