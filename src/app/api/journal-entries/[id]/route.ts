@@ -37,7 +37,7 @@ export async function PUT(
       const { data: existingUser } = await supabaseAdmin
         .from('users')
         .select('id')
-        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .eq('email', 'stevenvitoratos@gmail.com')
         .single();
       
       if (existingUser?.id) {
@@ -100,7 +100,7 @@ export async function DELETE(
       const { data: existingUser } = await supabaseAdmin
         .from('users')
         .select('id')
-        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .eq('email', 'stevenvitoratos@gmail.com')
         .single();
       
       if (existingUser?.id) {
