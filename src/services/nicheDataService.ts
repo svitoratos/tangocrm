@@ -118,9 +118,6 @@ class NicheDataService {
   private async getEntries(type: 'journal' | 'goal'): Promise<any[]> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
     
-    console.log(`🔧 SERVICE: this.niche = ${this.niche}, this.apiNiche = ${this.apiNiche}`);
-    console.log(`🔧 SERVICE: Fetching ${type} entries from: ${endpoint}?niche=${this.apiNiche}`);
-    
     // Use niche in URL query parameter for GET requests (like opportunities and calendar events)
     const response = await fetch(`${endpoint}?niche=${this.apiNiche}`);
     
@@ -131,24 +128,20 @@ class NicheDataService {
     }
 
     const data = await response.json();
-    console.log(`🔧 SERVICE: Raw API response for ${type} entries:`, data);
     
     // Double filter to ensure niche isolation
     const filteredData = data.filter((entry: any) => {
       if (type === 'journal') {
         // For journal entries, check if niche is in tags array
         const hasNicheTag = entry.tags && entry.tags.includes(this.apiNiche);
-        console.log(`🔧 SERVICE: Journal entry ${entry.id}: tags=${entry.tags}, hasNicheTag=${hasNicheTag}, looking for niche=${this.apiNiche}`);
         return hasNicheTag;
       } else {
         // For goals, check niche column
         const hasNicheColumn = entry.niche === this.apiNiche;
-        console.log(`🔧 SERVICE: Goal entry ${entry.id}: niche=${entry.niche}, hasNicheColumn=${hasNicheColumn}`);
         return hasNicheColumn;
       }
     });
 
-    console.log(`🔧 SERVICE: Filtered ${data.length} entries to ${filteredData.length} for ${this.niche} (API: ${this.apiNiche})`);
     return filteredData;
   }
 
