@@ -11,6 +11,8 @@ import {
 export const useNicheData = () => {
   const { currentNiche } = useNiche();
   
+  console.log('🔧 useNicheData - currentNiche from context:', currentNiche);
+  
   // Map plural niche forms to singular forms for API calls
   const mapNicheToApiFormat = (niche: string): string => {
     const nicheMap: { [key: string]: string } = {
@@ -23,12 +25,23 @@ export const useNicheData = () => {
   };
   
   const getDataService = () => {
+    console.log('🔧 useNicheData - Getting data service for niche:', currentNiche);
     switch (currentNiche) {
-      case 'creators': return creatorsDataService;
-      case 'podcasters': return podcastersDataService;
-      case 'freelancers': return freelancersDataService;
-      case 'coaches': return coachesDataService;
-      default: return creatorsDataService;
+      case 'creators': 
+        console.log('🔧 useNicheData - Using creatorsDataService');
+        return creatorsDataService;
+      case 'podcasters': 
+        console.log('🔧 useNicheData - Using podcastersDataService');
+        return podcastersDataService;
+      case 'freelancers': 
+        console.log('🔧 useNicheData - Using freelancersDataService');
+        return freelancersDataService;
+      case 'coaches': 
+        console.log('🔧 useNicheData - Using coachesDataService');
+        return coachesDataService;
+      default: 
+        console.log('🔧 useNicheData - Using default creatorsDataService');
+        return creatorsDataService;
     }
   };
   
