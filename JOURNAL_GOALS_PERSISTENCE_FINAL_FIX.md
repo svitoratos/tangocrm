@@ -4,7 +4,7 @@
 Journal entries and goals were saving initially but disappearing when users navigated away and came back to the journals/goals section. The data was being saved to the database but not retrieved properly.
 
 ## Root Cause Analysis
-The issue was caused by **two separate problems**:
+The issue was caused by **three separate problems**:
 
 ### Problem 1: Niche Mapping Inconsistency in NicheContext
 - **localStorage was storing singular forms** (`creator`, `podcaster`, etc.)
@@ -17,6 +17,14 @@ The issue was caused by **two separate problems**:
 - **Service layer was completely bypassed** for all journal operations
 - **Direct API calls were missing the `?niche=` parameter** for fetching
 - **This meant data was saved correctly but never retrieved, and operations were inconsistent**
+
+### Problem 3: Service Layer Using Wrong API Pattern
+- **Service layer was using inconsistent API patterns** compared to working components
+- **Working components** (opportunities, calendar, content) use:
+  - **GET requests**: `?niche=` in URL query parameters
+  - **POST/PUT requests**: `niche` in request body
+- **Service layer was using wrong pattern** for journal entries
+- **This caused API calls to fail** or return incorrect data
 
 ## The Complete Fix
 
@@ -60,6 +68,28 @@ const data = await updateJournalEntry(id, entryData);
 await deleteJournalEntry(id);
 ```
 
+### Fix 3: Updated Service Layer (`src/services/nicheDataService.ts`)
+Fixed the service layer to match the working pattern from opportunities and calendar events:
+
+**Before (Broken):**
+```typescript
+// Inconsistent API pattern
+const response = await fetch(`${endpoint}?niche=${this.apiNiche}`); // Wrong for POST/PUT
+```
+
+**After (Fixed):**
+```typescript
+// Match working pattern from opportunities and calendar events
+// GET requests: niche in URL query parameter
+const response = await fetch(`${endpoint}?niche=${this.apiNiche}`);
+
+// POST/PUT requests: niche in request body
+const requestBody = {
+  ...entryData,
+  niche: this.apiNiche
+};
+```
+
 ## Data Flow After Complete Fix
 
 ### Before Fix (Broken):
@@ -71,6 +101,8 @@ NicheContext: "creator" (singular) ❌
 Service Layer: Expects "creators" (plural) ❌
 ↓
 Component: Direct API calls for ALL operations ❌
+↓
+Service Layer: Wrong API pattern ❌
 ↓
 API: Inconsistent niche handling ❌
 ↓
@@ -91,7 +123,10 @@ Service Layer: mapNicheToApiFormat("creators") → "creator" (singular) ✅
 ↓
 Component: Uses service layer for ALL operations ✅
 ↓
-API Call: /api/journal-entries?niche=creator ✅
+Service Layer: Correct API pattern (GET: URL, POST/PUT: body) ✅
+↓
+API Call: /api/journal-entries?niche=creator (GET) ✅
+API Call: /api/journal-entries with niche in body (POST/PUT) ✅
 ↓
 Database: Has entries with niche="creator"
 ↓
@@ -103,9 +138,10 @@ Result: Data found ✅
 ### Core Fixes
 - **`src/contexts/NicheContext.tsx`** - Added niche mapping for consistent plural form usage
 - **`src/components/app/creator-journal.tsx`** - Updated ALL operations to use service layer
+- **`src/services/nicheDataService.ts`** - Fixed API pattern to match working components
 
-### Service Layer (Already Working)
-- **`src/services/nicheDataService.ts`** - Already had correct niche mapping for API calls
+### Service Layer (Now Working Correctly)
+- **`src/services/nicheDataService.ts`** - Now uses correct API pattern
 - **`src/hooks/useNicheData.ts`** - Already provided service layer access
 
 ### Testing & Documentation
@@ -129,6 +165,41 @@ Result: Data found ✅
 ### ✅ Delete Operations
 - `handleDeleteEntry` - Now uses `deleteJournalEntry()`
 
+## API Pattern Consistency
+
+### ✅ GET Requests (Fetching Data)
+```typescript
+// Journal entries
+fetch(`/api/journal-entries?niche=${niche}`)
+
+// Opportunities (working)
+fetch(`/api/opportunities?niche=${niche}`)
+
+// Calendar events (working)
+fetch(`/api/calendar-events?niche=${niche}`)
+```
+
+### ✅ POST/PUT Requests (Saving Data)
+```typescript
+// Journal entries
+fetch('/api/journal-entries', {
+  method: 'POST',
+  body: JSON.stringify({ ...data, niche: niche })
+})
+
+// Opportunities (working)
+fetch('/api/opportunities', {
+  method: 'POST',
+  body: JSON.stringify({ ...data, niche: niche })
+})
+
+// Calendar events (working)
+fetch('/api/calendar-events', {
+  method: 'POST',
+  body: JSON.stringify({ ...data, niche: niche })
+})
+```
+
 ## Verification
 
 The complete fix ensures that:
@@ -138,6 +209,7 @@ The complete fix ensures that:
 4. **Backward compatibility**: Existing data continues to work
 5. **Service layer consistency**: ALL operations use the same service layer
 6. **Operation consistency**: Create, read, update, delete all work correctly
+7. **API pattern consistency**: Matches the working pattern from other components
 
 ## Testing Instructions
 
@@ -155,18 +227,22 @@ All operations should work correctly and persist across navigation.
 
 - ✅ **Fixed**: Journal entries and goals persistence issue
 - ✅ **Fixed**: Component bypassing service layer issue
+- ✅ **Fixed**: Service layer API pattern inconsistency
 - ✅ **Fixed**: All journal operations now use service layer
 - ✅ **Improved**: Consistent niche handling across the application
 - ✅ **Maintained**: Backward compatibility with existing data
 - ✅ **Enhanced**: User experience with reliable data persistence
 - ✅ **Standardized**: All data operations now use the service layer
+- ✅ **Consistent**: API patterns match working components
 
 ## Key Lessons
 
 1. **Service Layer Consistency**: ALL data operations should use the same service layer
 2. **Niche Mapping**: Consistent mapping between UI forms (plural) and API forms (singular)
-3. **Debugging Strategy**: Use systematic debugging to identify where the data flow breaks
-4. **Type Safety**: Handle type mismatches between service layer and component interfaces
-5. **Complete Migration**: When fixing service layer issues, ensure ALL operations are migrated
+3. **API Pattern Consistency**: Match the working pattern from other components
+4. **Debugging Strategy**: Use systematic debugging to identify where the data flow breaks
+5. **Type Safety**: Handle type mismatches between service layer and component interfaces
+6. **Complete Migration**: When fixing service layer issues, ensure ALL operations are migrated
+7. **Pattern Matching**: Study working components to understand the correct patterns
 
 The journal/goals persistence issue is now completely resolved! 🎯
