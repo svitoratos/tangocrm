@@ -111,14 +111,26 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
   const [currentView, setCurrentView] = useState<'journal' | 'goals'>('journal');
   const [goalsViewMode, setGoalsViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Map plural niche forms to singular forms for API calls
+  const mapNicheToApiFormat = (niche: string): string => {
+    const nicheMap: { [key: string]: string } = {
+      'creators': 'creator',
+      'podcasters': 'podcaster',
+      'freelancers': 'freelancer',
+      'coaches': 'coach'
+    };
+    return nicheMap[niche] || niche;
+  };
+
   // Fetch journal entries from database
   const fetchEntries = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      console.log('🔄 Fetching journal entries for niche:', currentNiche);
-      const response = await fetch(`/api/journal-entries?niche=${currentNiche}`);
+      const apiNiche = mapNicheToApiFormat(currentNiche);
+      console.log('🔄 Fetching journal entries for niche:', currentNiche, '(API:', apiNiche, ')');
+      const response = await fetch(`/api/journal-entries?niche=${apiNiche}`);
       if (!response.ok) {
         throw new Error('Failed to fetch journal entries');
       }
@@ -142,7 +154,8 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       setIsLoadingGoals(true);
       setError(null);
       
-      const response = await fetch(`/api/goals?niche=${currentNiche}`);
+      const apiNiche = mapNicheToApiFormat(currentNiche);
+      const response = await fetch(`/api/goals?niche=${apiNiche}`);
       if (!response.ok) {
         throw new Error('Failed to fetch goals');
       }
@@ -210,13 +223,14 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       setIsSaving(true);
       setError(null);
 
+      const apiNiche = mapNicheToApiFormat(currentNiche);
       const entryData = {
         title: selectedEntry.title,
         content: selectedEntry.content,
         mood: selectedEntry.mood,
         isFavorite: selectedEntry.is_favorite,
         prompt: selectedEntry.prompt,
-        niche: currentNiche
+        niche: apiNiche
       };
       
       console.log('🎯 Saving journal entry with data:', entryData);

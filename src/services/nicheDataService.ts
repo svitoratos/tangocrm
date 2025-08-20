@@ -27,13 +27,26 @@ interface GoalEntry {
 
 class NicheDataService {
   private niche: string;
+  private apiNiche: string;
 
   constructor(niche: string) {
     this.niche = niche;
+    // Map plural niche forms to singular forms for API calls
+    this.apiNiche = this.mapNicheToApiFormat(niche);
+  }
+
+  private mapNicheToApiFormat(niche: string): string {
+    const nicheMap: { [key: string]: string } = {
+      'creators': 'creator',
+      'podcasters': 'podcaster',
+      'freelancers': 'freelancer',
+      'coaches': 'coach'
+    };
+    return nicheMap[niche] || niche;
   }
 
   async createJournalEntry(entryData: Partial<JournalEntry>): Promise<JournalEntry> {
-    console.log(`📝 Creating journal entry for ${this.niche}:`, entryData);
+    console.log(`📝 Creating journal entry for ${this.niche} (API: ${this.apiNiche}):`, entryData);
 
     // Save to database with niche filter
     const result = await this.saveEntry('journal', entryData);
@@ -42,7 +55,7 @@ class NicheDataService {
   }
 
   async createGoalEntry(entryData: Partial<GoalEntry>): Promise<GoalEntry> {
-    console.log(`🎯 Creating goal entry for ${this.niche}:`, entryData);
+    console.log(`🎯 Creating goal entry for ${this.niche} (API: ${this.apiNiche}):`, entryData);
 
     const result = await this.saveEntry('goal', entryData);
     console.log(`✅ Goal entry saved for ${this.niche}:`, result);
@@ -50,41 +63,41 @@ class NicheDataService {
   }
 
   async getJournalEntries(): Promise<JournalEntry[]> {
-    console.log(`📖 Loading journal entries for ${this.niche}`);
+    console.log(`📖 Loading journal entries for ${this.niche} (API: ${this.apiNiche})`);
     const entries = await this.getEntries('journal');
     console.log(`📖 Found ${entries.length} journal entries for ${this.niche}`);
     return entries;
   }
 
   async getGoalEntries(): Promise<GoalEntry[]> {
-    console.log(`🎯 Loading goal entries for ${this.niche}`);
+    console.log(`🎯 Loading goal entries for ${this.niche} (API: ${this.apiNiche})`);
     const entries = await this.getEntries('goal');
     console.log(`🎯 Found ${entries.length} goal entries for ${this.niche}`);
     return entries;
   }
 
   async updateJournalEntry(id: string, entryData: Partial<JournalEntry>): Promise<JournalEntry> {
-    console.log(`📝 Updating journal entry ${id} for ${this.niche}:`, entryData);
-    const result = await this.updateEntry('journal', id, { ...entryData, niche: this.niche });
+    console.log(`📝 Updating journal entry ${id} for ${this.niche} (API: ${this.apiNiche}):`, entryData);
+    const result = await this.updateEntry('journal', id, { ...entryData, niche: this.apiNiche });
     console.log(`✅ Journal entry updated for ${this.niche}:`, result);
     return result;
   }
 
   async updateGoalEntry(id: string, entryData: Partial<GoalEntry>): Promise<GoalEntry> {
-    console.log(`🎯 Updating goal entry ${id} for ${this.niche}:`, entryData);
-    const result = await this.updateEntry('goal', id, { ...entryData, niche: this.niche });
+    console.log(`🎯 Updating goal entry ${id} for ${this.niche} (API: ${this.apiNiche}):`, entryData);
+    const result = await this.updateEntry('goal', id, { ...entryData, niche: this.apiNiche });
     console.log(`✅ Goal entry updated for ${this.niche}:`, result);
     return result;
   }
 
   async deleteJournalEntry(id: string): Promise<void> {
-    console.log(`🗑️ Deleting journal entry ${id} for ${this.niche}`);
+    console.log(`🗑️ Deleting journal entry ${id} for ${this.niche} (API: ${this.apiNiche})`);
     await this.deleteEntry('journal', id);
     console.log(`✅ Journal entry deleted for ${this.niche}`);
   }
 
   async deleteGoalEntry(id: string): Promise<void> {
-    console.log(`🗑️ Deleting goal entry ${id} for ${this.niche}`);
+    console.log(`🗑️ Deleting goal entry ${id} for ${this.niche} (API: ${this.apiNiche})`);
     await this.deleteEntry('goal', id);
     console.log(`✅ Goal entry deleted for ${this.niche}`);
   }
@@ -98,12 +111,12 @@ class NicheDataService {
           title: entryData.title,
           content: entryData.content,
           mood: entryData.mood,
-          tags: [this.niche], // Store niche in tags array
-          niche: this.niche
+          tags: [this.apiNiche], // Store niche in tags array (use API format)
+          niche: this.apiNiche
         }
       : {
           ...entryData,
-          niche: this.niche
+          niche: this.apiNiche
         };
     
     console.log(`📤 Sending ${type} entry to API:`, requestBody);
@@ -128,9 +141,9 @@ class NicheDataService {
   private async getEntries(type: 'journal' | 'goal'): Promise<any[]> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
     
-    console.log(`📥 Fetching ${type} entries for ${this.niche} from: ${endpoint}`);
+    console.log(`📥 Fetching ${type} entries for ${this.niche} (API: ${this.apiNiche}) from: ${endpoint}`);
     
-    const response = await fetch(`${endpoint}?niche=${this.niche}`);
+    const response = await fetch(`${endpoint}?niche=${this.apiNiche}`);
     
     if (!response.ok) {
       const errorText = await response.text();
@@ -145,18 +158,18 @@ class NicheDataService {
     const filteredData = data.filter((entry: any) => {
       if (type === 'journal') {
         // For journal entries, check if niche is in tags array
-        const hasNicheTag = entry.tags && entry.tags.includes(this.niche);
-        console.log(`🔍 Journal entry ${entry.id}: tags=${entry.tags}, hasNicheTag=${hasNicheTag}, looking for niche=${this.niche}`);
+        const hasNicheTag = entry.tags && entry.tags.includes(this.apiNiche);
+        console.log(`🔍 Journal entry ${entry.id}: tags=${entry.tags}, hasNicheTag=${hasNicheTag}, looking for niche=${this.apiNiche}`);
         return hasNicheTag;
       } else {
         // For goals, check niche column
-        const hasNicheColumn = entry.niche === this.niche;
+        const hasNicheColumn = entry.niche === this.apiNiche;
         console.log(`🔍 Goal entry ${entry.id}: niche=${entry.niche}, hasNicheColumn=${hasNicheColumn}`);
         return hasNicheColumn;
       }
     });
 
-    console.log(`🔍 Filtered ${data.length} entries to ${filteredData.length} for ${this.niche}`);
+    console.log(`🔍 Filtered ${data.length} entries to ${filteredData.length} for ${this.niche} (API: ${this.apiNiche})`);
     return filteredData;
   }
 
@@ -166,7 +179,7 @@ class NicheDataService {
     // Ensure niche is included in the request body
     const requestBody = {
       ...entryData,
-      niche: this.niche
+      niche: this.apiNiche
     };
     
     console.log(`📤 Updating ${type} entry ${id} with data:`, requestBody);
