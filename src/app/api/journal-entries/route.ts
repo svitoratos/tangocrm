@@ -46,15 +46,17 @@ export async function GET(request: NextRequest) {
       .select('*')
       .eq('user_id', correctUserId);
     
+    // TEMPORARILY DISABLE NICHE FILTERING FOR DEBUG
+    console.log('Journal GET - NICHE FILTER DISABLED FOR DEBUG - niche parameter:', niche);
     // Filter by niche if provided
-    if (niche) {
-      console.log('Journal GET - Adding niche filter for:', niche);
-      // Use the correct Supabase array containment syntax
-      query = query.contains('tags', [niche]);
-      console.log('Journal GET - Query after niche filter:', query);
-    } else {
-      console.log('Journal GET - No niche parameter provided, will return all entries for user');
-    }
+    // if (niche) {
+    //   console.log('Journal GET - Adding niche filter for:', niche);
+    //   // Use the correct Supabase array containment syntax
+    //   query = query.contains('tags', [niche]);
+    //   console.log('Journal GET - Query after niche filter:', query);
+    // } else {
+    //   console.log('Journal GET - No niche parameter provided, will return all entries for user');
+    // }
     
     console.log('Journal GET - Executing query...');
     const { data: entries, error } = await query.order('created_at', { ascending: false });
