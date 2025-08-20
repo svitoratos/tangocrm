@@ -30,25 +30,8 @@ export async function PUT(
       updateData.tags = [niche];
     }
     
-    // Get the correct user_id for database query (same logic as main route)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@gmail.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('Journal PUT [id] - Using existing user ID for query:', correctUserId);
-      } else {
-        console.log('Journal PUT [id] - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('Journal PUT [id] - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - no override needed
+    const correctUserId = userId;
 
     const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')
@@ -93,25 +76,8 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Get the correct user_id for database query (same logic as main route)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@gmail.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('Journal DELETE [id] - Using existing user ID for query:', correctUserId);
-      } else {
-        console.log('Journal DELETE [id] - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('Journal DELETE [id] - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - no override needed
+    const correctUserId = userId;
 
     const { error } = await supabaseAdmin
       .from('journal_entries')

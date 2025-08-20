@@ -29,25 +29,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the correct user_id for database queries (same logic as POST)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@gmail.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('Journal GET - Using existing user ID for query:', correctUserId);
-      } else {
-        console.log('Journal GET - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('Journal GET - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - no override needed
+    const correctUserId = userId;
     
     console.log('Journal GET - Using authenticated user ID:', correctUserId);
     
@@ -140,25 +123,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the correct user_id for database insertion (same logic as other APIs)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@gmail.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('Journal POST - Using existing user ID for insertion:', correctUserId);
-      } else {
-        console.log('Journal POST - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('Journal POST - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - no override needed
+    const correctUserId = userId;
     
     // Ensure niche is included in tags array for proper filtering
     const entryTags = tags || [];

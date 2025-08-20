@@ -85,25 +85,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the correct user_id for database insertion (same logic as other APIs)
-    let correctUserId = userId;
-    try {
-      // Try to find existing user by email
-      const { data: existingUser } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('email', 'stevenvitoratos@gmail.com')
-        .single();
-      
-      if (existingUser?.id) {
-        correctUserId = existingUser.id;
-        console.log('Goals POST - Using existing user ID for insertion:', correctUserId);
-      } else {
-        console.log('Goals POST - No existing user found, using Clerk ID:', correctUserId);
-      }
-    } catch (error) {
-      console.log('Goals POST - Error finding existing user, using Clerk ID:', correctUserId);
-    }
+    // Use authenticated user ID directly - no override needed
+    const correctUserId = userId;
     
     const { data: goal, error } = await supabaseAdmin
       .from('goals')
