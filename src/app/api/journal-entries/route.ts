@@ -32,7 +32,9 @@ export async function GET(request: NextRequest) {
     // Use authenticated user ID directly - no override needed
     const correctUserId = userId;
     
-    console.log('Journal GET - Using authenticated user ID:', correctUserId);
+    console.log('🔍 Journal GET - Raw userId from auth():', userId);
+    console.log('🔍 Journal GET - Using correctUserId:', correctUserId);
+    console.log('🔍 Journal GET - Types:', typeof userId, typeof correctUserId);
     
     // Get niche filter from query parameters
     const { searchParams } = new URL(request.url);
@@ -127,6 +129,10 @@ export async function POST(request: NextRequest) {
 
     // Use authenticated user ID directly - no override needed
     const correctUserId = userId;
+    
+    console.log('🔍 Journal POST - Raw userId from auth():', userId);
+    console.log('🔍 Journal POST - Using correctUserId:', correctUserId);
+    console.log('🔍 Journal POST - Types:', typeof userId, typeof correctUserId);
     
     // Ensure niche is included in tags array for proper filtering
     const entryTags = tags || [];
