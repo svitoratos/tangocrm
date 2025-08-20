@@ -331,46 +331,31 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
         const goalData = {
           title: selectedGoal.title,
           description: selectedGoal.description,
-          deadline: selectedGoal.deadline, // Use deadline directly
+          deadline: selectedGoal.deadline,
           status: selectedGoal.status,
           category: selectedGoal.category,
-          target_value: selectedGoal.target_value || 0, // Use target_value directly
-          current_value: 0, // Default current value
-          unit: 'units', // Default unit
-          niche: currentNiche
+          target_value: selectedGoal.target_value || 0,
+          current_value: selectedGoal.current_value || 0,
+          unit: selectedGoal.unit || 'units'
         };
 
-        let response;
-        if (selectedGoal.id === 'new') {
-          // Create new goal
-          response = await fetch(`/api/goals?niche=${currentNiche}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(goalData)
-          });
-        } else {
-          // Update existing goal
-          response = await fetch(`/api/goals/${selectedGoal.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(goalData)
-          });
-        }
+        console.log('🎯 Saving goal with data:', goalData);
 
-        if (!response.ok) {
-          throw new Error('Failed to save goal');
-        }
-
-        const data = await response.json();
-        
+        let data: Goal;
         if (selectedGoal.id === 'new') {
-          // Add new goal to the beginning of the list
+          // Create new goal using service layer
+          data = await createGoalEntry(goalData) as Goal;
+          console.log('✅ Goal created successfully:', data);
           setGoals(prev => [data, ...prev]);
+          console.log('📝 Updated local goals state, new count:', goals.length + 1);
         } else {
-          // Update existing goal
+          // Update existing goal using service layer
+          data = await updateGoalEntry(selectedGoal.id, goalData) as Goal;
+          console.log('✅ Goal updated successfully:', data);
           setGoals(prev => prev.map(goal => 
             goal.id === selectedGoal.id ? data : goal
           ));
+          console.log('📝 Updated existing goal in local state');
         }
         
         setShowGoalModal(false);
@@ -386,13 +371,9 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
 
   const handleDeleteGoal = async (goalId: string) => {
     try {
-      const response = await fetch(`/api/goals/${goalId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete goal');
-      }
+      // Delete goal using service layer
+      await deleteGoalEntry(goalId);
+      console.log('✅ Goal deleted successfully');
 
       setGoals(prev => prev.filter(goal => goal.id !== goalId));
       if (selectedGoal?.id === goalId) {
@@ -409,29 +390,22 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
     if (!goal) return;
 
     try {
-      const updatedGoal = { ...goal, status: goal.status === 'completed' ? 'in-progress' : 'completed' };
-      const response = await fetch(`/api/goals/${goalId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: updatedGoal.title,
-          description: updatedGoal.description,
-          deadline: updatedGoal.deadline, // Use deadline directly
-          status: updatedGoal.status,
-          category: updatedGoal.category,
-          target_value: updatedGoal.target_value || 0, // Use target_value directly
-          current_value: updatedGoal.current_value || 0,
-          unit: updatedGoal.unit || 'units',
-          niche: currentNiche,
+      const updatedStatus = goal.status === 'completed' ? 'in-progress' : 'completed';
+      
+      // Update goal using service layer
+      const data = await updateGoalEntry(goalId, {
+        title: goal.title,
+        description: goal.description,
+        deadline: goal.deadline,
+        status: updatedStatus,
+        category: goal.category,
+        target_value: goal.target_value || 0,
+        current_value: goal.current_value || 0,
+        unit: goal.unit || 'units'
+      }) as Goal;
 
-        })
-      });
+      console.log('✅ Goal status toggled successfully:', data);
 
-      if (!response.ok) {
-        throw new Error('Failed to update goal status');
-      }
-
-      const data = await response.json();
       setGoals(prev => prev.map(goal => 
         goal.id === goalId ? data : goal
       ));
