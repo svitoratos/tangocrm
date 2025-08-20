@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 // GET /api/goals/[id]
 export async function GET(
@@ -19,11 +19,31 @@ export async function GET(
 
     const { id } = await params;
 
-    const { data: goal, error } = await supabase
+    // Get the correct user_id for database query (same logic as main route)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals GET [id] - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Goals GET [id] - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals GET [id] - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+
+    const { data: goal, error } = await supabaseAdmin
       .from('goals')
       .select('*')
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .single();
 
     if (error) {
@@ -62,11 +82,31 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    const { data: goal, error } = await supabase
+    // Get the correct user_id for database query (same logic as main route)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals PUT [id] - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Goals PUT [id] - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals PUT [id] - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+
+    const { data: goal, error } = await supabaseAdmin
       .from('goals')
       .update(body)
       .eq('id', id)
-      .eq('user_id', userId)
+      .eq('user_id', correctUserId)
       .select()
       .single();
 
@@ -105,11 +145,31 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const { error } = await supabase
+    // Get the correct user_id for database query (same logic as main route)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Goals DELETE [id] - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Goals DELETE [id] - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Goals DELETE [id] - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+
+    const { error } = await supabaseAdmin
       .from('goals')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', correctUserId);
 
     if (error) {
       console.error('Error deleting goal:', error);

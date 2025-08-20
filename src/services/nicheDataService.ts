@@ -163,29 +163,47 @@ class NicheDataService {
   private async updateEntry(type: 'journal' | 'goal', id: string, entryData: any): Promise<any> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
     
+    // Ensure niche is included in the request body
+    const requestBody = {
+      ...entryData,
+      niche: this.niche
+    };
+    
+    console.log(`📤 Updating ${type} entry ${id} with data:`, requestBody);
+    
     const response = await fetch(`${endpoint}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entryData)
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to update ${type} entry`);
+      const errorText = await response.text();
+      console.error(`❌ API Error updating ${type} entry:`, errorText);
+      throw new Error(`Failed to update ${type} entry: ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log(`✅ ${type} entry updated successfully:`, result);
+    return result;
   }
 
   private async deleteEntry(type: 'journal' | 'goal', id: string): Promise<void> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
+    
+    console.log(`🗑️ Deleting ${type} entry ${id} from: ${endpoint}/${id}`);
     
     const response = await fetch(`${endpoint}/${id}`, {
       method: 'DELETE'
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete ${type} entry`);
+      const errorText = await response.text();
+      console.error(`❌ API Error deleting ${type} entry:`, errorText);
+      throw new Error(`Failed to delete ${type} entry: ${errorText}`);
     }
+
+    console.log(`✅ ${type} entry ${id} deleted successfully`);
   }
 }
 

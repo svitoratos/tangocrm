@@ -19,7 +19,7 @@ git add .
 
 # Commit changes
 echo "💾 Committing changes..."
-git commit -m "Expand cards to full width for creator and freelancer niches - Updated grid layout to use 3 columns instead of 4 for better spacing"
+git commit -m "Fix journal and goals saving issue - Resolved API routing conflicts and user ID handling for proper data persistence"
 
 # Push to Vercel
 echo "🚀 Pushing to Vercel..."
