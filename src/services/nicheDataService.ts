@@ -33,7 +33,6 @@ class NicheDataService {
     this.niche = niche;
     // Map plural niche forms to singular forms for API calls
     this.apiNiche = this.mapNicheToApiFormat(niche);
-    console.log(`🔧 NicheDataService constructor: niche=${niche}, apiNiche=${this.apiNiche}`);
   }
 
   private mapNicheToApiFormat(niche: string): string {
@@ -47,60 +46,42 @@ class NicheDataService {
   }
 
   async createJournalEntry(entryData: Partial<JournalEntry>): Promise<JournalEntry> {
-    console.log(`📝 Creating journal entry for ${this.niche} (API: ${this.apiNiche}):`, entryData);
-
     // Save to database with niche filter
     const result = await this.saveEntry('journal', entryData);
-    console.log(`✅ Journal entry saved for ${this.niche}:`, result);
     return result;
   }
 
   async createGoalEntry(entryData: Partial<GoalEntry>): Promise<GoalEntry> {
-    console.log(`🎯 Creating goal entry for ${this.niche} (API: ${this.apiNiche}):`, entryData);
-
     const result = await this.saveEntry('goal', entryData);
-    console.log(`✅ Goal entry saved for ${this.niche}:`, result);
     return result;
   }
 
   async getJournalEntries(): Promise<JournalEntry[]> {
-    console.log(`📖 Loading journal entries for ${this.niche} (API: ${this.apiNiche})`);
     const entries = await this.getEntries('journal');
-    console.log(`📖 Found ${entries.length} journal entries for ${this.niche}`);
     return entries;
   }
 
   async getGoalEntries(): Promise<GoalEntry[]> {
-    console.log(`🎯 Loading goal entries for ${this.niche} (API: ${this.apiNiche})`);
     const entries = await this.getEntries('goal');
-    console.log(`🎯 Found ${entries.length} goal entries for ${this.niche}`);
     return entries;
   }
 
   async updateJournalEntry(id: string, entryData: Partial<JournalEntry>): Promise<JournalEntry> {
-    console.log(`📝 Updating journal entry ${id} for ${this.niche} (API: ${this.apiNiche}):`, entryData);
     const result = await this.updateEntry('journal', id, { ...entryData, niche: this.apiNiche });
-    console.log(`✅ Journal entry updated for ${this.niche}:`, result);
     return result;
   }
 
   async updateGoalEntry(id: string, entryData: Partial<GoalEntry>): Promise<GoalEntry> {
-    console.log(`🎯 Updating goal entry ${id} for ${this.niche} (API: ${this.apiNiche}):`, entryData);
     const result = await this.updateEntry('goal', id, { ...entryData, niche: this.apiNiche });
-    console.log(`✅ Goal entry updated for ${this.niche}:`, result);
     return result;
   }
 
   async deleteJournalEntry(id: string): Promise<void> {
-    console.log(`🗑️ Deleting journal entry ${id} for ${this.niche} (API: ${this.apiNiche})`);
     await this.deleteEntry('journal', id);
-    console.log(`✅ Journal entry deleted for ${this.niche}`);
   }
 
   async deleteGoalEntry(id: string): Promise<void> {
-    console.log(`🗑️ Deleting goal entry ${id} for ${this.niche} (API: ${this.apiNiche})`);
     await this.deleteEntry('goal', id);
-    console.log(`✅ Goal entry deleted for ${this.niche}`);
   }
 
   private async saveEntry(type: 'journal' | 'goal', entryData: any): Promise<any> {
@@ -120,8 +101,6 @@ class NicheDataService {
           niche: this.apiNiche
         };
     
-    console.log(`📤 Sending ${type} entry to API:`, requestBody);
-    
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -135,15 +114,11 @@ class NicheDataService {
     }
 
     const result = await response.json();
-    console.log(`✅ API Response:`, result);
     return result;
   }
 
   private async getEntries(type: 'journal' | 'goal'): Promise<any[]> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
-    
-    console.log(`🔧 DEBUG: this.niche = ${this.niche}, this.apiNiche = ${this.apiNiche}`);
-    console.log(`📥 Fetching ${type} entries for ${this.niche} (API: ${this.apiNiche}) from: ${endpoint}?niche=${this.apiNiche}`);
     
     const response = await fetch(`${endpoint}?niche=${this.apiNiche}`);
     
@@ -154,24 +129,20 @@ class NicheDataService {
     }
 
     const data = await response.json();
-    console.log(`📥 Raw API response for ${type} entries:`, data);
     
     // Double filter to ensure niche isolation
     const filteredData = data.filter((entry: any) => {
       if (type === 'journal') {
         // For journal entries, check if niche is in tags array
         const hasNicheTag = entry.tags && entry.tags.includes(this.apiNiche);
-        console.log(`🔍 Journal entry ${entry.id}: tags=${entry.tags}, hasNicheTag=${hasNicheTag}, looking for niche=${this.apiNiche}`);
         return hasNicheTag;
       } else {
         // For goals, check niche column
         const hasNicheColumn = entry.niche === this.apiNiche;
-        console.log(`🔍 Goal entry ${entry.id}: niche=${entry.niche}, hasNicheColumn=${hasNicheColumn}`);
         return hasNicheColumn;
       }
     });
 
-    console.log(`🔍 Filtered ${data.length} entries to ${filteredData.length} for ${this.niche} (API: ${this.apiNiche})`);
     return filteredData;
   }
 
@@ -183,8 +154,6 @@ class NicheDataService {
       ...entryData,
       niche: this.apiNiche
     };
-    
-    console.log(`📤 Updating ${type} entry ${id} with data:`, requestBody);
     
     const response = await fetch(`${endpoint}/${id}`, {
       method: 'PUT',
@@ -199,14 +168,11 @@ class NicheDataService {
     }
 
     const result = await response.json();
-    console.log(`✅ ${type} entry updated successfully:`, result);
     return result;
   }
 
   private async deleteEntry(type: 'journal' | 'goal', id: string): Promise<void> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
-    
-    console.log(`🗑️ Deleting ${type} entry ${id} from: ${endpoint}/${id}`);
     
     const response = await fetch(`${endpoint}/${id}`, {
       method: 'DELETE'
@@ -217,17 +183,13 @@ class NicheDataService {
       console.error(`❌ API Error deleting ${type} entry:`, errorText);
       throw new Error(`Failed to delete ${type} entry: ${errorText}`);
     }
-
-    console.log(`✅ ${type} entry ${id} deleted successfully`);
   }
 }
 
 // Export niche-specific instances
-console.log('🔧 Creating NicheDataService instances...');
 export const creatorsDataService = new NicheDataService('creators');
 export const podcastersDataService = new NicheDataService('podcasters');
 export const freelancersDataService = new NicheDataService('freelancers');
 export const coachesDataService = new NicheDataService('coaches');
-console.log('🔧 NicheDataService instances created');
 
 export type { JournalEntry, GoalEntry }; 

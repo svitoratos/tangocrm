@@ -70,27 +70,45 @@ const NicheDetector: React.FC<{ onNicheDetected: (niche: string) => void }> = ({
 export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
   const [currentNiche, setCurrentNiche] = useState<string>('creators');
   
+  // Map singular niche forms to plural forms for consistency
+  const mapToPluralForm = (niche: string): string => {
+    const nicheMap: { [key: string]: string } = {
+      'creator': 'creators',
+      'creators': 'creators',
+      'podcaster': 'podcasters',
+      'podcasters': 'podcasters',
+      'freelancer': 'freelancers',
+      'freelancers': 'freelancers',
+      'coach': 'coaches',
+      'coaches': 'coaches'
+    };
+    return nicheMap[niche] || 'creators';
+  };
+  
   // Initialize from localStorage if available
   useEffect(() => {
     const savedNiche = localStorage.getItem('selectedNiche');
     if (savedNiche) {
-      console.log('🎯 NicheContext - Restoring niche from localStorage:', savedNiche);
-      setCurrentNiche(savedNiche);
+      const mappedNiche = mapToPluralForm(savedNiche);
+      console.log('🎯 NicheContext - Restoring niche from localStorage:', savedNiche, '-> mapped to:', mappedNiche);
+      setCurrentNiche(mappedNiche);
     }
   }, []);
   
   const handleNicheDetected = (niche: string) => {
-    console.log('🎯 NicheContext - Setting current niche to:', niche);
-    setCurrentNiche(niche);
+    const mappedNiche = mapToPluralForm(niche);
+    console.log('🎯 NicheContext - Setting current niche to:', mappedNiche);
+    setCurrentNiche(mappedNiche);
     // Persist to localStorage
-    localStorage.setItem('selectedNiche', niche);
+    localStorage.setItem('selectedNiche', mappedNiche);
   };
   
   const updateNiche = (niche: string) => {
-    console.log('🎯 NicheContext - Manually updating niche to:', niche);
-    setCurrentNiche(niche);
+    const mappedNiche = mapToPluralForm(niche);
+    console.log('🎯 NicheContext - Manually updating niche to:', mappedNiche);
+    setCurrentNiche(mappedNiche);
     // Persist to localStorage
-    localStorage.setItem('selectedNiche', niche);
+    localStorage.setItem('selectedNiche', mappedNiche);
   };
   
   return (

@@ -23,29 +23,16 @@ export const useNicheData = () => {
   };
   
   const getDataService = () => {
-    console.log(`🔧 useNicheData: currentNiche = ${currentNiche}`);
     switch (currentNiche) {
-      case 'creators': 
-        console.log(`🔧 useNicheData: returning creatorsDataService`);
-        return creatorsDataService;
-      case 'podcasters': 
-        console.log(`🔧 useNicheData: returning podcastersDataService`);
-        return podcastersDataService;
-      case 'freelancers': 
-        console.log(`🔧 useNicheData: returning freelancersDataService`);
-        return freelancersDataService;
-      case 'coaches': 
-        console.log(`🔧 useNicheData: returning coachesDataService`);
-        return coachesDataService;
-      default: 
-        console.log(`🔧 useNicheData: returning default creatorsDataService`);
-        return creatorsDataService;
+      case 'creators': return creatorsDataService;
+      case 'podcasters': return podcastersDataService;
+      case 'freelancers': return freelancersDataService;
+      case 'coaches': return coachesDataService;
+      default: return creatorsDataService;
     }
   };
   
   const dataService = getDataService();
-  
-  console.log(`🔧 Using data service for: ${currentNiche} (API format: ${mapNicheToApiFormat(currentNiche)})`);
   
   return {
     currentNiche,
