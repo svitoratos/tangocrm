@@ -54,6 +54,23 @@ export async function GET(request: NextRequest) {
     
     if (entries && entries.length > 0) {
       console.log('Journal GET - Sample entry tags:', entries[0].tags);
+      console.log('Journal GET - Sample entry user_id:', entries[0].user_id);
+    } else {
+      console.log('Journal GET - No entries found. Let me check all entries for this user...');
+      // Debug: Check all entries for this user without niche filter
+      const { data: allEntries, error: allError } = await supabaseAdmin
+        .from('journal_entries')
+        .select('*')
+        .eq('user_id', correctUserId);
+      console.log('Journal GET - All entries for user (no niche filter):', allEntries?.length || 0);
+      if (allEntries && allEntries.length > 0) {
+        console.log('Journal GET - Sample entry without niche filter:', {
+          id: allEntries[0].id,
+          user_id: allEntries[0].user_id,
+          tags: allEntries[0].tags,
+          title: allEntries[0].title
+        });
+      }
     }
 
     if (error) {
