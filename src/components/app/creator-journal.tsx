@@ -128,18 +128,14 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       setIsLoading(true);
       setError(null);
       
-      const apiNiche = mapNicheToApiFormat(currentNiche);
-      console.log('🔄 Fetching journal entries for niche:', currentNiche, '(API:', apiNiche, ')');
-      const response = await fetch(`/api/journal-entries?niche=${apiNiche}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch journal entries');
-      }
+      console.log('🔄 Fetching journal entries using service layer for niche:', currentNiche);
+      const data = await getJournalEntries();
+      console.log('📥 Journal entries from service:', data);
       
-      const data = await response.json();
-      console.log('📥 Journal entries API response:', data);
-      
-      setEntries(Array.isArray(data) ? data : []);
-      console.log('📝 Set entries state with', data.length, 'entries');
+      // Convert service layer types to component types
+      const convertedData = data as JournalEntry[];
+      setEntries(Array.isArray(convertedData) ? convertedData : []);
+      console.log('📝 Set entries state with', convertedData.length, 'entries');
     } catch (error) {
       console.error('Error fetching journal entries:', error);
       setError('Failed to load journal entries');
@@ -154,15 +150,13 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       setIsLoadingGoals(true);
       setError(null);
       
-      const apiNiche = mapNicheToApiFormat(currentNiche);
-      const response = await fetch(`/api/goals?niche=${apiNiche}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch goals');
-      }
+      console.log('🔄 Fetching goals using service layer for niche:', currentNiche);
+      const data = await getGoalEntries();
+      console.log('📥 Goals from service:', data);
       
-      const data = await response.json();
-      
-      setGoals(Array.isArray(data) ? data : []);
+      // Convert service layer types to component types
+      const convertedData = data as Goal[];
+      setGoals(Array.isArray(convertedData) ? convertedData : []);
     } catch (error) {
       console.error('Error fetching goals:', error);
       setError('Failed to load goals');
