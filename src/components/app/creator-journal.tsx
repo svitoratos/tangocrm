@@ -217,46 +217,27 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
       setIsSaving(true);
       setError(null);
 
-      const apiNiche = mapNicheToApiFormat(currentNiche);
       const entryData = {
         title: selectedEntry.title,
         content: selectedEntry.content,
         mood: selectedEntry.mood,
-        isFavorite: selectedEntry.is_favorite,
-        prompt: selectedEntry.prompt,
-        niche: apiNiche
+        is_favorite: selectedEntry.is_favorite,
+        prompt: selectedEntry.prompt
       };
       
       console.log('🎯 Saving journal entry with data:', entryData);
 
-      let response;
+      let data: JournalEntry;
       if (isCreating) {
-        // Create new entry
-        response = await fetch('/api/journal-entries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(entryData)
-        });
-      } else {
-        // Update existing entry
-        response = await fetch(`/api/journal-entries/${selectedEntry.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(entryData)
-        });
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to save journal entry');
-      }
-
-      const data = await response.json();
-      console.log('✅ Journal entry saved successfully:', data);
-      
-      if (isCreating) {
+        // Create new entry using service layer
+        data = await createJournalEntry(entryData) as JournalEntry;
+        console.log('✅ Journal entry created successfully:', data);
         setEntries(prev => [data, ...prev]);
         console.log('📝 Updated local entries state, new count:', entries.length + 1);
       } else {
+        // Update existing entry using service layer
+        data = await updateJournalEntry(selectedEntry.id, entryData) as JournalEntry;
+        console.log('✅ Journal entry updated successfully:', data);
         setEntries(prev => prev.map(entry => 
           entry.id === selectedEntry.id ? data : entry
         ));
@@ -275,13 +256,9 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
 
   const handleDeleteEntry = async (entryId: string) => {
     try {
-      const response = await fetch(`/api/journal-entries/${entryId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete journal entry');
-      }
+      // Delete entry using service layer
+      await deleteJournalEntry(entryId);
+      console.log('✅ Journal entry deleted successfully');
 
       setEntries(prev => prev.filter(entry => entry.id !== entryId));
       if (selectedEntry?.id === entryId) {
@@ -300,29 +277,23 @@ export const CreatorJournal: React.FC<CreatorJournalProps> = () => {
 
     try {
       const updatedEntry = { ...entry, is_favorite: !entry.is_favorite };
-      const response = await fetch(`/api/journal-entries/${entryId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: updatedEntry.title,
-          content: updatedEntry.content,
-          mood: updatedEntry.mood,
-          isFavorite: updatedEntry.is_favorite,
-          prompt: updatedEntry.prompt,
-          niche: currentNiche
-        })
-      });
+      
+      // Update entry using service layer
+      const data = await updateJournalEntry(entryId, {
+        title: updatedEntry.title,
+        content: updatedEntry.content,
+        mood: updatedEntry.mood,
+        is_favorite: updatedEntry.is_favorite,
+        prompt: updatedEntry.prompt
+      }) as JournalEntry;
 
-      if (!response.ok) {
-        throw new Error('Failed to update journal entry');
-      }
+      console.log('✅ Journal entry favorite toggled successfully:', data);
 
-      const data = await response.json();
       setEntries(prev => prev.map(entry => 
         entry.id === entryId ? data : entry
       ));
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error('Error updating journal entry:', error);
       setError('Failed to update journal entry');
     }
   };
