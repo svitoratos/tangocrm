@@ -16,9 +16,13 @@ export interface JournalEntry {
 // GET /api/journal-entries
 export async function GET(request: NextRequest) {
   try {
+    console.log('=== JOURNAL ENTRIES GET API DEBUG START ===');
+    console.log('Journal GET - Full request URL:', request.url);
+    
     const { userId } = await auth();
     
     if (!userId) {
+      console.log('Journal GET - Unauthorized - no userId');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -52,6 +56,7 @@ export async function GET(request: NextRequest) {
     const niche = searchParams.get('niche');
     
     console.log('Journal GET - Building query for user:', correctUserId, 'niche:', niche);
+    console.log('Journal GET - All search params:', Object.fromEntries(searchParams.entries()));
     
     let query = supabaseAdmin
       .from('journal_entries')
@@ -64,6 +69,8 @@ export async function GET(request: NextRequest) {
       // Use the correct Supabase array containment syntax
       query = query.contains('tags', [niche]);
       console.log('Journal GET - Query after niche filter:', query);
+    } else {
+      console.log('Journal GET - No niche parameter provided, will return all entries for user');
     }
     
     console.log('Journal GET - Executing query...');
@@ -90,6 +97,8 @@ export async function GET(request: NextRequest) {
         });
       }
     }
+    
+    console.log('=== JOURNAL ENTRIES GET API DEBUG END ===');
 
     if (error) {
       console.error('Error fetching journal entries:', error);
