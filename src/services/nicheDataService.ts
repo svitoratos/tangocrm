@@ -33,6 +33,7 @@ class NicheDataService {
     this.niche = niche;
     // Map plural niche forms to singular forms for API calls
     this.apiNiche = this.mapNicheToApiFormat(niche);
+    console.log(`🔧 NicheDataService constructor: niche=${niche}, apiNiche=${this.apiNiche}`);
   }
 
   private mapNicheToApiFormat(niche: string): string {
@@ -141,7 +142,8 @@ class NicheDataService {
   private async getEntries(type: 'journal' | 'goal'): Promise<any[]> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
     
-    console.log(`📥 Fetching ${type} entries for ${this.niche} (API: ${this.apiNiche}) from: ${endpoint}`);
+    console.log(`🔧 DEBUG: this.niche = ${this.niche}, this.apiNiche = ${this.apiNiche}`);
+    console.log(`📥 Fetching ${type} entries for ${this.niche} (API: ${this.apiNiche}) from: ${endpoint}?niche=${this.apiNiche}`);
     
     const response = await fetch(`${endpoint}?niche=${this.apiNiche}`);
     
@@ -221,9 +223,11 @@ class NicheDataService {
 }
 
 // Export niche-specific instances
+console.log('🔧 Creating NicheDataService instances...');
 export const creatorsDataService = new NicheDataService('creators');
 export const podcastersDataService = new NicheDataService('podcasters');
 export const freelancersDataService = new NicheDataService('freelancers');
 export const coachesDataService = new NicheDataService('coaches');
+console.log('🔧 NicheDataService instances created');
 
 export type { JournalEntry, GoalEntry }; 
