@@ -87,12 +87,10 @@ class NicheDataService {
   private async saveEntry(type: 'journal' | 'goal', entryData: any): Promise<any> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
     
-    // For journal entries, we need to send tags array with niche
-    const requestBody = type === 'journal' 
+    // Prepare request body with niche included (like opportunities and calendar events)
+    const requestBody = type === 'journal'
       ? {
-          title: entryData.title,
-          content: entryData.content,
-          mood: entryData.mood,
+          ...entryData,
           tags: [this.apiNiche], // Store niche in tags array (use API format)
           niche: this.apiNiche
         }
@@ -123,6 +121,7 @@ class NicheDataService {
     console.log(`🔧 SERVICE: this.niche = ${this.niche}, this.apiNiche = ${this.apiNiche}`);
     console.log(`🔧 SERVICE: Fetching ${type} entries from: ${endpoint}?niche=${this.apiNiche}`);
     
+    // Use niche in URL query parameter for GET requests (like opportunities and calendar events)
     const response = await fetch(`${endpoint}?niche=${this.apiNiche}`);
     
     if (!response.ok) {
@@ -156,7 +155,7 @@ class NicheDataService {
   private async updateEntry(type: 'journal' | 'goal', id: string, entryData: any): Promise<any> {
     const endpoint = type === 'journal' ? '/api/journal-entries' : '/api/goals';
     
-    // Ensure niche is included in the request body
+    // Include niche in request body for PUT requests (like opportunities and calendar events)
     const requestBody = {
       ...entryData,
       niche: this.apiNiche
