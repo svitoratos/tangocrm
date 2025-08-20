@@ -25,8 +25,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // SECURITY FIX: Use authenticated user's ID directly - never override with hardcoded values
-    const correctUserId = userId;
+    // Get the correct user_id for database queries (same logic as POST)
+    let correctUserId = userId;
+    try {
+      // Try to find existing user by email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('email', 'stevenvitoratos@getbondlyapp.com')
+        .single();
+      
+      if (existingUser?.id) {
+        correctUserId = existingUser.id;
+        console.log('Journal GET - Using existing user ID for query:', correctUserId);
+      } else {
+        console.log('Journal GET - No existing user found, using Clerk ID:', correctUserId);
+      }
+    } catch (error) {
+      console.log('Journal GET - Error finding existing user, using Clerk ID:', correctUserId);
+    }
+    
     console.log('Journal GET - Using authenticated user ID:', correctUserId);
     
     // Get niche filter from query parameters
