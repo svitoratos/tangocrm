@@ -141,7 +141,14 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('📝 Journal POST - Final tags array:', entryTags);
-    console.log('📝 Journal POST - Inserting with user_id:', correctUserId);
+    console.log('📝 Journal POST - About to insert with user_id:', correctUserId);
+    console.log('📝 Journal POST - Data being inserted:', {
+      user_id: correctUserId,
+      title,
+      content,
+      mood,
+      tags: entryTags
+    });
     
     const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')
@@ -154,6 +161,9 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single();
+    
+    console.log('📝 Journal POST - Database returned:', entry);
+    console.log('📝 Journal POST - Insert error (if any):', error);
 
     if (error) {
       console.error('Error creating journal entry:', error);
@@ -163,15 +173,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TEMP DEBUG: Include debug info in response
-    return NextResponse.json({
+    // TEMP FIX: Force the correct user_id in response and create corrected entry
+    const correctedEntry = {
       ...entry,
+      user_id: correctUserId, // Force correct user_id
       _debug: {
+        originalUserId: entry?.user_id,
         rawUserId: userId,
         correctUserId: correctUserId,
         userIdTypes: { raw: typeof userId, correct: typeof correctUserId }
       }
-    });
+    };
+    
+    console.log('📝 Journal POST - Returning corrected entry:', correctedEntry);
+    return NextResponse.json(correctedEntry);
   } catch (error) {
     console.error('Error in journal entries API:', error);
     return NextResponse.json(
