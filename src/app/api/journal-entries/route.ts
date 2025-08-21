@@ -163,7 +163,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(entry);
+    // TEMP DEBUG: Include debug info in response
+    return NextResponse.json({
+      ...entry,
+      _debug: {
+        rawUserId: userId,
+        correctUserId: correctUserId,
+        userIdTypes: { raw: typeof userId, correct: typeof correctUserId }
+      }
+    });
   } catch (error) {
     console.error('Error in journal entries API:', error);
     return NextResponse.json(
