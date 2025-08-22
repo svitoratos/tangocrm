@@ -48,10 +48,9 @@ export async function GET(request: NextRequest) {
       .select('*')
       .eq('user_id', correctUserId);
     
-    // Filter by niche if provided
+    // Filter by niche using tags array (since niche column doesn't exist yet)
     if (niche) {
       console.log('Journal GET - Adding niche filter for:', niche);
-      // Use the correct Supabase array containment syntax
       query = query.contains('tags', [niche]);
       console.log('Journal GET - Query after niche filter:', query);
     } else {
@@ -145,7 +144,8 @@ export async function POST(request: NextRequest) {
       title,
       content,
       mood,
-      tags: entryTags
+      tags: entryTags,
+      niche
     });
     
     const { data: entry, error } = await supabaseAdmin
@@ -156,6 +156,7 @@ export async function POST(request: NextRequest) {
         content,
         mood,
         tags: entryTags
+        // Remove niche column insert since it doesn't exist yet
       })
       .select()
       .single();

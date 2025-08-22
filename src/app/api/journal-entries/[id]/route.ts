@@ -30,6 +30,11 @@ export async function PUT(
       updateData.tags = [niche];
     }
     
+    // Remove niche column update since it doesn't exist yet
+    // if (niche) {
+    //   updateData.niche = niche;
+    // }
+    
     // Use authenticated user ID directly - no override needed
     const correctUserId = userId;
 

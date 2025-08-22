@@ -132,13 +132,14 @@ class NicheDataService {
     // Double filter to ensure niche isolation
     const filteredData = data.filter((entry: any) => {
       if (type === 'journal') {
-        // For journal entries, check if niche is in tags array
+        // For journal entries, check if niche is in tags array (until niche column is added)
         const hasNicheTag = entry.tags && entry.tags.includes(this.apiNiche);
         return hasNicheTag;
       } else {
-        // For goals, check niche column
+        // For goals, check niche column (if it exists, otherwise use tags)
         const hasNicheColumn = entry.niche === this.apiNiche;
-        return hasNicheColumn;
+        const hasNicheTag = entry.tags && entry.tags.includes(this.apiNiche);
+        return hasNicheColumn || hasNicheTag;
       }
     });
 
