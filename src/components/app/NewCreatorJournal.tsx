@@ -208,7 +208,7 @@ export const NewCreatorJournal: React.FC = () => {
           <div className="p-4 border-b border-slate-200">
             <h2 className="font-semibold text-slate-900 mb-2">Your {currentNiche} Entries</h2>
             <p className="text-sm text-slate-600 mb-4">
-              {entries.length} entry{entries.length !== 1 ? 'ies' : ''}
+              {entries.length} {entries.length === 1 ? 'entry' : 'entries'}
             </p>
             
             <Button 
