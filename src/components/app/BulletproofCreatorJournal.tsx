@@ -410,7 +410,7 @@ export const BulletproofCreatorJournal: React.FC = () => {
                   </Button>
                 </div>
                 <p className="text-sm text-slate-600 mt-1">
-                  {filteredEntries.length} entry{filteredEntries.length !== 1 ? 'ies' : ''}
+                  {filteredEntries.length} {filteredEntries.length === 1 ? 'entry' : 'entries'}
                 </p>
               </div>
 
