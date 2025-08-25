@@ -250,8 +250,18 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     // Show all niches for Tango Core users
     const availableNiches = niches;
 
+    // Map activeNiche (plural) to niche ID (singular) for matching
+    const nicheMap: { [key: string]: string } = {
+      'creators': 'creator',
+      'coaches': 'coach',
+      'podcasters': 'podcaster',
+      'freelancers': 'freelancer'
+    };
+    
+    const mappedActiveNiche = nicheMap[activeNiche] || activeNiche;
+    
     // Ensure we have a valid current niche from available ones only
-    const currentNiche = availableNiches.find(n => n.id === activeNiche) || availableNiches[0] || null;
+    const currentNiche = availableNiches.find(n => n.id === mappedActiveNiche) || availableNiches[0] || null;
 
     // If no niches are available, show a fallback
     if (availableNiches.length === 0) {
@@ -260,10 +270,12 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
     // Force re-render when subscribedNiches changes
     React.useEffect(() => {
+      console.log('🔧 Sidebar: activeNiche:', activeNiche);
+      console.log('🔧 Sidebar: mappedActiveNiche:', mappedActiveNiche);
       console.log('🔧 Sidebar: subscribedNiches changed:', subscribedNiches);
       console.log('🔧 Sidebar: availableNiches filtered:', availableNiches);
       console.log('🔧 Sidebar: currentNiche selected:', currentNiche);
-    }, [subscribedNiches, availableNiches, currentNiche]);
+    }, [activeNiche, mappedActiveNiche, subscribedNiches, availableNiches, currentNiche]);
 
   const getNavigationItems = (niche: string) => {
     const baseItems = [
@@ -306,7 +318,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     ]
   }
 
-  const navigationItems = getNavigationItems(activeNiche)
+  const navigationItems = getNavigationItems(mappedActiveNiche)
 
   return (
     <div
