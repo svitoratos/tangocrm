@@ -247,8 +247,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       }
     ]
 
-    // CRITICAL FIX: Only show niches that the user is actually subscribed to
-    const availableNiches = niches.filter(niche => isSubscribed(niche.id));
+    // Show all niches for Tango Core users
+    const availableNiches = niches;
 
     // Ensure we have a valid current niche from available ones only
     const currentNiche = availableNiches.find(n => n.id === activeNiche) || availableNiches[0] || null;
