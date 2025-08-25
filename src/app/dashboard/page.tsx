@@ -12,6 +12,7 @@ import { ProgramsContentHub } from "@/components/app/programs-content-hub";
 
 import ClientsPage from "./clients/page";
 import SettingsPage from "./settings/page";
+import JournalsGoalsPage from "./journals-goals/page";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -68,7 +69,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   { id: "calendar", label: "Calendar", component: CalendarComponent, requiresNiche: true },
   { id: "analytics", label: "Analytics", component: AnalyticsDashboard, requiresNiche: true },
   { id: "programs", label: "Programs", component: ProgramsContentHub, requiresNiche: true },
-
+  { id: "journals-goals", label: "Journals & Goals", component: JournalsGoalsPage, requiresNiche: false },
   { id: "settings", label: "Settings", component: SettingsPage, requiresNiche: false }
 ];
 

@@ -284,7 +284,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       { id: 'clients', icon: <User size={20} />, label: 'Contact Management' },
       { id: 'calendar', icon: <Calendar size={20} />, label: 'Calendar' },
       { id: 'analytics', icon: <BarChart3 size={20} />, label: 'Analytics' },
-
+      { id: 'journals-goals', icon: <BookOpen size={20} />, label: 'Journals & Goals' },
     ]
 
     const programLabels: Record<string, { label: string; icon: React.ReactNode }> = {
