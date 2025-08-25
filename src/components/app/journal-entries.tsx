@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit, Trash2, Calendar, Tag, Heart, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNiche } from '@/contexts/NicheContext';
 
 interface JournalEntry {
   id: string;
@@ -33,6 +34,7 @@ const MOOD_OPTIONS = [
 ];
 
 export default function JournalEntries() {
+  const { currentNiche } = useNiche();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -51,7 +53,7 @@ export default function JournalEntries() {
 
   const fetchEntries = async () => {
     try {
-      const response = await fetch('/api/journal-entries');
+      const response = await fetch(`/api/journal-entries?niche=${currentNiche}`);
       if (response.ok) {
         const data = await response.json();
         setEntries(data.entries || []);
@@ -76,7 +78,7 @@ export default function JournalEntries() {
 
     try {
       const url = editingEntry 
-        ? `/api/journal-entries/${editingEntry.id}`
+        ? `/api/journal-entries/${editingEntry.id}?niche=${currentNiche}`
         : '/api/journal-entries';
       
       const method = editingEntry ? 'PUT' : 'POST';
@@ -86,7 +88,10 @@ export default function JournalEntries() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          niche: currentNiche
+        }),
       });
 
       if (response.ok) {
@@ -110,7 +115,7 @@ export default function JournalEntries() {
     }
 
     try {
-      const response = await fetch(`/api/journal-entries/${id}`, {
+      const response = await fetch(`/api/journal-entries/${id}?niche=${currentNiche}`, {
         method: 'DELETE',
       });
 

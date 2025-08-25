@@ -79,7 +79,7 @@ export default function GoalsManagement() {
 
   const fetchGoals = async () => {
     try {
-      const response = await fetch('/api/goals');
+      const response = await fetch(`/api/goals?niche=${currentNiche}`);
       if (response.ok) {
         const data = await response.json();
         setGoals(data.goals || []);
@@ -104,7 +104,7 @@ export default function GoalsManagement() {
 
     try {
       const url = editingGoal 
-        ? `/api/goals/${editingGoal.id}`
+        ? `/api/goals/${editingGoal.id}?niche=${currentNiche}`
         : '/api/goals';
       
       const method = editingGoal ? 'PUT' : 'POST';
@@ -120,7 +120,10 @@ export default function GoalsManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          ...payload,
+          niche: currentNiche
+        }),
       });
 
       if (response.ok) {
@@ -144,7 +147,7 @@ export default function GoalsManagement() {
     }
 
     try {
-      const response = await fetch(`/api/goals/${id}`, {
+      const response = await fetch(`/api/goals/${id}?niche=${currentNiche}`, {
         method: 'DELETE',
       });
 

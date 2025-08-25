@@ -15,12 +15,18 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status');
     const category = searchParams.get('category');
+    const niche = searchParams.get('niche');
     const offset = (page - 1) * limit;
+
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
+    }
 
     let query = supabaseAdmin
       .from('goals')
       .select('*')
       .eq('user_id', userId)
+      .eq('niche', niche)
       .order('created_at', { ascending: false });
 
     if (status) {
@@ -39,11 +45,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch goals' }, { status: 500 });
     }
 
-    // Get total count
+    // Get total count filtered by niche
     let countQuery = supabaseAdmin
       .from('goals')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('niche', niche);
 
     if (status) {
       countQuery = countQuery.eq('status', status);
