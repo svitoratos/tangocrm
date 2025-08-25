@@ -38,7 +38,6 @@ function OnboardingPageContent() {
 
   const handleOnboardingComplete = (data: {
     roles: string[];
-    goals: string[];
     setupTask?: string;
   }) => {
     // You can process the onboarding data here if needed
