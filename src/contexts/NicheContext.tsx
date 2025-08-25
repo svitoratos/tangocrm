@@ -85,7 +85,7 @@ export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
     return nicheMap[niche] || 'creators';
   };
   
-  // Initialize from localStorage if available
+  // Initialize from localStorage if available and listen for changes
   useEffect(() => {
     const savedNiche = localStorage.getItem('selectedNiche');
     if (savedNiche) {
@@ -93,6 +93,21 @@ export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
       console.log('🎯 NicheContext - Restoring niche from localStorage:', savedNiche, '-> mapped to:', mappedNiche);
       setCurrentNiche(mappedNiche);
     }
+    
+    // Listen for localStorage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'selectedNiche' && e.newValue) {
+        const mappedNiche = mapToPluralForm(e.newValue);
+        console.log('🎯 NicheContext - Detected localStorage change:', e.newValue, '-> mapped to:', mappedNiche);
+        setCurrentNiche(mappedNiche);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   
   const handleNicheDetected = (niche: string) => {

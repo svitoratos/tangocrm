@@ -111,6 +111,7 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
 // Main Content Component
   const MainContent: React.FC = () => {
     const { activeSection, selectedNiche, isLoading, setActiveSection } = useAppContext();
+    const { currentNiche } = useNiche();
     const { user } = useUser();
 
     const currentNavItem = NAVIGATION_ITEMS.find(item => item.id === activeSection);
@@ -161,10 +162,10 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
     return (
       <div className="w-full h-full main-content-container">
         {currentNavItem.id === 'clients' ? (
-          <Component activeNiche={selectedNiche} onNavigate={(section: string) => setActiveSection(section)} />
+          <Component activeNiche={currentNiche} onNavigate={(section: string) => setActiveSection(section)} />
         ) : (
           <Component 
-            {...(currentNavItem.requiresNiche ? { activeNiche: selectedNiche } : {})}
+            {...(currentNavItem.requiresNiche ? { activeNiche: currentNiche } : {})}
             onNavigate={(section: string) => {
               setActiveSection(section);
             }}
@@ -631,6 +632,8 @@ function MainDashboardWithSearchParams() {
     const url = new URL(window.location.href);
     url.searchParams.set('niche', mappedNiche);
     window.history.replaceState({}, '', url.toString());
+    
+
     
     // Auto-switch to analytics dashboard for coach niche
     if (niche === 'coach' && activeSection === 'dashboard') {
