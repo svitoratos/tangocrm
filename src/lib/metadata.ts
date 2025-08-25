@@ -172,7 +172,7 @@ export const structuredData = {
       'Client Relationship Management',
       'Revenue Tracking',
       'Content Calendar',
-      'Goal Setting & Analytics',
+
       'Multi-Niche Support',
       'Stripe Integration',
       'Mobile Responsive'

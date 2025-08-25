@@ -119,39 +119,7 @@ CREATE TABLE IF NOT EXISTS content_items (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- ========================================
--- GOALS TABLE
--- ========================================
-CREATE TABLE IF NOT EXISTS goals (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    description TEXT,
-    goal_type TEXT NOT NULL DEFAULT 'revenue',
-    target_value DECIMAL(10,2),
-    current_value DECIMAL(10,2) DEFAULT 0,
-    start_date DATE,
-    end_date DATE,
-    status TEXT DEFAULT 'active',
-    progress_percentage INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
 
--- ========================================
--- JOURNAL ENTRIES TABLE
--- ========================================
-CREATE TABLE IF NOT EXISTS journal_entries (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title TEXT,
-    content TEXT NOT NULL,
-    mood TEXT,
-    tags TEXT[] DEFAULT '{}',
-    entry_date DATE DEFAULT CURRENT_DATE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
 
 -- ========================================
 -- INDEXES FOR PERFORMANCE
@@ -196,16 +164,7 @@ CREATE INDEX IF NOT EXISTS idx_content_items_status ON content_items(status);
 CREATE INDEX IF NOT EXISTS idx_content_items_stage ON content_items(stage);
 CREATE INDEX IF NOT EXISTS idx_content_items_due_date ON content_items(due_date);
 
--- Goals indexes
-CREATE INDEX IF NOT EXISTS idx_goals_user_id ON goals(user_id);
-CREATE INDEX IF NOT EXISTS idx_goals_goal_type ON goals(goal_type);
-CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
-CREATE INDEX IF NOT EXISTS idx_goals_end_date ON goals(end_date);
 
--- Journal entries indexes
-CREATE INDEX IF NOT EXISTS idx_journal_entries_user_id ON journal_entries(user_id);
-CREATE INDEX IF NOT EXISTS idx_journal_entries_entry_date ON journal_entries(entry_date);
-CREATE INDEX IF NOT EXISTS idx_journal_entries_mood ON journal_entries(mood);
 
 -- ========================================
 -- TRIGGER FUNCTIONS
@@ -244,8 +203,7 @@ CREATE TRIGGER update_clients_updated_at BEFORE UPDATE ON clients FOR EACH ROW E
 CREATE TRIGGER update_opportunities_updated_at BEFORE UPDATE ON opportunities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_calendar_events_updated_at BEFORE UPDATE ON calendar_events FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_content_items_updated_at BEFORE UPDATE ON content_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_goals_updated_at BEFORE UPDATE ON goals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_journal_entries_updated_at BEFORE UPDATE ON journal_entries FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 
 -- User timezone triggers
 CREATE TRIGGER trigger_set_opportunity_user_timezone BEFORE INSERT ON opportunities FOR EACH ROW EXECUTE FUNCTION set_user_timezone();
@@ -261,8 +219,7 @@ ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE opportunities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE goals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
+
 
 -- Users policies
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid()::text = id);
@@ -293,17 +250,7 @@ CREATE POLICY "Users can insert own content items" ON content_items FOR INSERT W
 CREATE POLICY "Users can update own content items" ON content_items FOR UPDATE USING (auth.uid()::text = user_id);
 CREATE POLICY "Users can delete own content items" ON content_items FOR DELETE USING (auth.uid()::text = user_id);
 
--- Goals policies
-CREATE POLICY "Users can view own goals" ON goals FOR SELECT USING (auth.uid()::text = user_id);
-CREATE POLICY "Users can insert own goals" ON goals FOR INSERT WITH CHECK (auth.uid()::text = user_id);
-CREATE POLICY "Users can update own goals" ON goals FOR UPDATE USING (auth.uid()::text = user_id);
-CREATE POLICY "Users can delete own goals" ON goals FOR DELETE USING (auth.uid()::text = user_id);
 
--- Journal entries policies
-CREATE POLICY "Users can view own journal entries" ON journal_entries FOR SELECT USING (auth.uid()::text = user_id);
-CREATE POLICY "Users can insert own journal entries" ON journal_entries FOR INSERT WITH CHECK (auth.uid()::text = user_id);
-CREATE POLICY "Users can update own journal entries" ON journal_entries FOR UPDATE USING (auth.uid()::text = user_id);
-CREATE POLICY "Users can delete own journal entries" ON journal_entries FOR DELETE USING (auth.uid()::text = user_id);
 
 -- ========================================
 -- VERIFICATION QUERIES
@@ -315,7 +262,7 @@ SELECT
     'Table created successfully' as status
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
-AND table_name IN ('users', 'clients', 'opportunities', 'calendar_events', 'content_items', 'goals', 'journal_entries')
+AND table_name IN ('users', 'clients', 'opportunities', 'calendar_events', 'content_items')
 ORDER BY table_name;
 
 -- Show opportunities table structure
@@ -339,6 +286,4 @@ SELECT 'calendar_events' as table_name, COUNT(*) as record_count FROM calendar_e
 UNION ALL
 SELECT 'content_items' as table_name, COUNT(*) as record_count FROM content_items
 UNION ALL
-SELECT 'goals' as table_name, COUNT(*) as record_count FROM goals
-UNION ALL
-SELECT 'journal_entries' as table_name, COUNT(*) as record_count FROM journal_entries; 
+ 

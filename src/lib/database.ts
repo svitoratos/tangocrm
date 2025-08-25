@@ -6,8 +6,7 @@ export type Client = Database['public']['Tables']['clients']['Row']
 export type Opportunity = Database['public']['Tables']['opportunities']['Row']
 export type Content = Database['public']['Tables']['content']['Row']
 export type CalendarEvent = Database['public']['Tables']['calendar_events']['Row']
-export type JournalEntry = Database['public']['Tables']['journal_entries']['Row']
-export type Goal = Database['public']['Tables']['goals']['Row']
+
 
 // Legacy alias for backwards compatibility
 export type Deal = Opportunity
@@ -814,167 +813,9 @@ export const calendarOperations = {
   }
 }
 
-// Journal operations
-export const journalOperations = {
-  async getAll(userId: string): Promise<JournalEntry[]> {
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-    
-    if (error) {
-      console.error('Error getting journal entries:', error)
-      return []
-    }
-    
-    return data || []
-  },
 
-  async getById(id: string, userId: string): Promise<JournalEntry | null> {
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', userId)
-      .single()
-    
-    if (error) {
-      console.error('Error getting journal entry:', error)
-      return null
-    }
-    
-    return data
-  },
 
-  async create(entry: Omit<JournalEntry, 'id' | 'created_at' | 'updated_at'>): Promise<JournalEntry | null> {
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .insert(entry)
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error creating journal entry:', error)
-      return null
-    }
-    
-    return data
-  },
 
-  async update(id: string, userId: string, updates: Partial<JournalEntry>): Promise<JournalEntry | null> {
-    const { data, error } = await supabase
-      .from('journal_entries')
-      .update(updates)
-      .eq('id', id)
-      .eq('user_id', userId)
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error updating journal entry:', error)
-      return null
-    }
-    
-    return data
-  },
-
-  async delete(id: string, userId: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('journal_entries')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId)
-    
-    if (error) {
-      console.error('Error deleting journal entry:', error)
-      return false
-    }
-    
-    return true
-  }
-}
-
-// Goal operations
-export const goalOperations = {
-  async getAll(userId: string): Promise<Goal[]> {
-    const { data, error } = await supabase
-      .from('goals')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-    
-    if (error) {
-      console.error('Error getting goals:', error)
-      return []
-    }
-    
-    return data || []
-  },
-
-  async getById(id: string, userId: string): Promise<Goal | null> {
-    const { data, error } = await supabase
-      .from('goals')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', userId)
-      .single()
-    
-    if (error) {
-      console.error('Error getting goal:', error)
-      return null
-    }
-    
-    return data
-  },
-
-  async create(goal: Omit<Goal, 'id' | 'created_at' | 'updated_at'>): Promise<Goal | null> {
-    const { data, error } = await supabase
-      .from('goals')
-      .insert(goal)
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error creating goal:', error)
-      return null
-    }
-    
-    return data
-  },
-
-  async update(id: string, userId: string, updates: Partial<Goal>): Promise<Goal | null> {
-    const { data, error } = await supabase
-      .from('goals')
-      .update(updates)
-      .eq('id', id)
-      .eq('user_id', userId)
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error updating goal:', error)
-      return null
-    }
-    
-    return data
-  },
-
-  async delete(id: string, userId: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('goals')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId)
-    
-    if (error) {
-      console.error('Error deleting goal:', error)
-      return false
-    }
-    
-    return true
-  }
-}
 
 // Analytics operations
 export const analyticsOperations = {

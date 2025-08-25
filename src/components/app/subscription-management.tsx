@@ -255,7 +255,7 @@ export const SubscriptionManagement = () => {
               </div>
               <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-sm">Goal setting</span>
+                <span className="text-sm">Analytics dashboard</span>
               </div>
             </div>
           </div>

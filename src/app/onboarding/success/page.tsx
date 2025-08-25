@@ -125,7 +125,7 @@ function OnboardingSuccessContent() {
                   onboardingCompleted: true,
                   primaryNiche: onboardingData.selectedRoles[0] || 'creator',
                   niches: onboardingData.selectedRoles,
-                  goals: onboardingData.selectedGoals,
+
                   setupTask: onboardingData.selectedSetupTask,
                 }),
               });

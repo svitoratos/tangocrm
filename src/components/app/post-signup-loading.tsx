@@ -7,7 +7,6 @@ import { useEffect } from "react";
 interface PostSignupLoadingProps {
   userName?: string;
   selectedRoles?: string[];
-  selectedGoals?: string[];
   setupTask?: string;
   onSetupComplete?: () => void;
 }
@@ -15,7 +14,6 @@ interface PostSignupLoadingProps {
 export const PostSignupLoading = ({ 
   userName = "Creator",
   selectedRoles = [],
-  selectedGoals = [],
   setupTask = "Set up your first campaign",
   onSetupComplete 
 }: PostSignupLoadingProps) => {

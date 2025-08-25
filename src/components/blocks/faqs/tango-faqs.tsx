@@ -18,12 +18,12 @@ const TangoFAQs = [
   {
     question: "How does the pricing work and what's included?",
     answer:
-      "Tango offers simple, transparent pricing at $49.99/month for Tango Core. This single plan includes access to all 4 business types (Creator, Coach, Podcaster, and Freelancer), unlimited clients and opportunities, content planning and organization, goal tracking and analytics, calendar management, journal tools, and mobile responsive access. No additional costs for multiple niches — everything is included in one plan.",
+      "Tango offers simple, transparent pricing at $49.99/month for Tango Core. This single plan includes access to all 4 business types (Creator, Coach, Podcaster, and Freelancer), unlimited clients and opportunities, content planning and organization, analytics and insights, calendar management, and mobile responsive access. No additional costs for multiple niches — everything is included in one plan.",
   },
   {
     question: "Do I need any technical skills to use Tango?",
     answer:
-      "Nope! Tango is built to be clean, intuitive, and easy to use — whether you're managing content, organizing your business, or tracking your goals. If you can use a simple app, you can organize your creator business with Tango.",
+      "Nope! Tango is built to be clean, intuitive, and easy to use — whether you're managing content, organizing your business, or tracking your progress. If you can use a simple app, you can organize your creator business with Tango.",
   },
   {
     question: "What happens when I sign up?",

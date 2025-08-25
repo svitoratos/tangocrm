@@ -14,7 +14,7 @@ export const PricingSection = () => {
       period: '/month',
       description: 'Perfect for content creators',
       subtitle: 'Manage your content creation business',
-      features: ['Client Management', 'Content Planning', 'Goal Tracking', 'Analytics Dashboard', 'Email Support'],
+              features: ['Client Management', 'Content Planning', 'Analytics Dashboard', 'Email Support'],
       buttonText: 'Start with Creator',
       isPrimary: true,
       isPopular: true
@@ -26,7 +26,7 @@ export const PricingSection = () => {
       period: '/month',
       description: 'Built for coaches and consultants',
       subtitle: 'Track clients and grow your coaching business',
-      features: ['Client Management', 'Session Tracking', 'Goal Tracking', 'Analytics Dashboard', 'Email Support'],
+              features: ['Client Management', 'Session Tracking', 'Analytics Dashboard', 'Email Support'],
       buttonText: 'Start with Coach',
       isPrimary: false,
       isPopular: false

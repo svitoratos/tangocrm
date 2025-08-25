@@ -118,7 +118,7 @@ export default function PodcasterCRMGuidePage() {
                 <li>Basic sponsor information tracking</li>
                 <li>Content planning and organization</li>
                 <li>Simple business workflow management</li>
-                <li>Goal tracking and progress monitoring</li>
+                <li>Progress monitoring</li>
               </ul>
             </div>
 
@@ -160,7 +160,7 @@ export default function PodcasterCRMGuidePage() {
                 <ul className="space-y-2 text-gray-700">
                   <li>✓ Guest and content tracking</li>
                   <li>✓ Content planning and organization</li>
-                  <li>✓ Goal tracking and progress monitoring</li>
+                  <li>✓ Progress monitoring</li>
                   <li>✓ Podcast workflow management</li>
                   <li>✓ Mobile responsive design</li>
                   <li>✓ Simple and intuitive interface</li>
@@ -194,7 +194,7 @@ export default function PodcasterCRMGuidePage() {
                 <ul className="space-y-2 text-gray-700">
                   <li>• Guest and content tracking</li>
                   <li>• Content planning and organization</li>
-                  <li>• Goal tracking and progress monitoring</li>
+                  <li>• Progress monitoring</li>
                   <li>• Podcast workflow management</li>
                   <li>• Episode organization and planning</li>
                   <li>• Podcaster-friendly interface and organization</li>
@@ -248,7 +248,7 @@ export default function PodcasterCRMGuidePage() {
                      </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                      <span className="text-gray-700">Goal tracking & analytics</span>
+                      <span className="text-gray-700">Analytics & insights</span>
                     </li>
                                          <li className="flex items-center gap-3">
                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />

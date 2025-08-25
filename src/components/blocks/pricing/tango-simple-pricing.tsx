@@ -114,7 +114,7 @@ export const TangoSimplePricing = () => {
                   </div>
                   <div className="flex items-start">
                     <Check className="h-5 w-5 text-emerald-500 mt-0.5 mr-3 flex-shrink-0" />
-                    <span className="text-slate-700">Goal tracking & progress monitoring</span>
+                    <span className="text-slate-700">Progress monitoring</span>
                   </div>
                   <div className="flex items-start">
                     <Check className="h-5 w-5 text-emerald-500 mt-0.5 mr-3 flex-shrink-0" />

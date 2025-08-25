@@ -31,8 +31,8 @@ const features = [
   },
   {
     icon: Target,
-    title: 'Goal Tracking',
-    description: 'Set and monitor client goals, track progress, and celebrate achievements with built-in milestone tracking.'
+    title: 'Progress Tracking',
+    description: 'Track client progress and celebrate achievements with built-in milestone tracking.'
   },
   {
     icon: DollarSign,
@@ -232,7 +232,7 @@ export default function CoachCRMPage() {
                      </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                      <span className="text-gray-700">Goal tracking & analytics</span>
+                      <span className="text-gray-700">Analytics & insights</span>
                     </li>
                                          <li className="flex items-center gap-3">
                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />

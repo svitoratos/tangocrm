@@ -33,12 +33,11 @@ interface OnboardingProps {
   existingNiche?: string; // The niche the user already has
   onComplete?: (data: {
     roles: string[];
-    goals: string[];
     setupTask?: string;
   }) => void;
 }
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 3 | 4;
 
 const roleOptions = [
   { 
@@ -71,37 +70,7 @@ const roleOptions = [
   },
 ];
 
-// Niche-specific goals
-const NICHE_GOALS = {
-  "creator": [
-    { id: "brand-partnerships", label: "Manage my brand partnerships and sponsorships" },
-    { id: "content-pipeline", label: "Organize my content pipeline and calendar" },
-    { id: "revenue-tracking", label: "Track revenue from sponsored content and deals" },
-    { id: "audience-growth", label: "Grow my audience across platforms" },
-    { id: "collaboration-tracking", label: "Manage collaborations and partnerships" },
-  ],
-  "coach": [
-    { id: "client-tracking", label: "Track client progress and coaching sessions" },
-    { id: "program-management", label: "Manage my coaching programs and masterminds" },
-    { id: "communication-tracking", label: "Track client communications and notes" },
-    { id: "revenue-tracking", label: "Track revenue from coaching packages" },
-    { id: "speaking-engagements", label: "Manage speaking engagements and workshops" },
-  ],
-  "podcaster": [
-    { id: "sponsorship-management", label: "Manage podcast sponsorships and brand deals" },
-    { id: "episode-tracking", label: "Track episodes and release schedules" },
-    { id: "premium-content", label: "Manage premium content and subscriptions" },
-    { id: "deliverables-tracking", label: "Track deliverables and sponsor requirements" },
-    { id: "revenue-tracking", label: "Track revenue from podcast monetization" },
-  ],
-  "freelancer": [
-    { id: "client-tracking", label: "Track clients and project progress" },
-    { id: "proposal-management", label: "Manage proposals and contracts" },
-    { id: "deliverables-tracking", label: "Track deliverables and due dates" },
-    { id: "revenue-tracking", label: "Track revenue from freelance work" },
-    { id: "project-management", label: "Manage project timelines and milestones" },
-  ],
-};
+
 
 // Niche-specific features for pricing section - Updated for Tango Core (all niches included)
 const NICHE_FEATURES = {
@@ -109,7 +78,7 @@ const NICHE_FEATURES = {
     "Access to all 4 business types",
     "Unlimited clients & opportunities",
     "Content planning & scheduling",
-    "Goal tracking & analytics",
+    "Analytics & insights",
     "Calendar management",
     "Brand deal management"
   ],
@@ -117,7 +86,7 @@ const NICHE_FEATURES = {
     "Access to all 4 business types",
     "Unlimited clients & opportunities",
     "Programs/content planning & scheduling",
-    "Goal tracking & analytics",
+    "Analytics & insights",
     "Calendar management",
     "Client progress tracking"
   ],
@@ -125,7 +94,7 @@ const NICHE_FEATURES = {
     "Access to all 4 business types",
     "Unlimited guests/clients & opportunities",
     "Episode/content planning & scheduling",
-    "Goal tracking & analytics",
+    "Analytics & insights",
     "Calendar management",
     "Sponsorship tracking"
   ],
@@ -133,7 +102,7 @@ const NICHE_FEATURES = {
     "Access to all 4 business types",
     "Unlimited clients & opportunities",
     "Projects/content planning & scheduling",
-    "Goal tracking & analytics",
+    "Analytics & insights",
     "Calendar management",
     "Project management"
   ],
@@ -171,19 +140,7 @@ const NICHE_PLUS_FEATURES = {
   ],
 };
 
-// Function to get relevant goals based on selected roles
-const getRelevantGoals = (selectedRoles: string[]) => {
-  const allGoals = new Map<string, { id: string; label: string }>();
-  selectedRoles.forEach(role => {
-    const roleGoals = NICHE_GOALS[role as keyof typeof NICHE_GOALS] || [];
-    roleGoals.forEach(goal => {
-      if (!allGoals.has(goal.id)) {
-        allGoals.set(goal.id, goal);
-      }
-    });
-  });
-  return Array.from(allGoals.values());
-};
+
 
 const setupTasks = [
   { id: "pipeline-stages", label: "Set up your pipeline stages", icon: Target },
@@ -197,7 +154,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
   const { user } = useUser();
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+
   const [selectedSetupTask, setSelectedSetupTask] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -226,23 +183,27 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
     });
   };
 
-  const handleGoalToggle = (goalId: string) => {
-    setSelectedGoals(prev => 
-      prev.includes(goalId) 
-        ? prev.filter(id => id !== goalId)
-        : [...prev, goalId]
-    );
-  };
+
 
   const handleContinue = () => {
     if (currentStep < 4) {
-      setCurrentStep((prev) => (prev + 1) as Step);
+      // Skip step 2 (goals) since we removed it
+      if (currentStep === 1) {
+        setCurrentStep(3 as Step);
+      } else {
+        setCurrentStep((prev) => (prev + 1) as Step);
+      }
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep((prev) => (prev - 1) as Step);
+      // Skip step 2 (goals) since we removed it
+      if (currentStep === 3) {
+        setCurrentStep(1 as Step);
+      } else {
+        setCurrentStep((prev) => (prev - 1) as Step);
+      }
     }
   };
 
@@ -261,9 +222,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
         throw new Error('Please select at least one role');
       }
 
-      if (selectedGoals.length === 0) {
-        throw new Error('Please select at least one goal');
-      }
+
 
       console.log('🔧 Starting Tango Core subscription with direct payment link:', { 
         selectedRoles, 
@@ -297,7 +256,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
       // Save onboarding data and Clerk user ID to sessionStorage for after payment
       sessionStorage.setItem('pendingOnboarding', JSON.stringify({
         selectedRoles,
-        selectedGoals,
+
         selectedSetupTask,
         billingCycle,
         clerkUserId: user?.id, // Store Clerk user ID
@@ -330,7 +289,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
           onboardingCompleted: true,
           primaryNiche: selectedRoles[0] || 'creator',
           niches: selectedRoles,
-          goals: selectedGoals,
+
           setupTask: skipSetup ? undefined : selectedSetupTask,
         }),
       });
@@ -341,7 +300,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
 
       const data = {
         roles: selectedRoles,
-        goals: selectedGoals,
+
         setupTask: skipSetup ? undefined : selectedSetupTask,
       };
       
@@ -359,8 +318,6 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
     switch (currentStep) {
       case 1:
         return selectedRoles.length > 0 && selectedRoles.length <= 4;
-      case 2:
-        return selectedGoals.length > 0;
       case 3:
         return true;
       case 4:
@@ -411,7 +368,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
           
           {/* Progress Dots */}
           <div className="flex items-center space-x-2">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 3, 4].map((step) => (
               <div
                 key={step}
                 className={`w-2 h-2 rounded-full transition-colors ${
@@ -551,43 +508,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                 </div>
               )}
 
-              {currentStep === 2 && (
-                <div className="space-y-8">
-                  <div>
-                    <h1 className="text-4xl font-bold text-slate-800 mb-2">
-                      What would you like to do with Tango?
-                    </h1>
-                    <p className="text-slate-600">
-                      Select all answers below that apply to you.
-                    </p>
-                  </div>
 
-                  <div className="space-y-4">
-                    {getRelevantGoals(selectedRoles).map((goal) => (
-                      <Label
-                        key={goal.id}
-                        htmlFor={goal.id}
-                        className="cursor-pointer block"
-                      >
-                        <Card className={`p-4 border-2 transition-all hover:border-emerald-200 ${
-                          selectedGoals.includes(goal.id)
-                            ? "border-emerald-500 bg-emerald-50"
-                            : "border-stone-200"
-                        }`}>
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              id={goal.id}
-                              checked={selectedGoals.includes(goal.id)}
-                              onCheckedChange={() => handleGoalToggle(goal.id)}
-                            />
-                            <span className="font-medium">{goal.label}</span>
-                          </div>
-                        </Card>
-                      </Label>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {currentStep === 3 && (
                 <div className="space-y-8">
@@ -896,37 +817,7 @@ export const TangoOnboarding = ({ userName = "Creator", existingNiche, onComplet
                 </motion.div>
               )}
 
-              {currentStep === 2 && selectedGoals.length > 0 && (
-                <motion.div
-                  key="goals-feedback"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-4 max-w-sm"
-                >
-                  <h3 className="text-xl font-bold text-slate-800 text-center mb-6">
-                    My goals with Tango:
-                  </h3>
-                  <div className="space-y-3">
-                    {selectedGoals.map((goalId, index) => {
-                      const allGoals = getRelevantGoals(selectedRoles);
-                      const goal = allGoals.find(g => g.id === goalId);
-                      return (
-                        <motion.div
-                          key={goalId}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-medium"
-                        >
-                          {goal?.label}
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
+
 
                             {currentStep === 3 && (
                 <motion.div

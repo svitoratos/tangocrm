@@ -106,7 +106,7 @@ export default function CreatorCRMGuidePage() {
                 <li>Client and opportunity tracking</li>
                 <li>Basic project organization</li>
                 <li>Content planning and management</li>
-                <li>Goal tracking and progress monitoring</li>
+                <li>Progress monitoring</li>
               </ul>
             </div>
 
@@ -161,7 +161,7 @@ export default function CreatorCRMGuidePage() {
                 <ul className="space-y-2 text-gray-700">
                   <li>✓ Client and opportunity tracking</li>
                   <li>✓ Content planning and organization</li>
-                  <li>✓ Goal tracking and progress monitoring</li>
+                  <li>✓ Progress monitoring</li>
                   <li>✓ Business workflow management</li>
                   <li>✓ Mobile responsive design</li>
                   <li>✓ Simple and intuitive interface</li>
@@ -196,7 +196,7 @@ export default function CreatorCRMGuidePage() {
                   <li>• Multi-niche support (Creators, Coaches, Podcasters, Freelancers)</li>
                   <li>• Client and opportunity tracking</li>
                   <li>• Content planning and organization</li>
-                  <li>• Goal tracking and progress monitoring</li>
+                  <li>• Progress monitoring</li>
                   <li>• Business workflow management</li>
                   <li>• Creator-friendly interface and organization</li>
                 </ul>
@@ -249,7 +249,7 @@ export default function CreatorCRMGuidePage() {
                     </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                      <span className="text-gray-700">Goal tracking & analytics</span>
+                      <span className="text-gray-700">Analytics & insights</span>
                     </li>
                                          <li className="flex items-center gap-3">
                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />

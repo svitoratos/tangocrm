@@ -232,7 +232,7 @@ export default function PodcasterCRMPage() {
                      </li>
                     <li className="flex items-center gap-3">
                       <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                      <span className="text-gray-700">Goal tracking & analytics</span>
+                      <span className="text-gray-700">Analytics & insights</span>
                     </li>
                                          <li className="flex items-center gap-3">
                        <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />

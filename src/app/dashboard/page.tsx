@@ -9,7 +9,7 @@ import CRMPipelineView from "@/components/app/crm-pipeline-view";
 import { CalendarComponent } from "@/components/app/calendar-view";
 import AnalyticsDashboard from "@/components/app/analytics-dashboard";
 import { ProgramsContentHub } from "@/components/app/programs-content-hub";
-import { BulletproofCreatorJournal } from "@/components/app/BulletproofCreatorJournal";
+
 import ClientsPage from "./clients/page";
 import SettingsPage from "./settings/page";
 import { Card } from "@/components/ui/card";
@@ -68,7 +68,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   { id: "calendar", label: "Calendar", component: CalendarComponent, requiresNiche: true },
   { id: "analytics", label: "Analytics", component: AnalyticsDashboard, requiresNiche: true },
   { id: "programs", label: "Programs", component: ProgramsContentHub, requiresNiche: true },
-          { id: "journal", label: "Journal/Goals", component: BulletproofCreatorJournal, requiresNiche: false },
+
   { id: "settings", label: "Settings", component: SettingsPage, requiresNiche: false }
 ];
 
