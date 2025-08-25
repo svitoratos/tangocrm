@@ -627,6 +627,11 @@ function MainDashboardWithSearchParams() {
       localStorage.setItem('selectedNiche', mappedNiche);
     }
     
+    // Update URL to trigger NicheContext update
+    const url = new URL(window.location.href);
+    url.searchParams.set('niche', mappedNiche);
+    window.history.replaceState({}, '', url.toString());
+    
     // Auto-switch to analytics dashboard for coach niche
     if (niche === 'coach' && activeSection === 'dashboard') {
       setActiveSection('analytics');
@@ -841,6 +846,8 @@ function MainDashboard() {
     </Suspense>
   );
 }
+
+
 
 // Protected Dashboard Component
 export default function ProtectedDashboard() {

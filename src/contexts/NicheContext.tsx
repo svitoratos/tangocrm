@@ -3,13 +3,13 @@
 import React, { createContext, useContext, useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-interface NicheContextType {
+export interface NicheContextType {
   currentNiche: string;
   setCurrentNiche: (niche: string) => void;
   updateNiche: (niche: string) => void;
 }
 
-const NicheContext = createContext<NicheContextType | undefined>(undefined);
+export const NicheContext = createContext<NicheContextType | undefined>(undefined);
 
 export const useNiche = () => {
   const context = useContext(NicheContext);
