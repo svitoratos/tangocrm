@@ -18,15 +18,10 @@ export async function GET(request: NextRequest) {
     const niche = searchParams.get('niche');
     const offset = (page - 1) * limit;
 
-    if (!niche) {
-      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
-    }
-
     let query = supabaseAdmin
       .from('goals')
       .select('*')
       .eq('user_id', userId)
-      .eq('niche', niche)
       .order('created_at', { ascending: false });
 
     if (status) {
@@ -45,12 +40,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch goals' }, { status: 500 });
     }
 
-    // Get total count filtered by niche
+    // Get total count (temporarily without niche filtering)
     let countQuery = supabaseAdmin
       .from('goals')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('niche', niche);
+      .eq('user_id', userId);
 
     if (status) {
       countQuery = countQuery.eq('status', status);
@@ -104,9 +98,9 @@ export async function POST(request: NextRequest) {
       tags 
     } = body;
 
-    if (!title || !category || !niche) {
+    if (!title || !category) {
       return NextResponse.json({ 
-        error: 'Title, category, and niche are required' 
+        error: 'Title and category are required' 
       }, { status: 400 });
     }
 
@@ -122,7 +116,6 @@ export async function POST(request: NextRequest) {
         deadline: deadline || null,
         status: status || 'active',
         category,
-        niche,
         tags: tags || []
       })
       .select()

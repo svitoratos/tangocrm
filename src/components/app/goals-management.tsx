@@ -79,7 +79,7 @@ export default function GoalsManagement() {
 
   const fetchGoals = async () => {
     try {
-      const response = await fetch(`/api/goals?niche=${currentNiche}`);
+      const response = await fetch('/api/goals');
       if (response.ok) {
         const data = await response.json();
         setGoals(data.goals || []);
@@ -87,7 +87,7 @@ export default function GoalsManagement() {
         toast.error('Failed to fetch goals');
       }
     } catch (error) {
-      console.error('Error fetching goals:', error);
+      console.error('Error fetching goals', error);
       toast.error('Failed to fetch goals');
     } finally {
       setLoading(false);
@@ -104,7 +104,7 @@ export default function GoalsManagement() {
 
     try {
       const url = editingGoal 
-        ? `/api/goals/${editingGoal.id}?niche=${currentNiche}`
+        ? `/api/goals/${editingGoal.id}`
         : '/api/goals';
       
       const method = editingGoal ? 'PUT' : 'POST';
@@ -120,10 +120,7 @@ export default function GoalsManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...payload,
-          niche: currentNiche
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -147,7 +144,7 @@ export default function GoalsManagement() {
     }
 
     try {
-      const response = await fetch(`/api/goals/${id}?niche=${currentNiche}`, {
+      const response = await fetch(`/api/goals/${id}`, {
         method: 'DELETE',
       });
 

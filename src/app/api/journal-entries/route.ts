@@ -16,16 +16,11 @@ export async function GET(request: NextRequest) {
     const niche = searchParams.get('niche');
     const offset = (page - 1) * limit;
 
-    if (!niche) {
-      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
-    }
-
-    // Get journal entries filtered by niche
+    // Get journal entries (temporarily without niche filtering)
     const { data: entries, error: entriesError } = await supabaseAdmin
       .from('journal_entries')
       .select('*')
       .eq('user_id', userId)
-      .eq('niche', niche)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -34,12 +29,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch journal entries' }, { status: 500 });
     }
 
-    // Get total count filtered by niche
+    // Get total count (temporarily without niche filtering)
     const { count, error: countError } = await supabaseAdmin
       .from('journal_entries')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('niche', niche);
+      .eq('user_id', userId);
 
     if (countError) {
       console.error('Error counting journal entries:', countError);
@@ -72,15 +66,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { title, content, mood, tags, niche } = body;
 
-    if (!title || !content || !niche) {
-      return NextResponse.json({ error: 'Title, content, and niche are required' }, { status: 400 });
+    if (!title || !content) {
+      return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
     }
 
     const { data: newEntry, error } = await supabaseAdmin
       .from('journal_entries')
       .insert({
         user_id: userId,
-        niche,
         title,
         content,
         mood: mood || null,

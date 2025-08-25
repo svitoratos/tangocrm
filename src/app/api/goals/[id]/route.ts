@@ -14,19 +14,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const niche = searchParams.get('niche');
-
-    if (!niche) {
-      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
-    }
-
     const { data: goal, error } = await supabaseAdmin
       .from('goals')
       .select('*')
       .eq('id', id)
       .eq('user_id', userId)
-      .eq('niche', niche)
       .single();
 
     if (error) {
@@ -93,7 +85,6 @@ export async function PUT(
       })
       .eq('id', id)
       .eq('user_id', userId)
-      .eq('niche', niche)
       .select()
       .single();
 
@@ -124,19 +115,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const niche = searchParams.get('niche');
-
-    if (!niche) {
-      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
-    }
-
     const { error } = await supabaseAdmin
       .from('goals')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId)
-      .eq('niche', niche);
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Error deleting goal:', error);
