@@ -113,6 +113,15 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
     const { activeSection, selectedNiche, isLoading, setActiveSection } = useAppContext();
     const { currentNiche } = useNiche();
     const { user } = useUser();
+    
+    // Map plural niche names to singular forms for component compatibility
+    const nicheMap: { [key: string]: string } = {
+      'creators': 'creator',
+      'coaches': 'coach',
+      'podcasters': 'podcaster',
+      'freelancers': 'freelancer'
+    };
+    const mappedNiche = nicheMap[currentNiche] || currentNiche;
 
     const currentNavItem = NAVIGATION_ITEMS.find(item => item.id === activeSection);
     
@@ -162,10 +171,10 @@ const ErrorBoundary: React.FC<{ children: React.ReactNode; error: string | null 
     return (
       <div className="w-full h-full main-content-container">
         {currentNavItem.id === 'clients' ? (
-          <Component activeNiche={currentNiche} onNavigate={(section: string) => setActiveSection(section)} />
+          <Component activeNiche={mappedNiche} onNavigate={(section: string) => setActiveSection(section)} />
         ) : (
           <Component 
-            {...(currentNavItem.requiresNiche ? { activeNiche: currentNiche } : {})}
+            {...(currentNavItem.requiresNiche ? { activeNiche: mappedNiche } : {})}
             onNavigate={(section: string) => {
               setActiveSection(section);
             }}
