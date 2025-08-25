@@ -4,8 +4,9 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { userId } = await auth();
     
@@ -16,7 +17,7 @@ export async function GET(
     const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', userId)
       .single();
 
@@ -37,8 +38,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { userId } = await auth();
     
@@ -62,7 +64,7 @@ export async function PUT(
         tags: tags || [],
         updated_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', userId)
       .select()
       .single();
@@ -84,8 +86,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const { userId } = await auth();
     
@@ -96,7 +99,7 @@ export async function DELETE(
     const { error } = await supabaseAdmin
       .from('journal_entries')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', userId);
 
     if (error) {
