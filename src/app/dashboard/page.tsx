@@ -557,7 +557,7 @@ function MainDashboardWithSearchParams() {
     return () => window.removeEventListener('resize', handleResize);
   }, [refreshPaymentStatus, forceRefreshAfterPayment]);
 
-  const isSubscribed = (niche: string) => availableNiches.includes(niche);
+  const isSubscribed = (niche: string) => true; // Tango Core includes all niches
   
   // Check if user has the Tango Core plan (any paid subscription)
   const hasCorePlan = () => {
@@ -617,11 +617,8 @@ function MainDashboardWithSearchParams() {
     
     const mappedNiche = nicheMap[niche] || niche;
     
-    // Only allow switching to available niches
-    if (!availableNiches.includes(niche)) {
-      console.warn(`User not subscribed to niche: ${niche}`);
-      return;
-    }
+    // Allow switching to any niche for Tango Core users
+    console.log(`Switching to niche: ${niche} (mapped to: ${mappedNiche})`);
     
     setSelectedNiche(mappedNiche);
     
