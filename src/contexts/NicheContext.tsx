@@ -94,7 +94,7 @@ export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
       setCurrentNiche(mappedNiche);
     }
     
-    // Listen for localStorage changes
+    // Listen for localStorage changes (from other tabs)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'selectedNiche' && e.newValue) {
         const mappedNiche = mapToPluralForm(e.newValue);
@@ -103,10 +103,20 @@ export const NicheProvider: React.FC<NicheProviderProps> = ({ children }) => {
       }
     };
     
+    // Listen for custom niche change events (from same tab)
+    const handleNicheChangeEvent = (e: CustomEvent) => {
+      const { niche } = e.detail;
+      const mappedNiche = mapToPluralForm(niche);
+      console.log('🎯 NicheContext - Detected custom niche change event:', niche, '-> mapped to:', mappedNiche);
+      setCurrentNiche(mappedNiche);
+    };
+    
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('nicheChanged', handleNicheChangeEvent as EventListener);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('nicheChanged', handleNicheChangeEvent as EventListener);
     };
   }, []);
   

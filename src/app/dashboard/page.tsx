@@ -633,6 +633,9 @@ function MainDashboardWithSearchParams() {
     url.searchParams.set('niche', mappedNiche);
     window.history.replaceState({}, '', url.toString());
     
+    // Dispatch custom event to notify NicheContext of the change
+    window.dispatchEvent(new CustomEvent('nicheChanged', { detail: { niche: mappedNiche } }));
+    
 
     
     // Auto-switch to analytics dashboard for coach niche
