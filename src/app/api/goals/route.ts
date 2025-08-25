@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,38 +18,41 @@ export async function GET(request: NextRequest) {
     const niche = searchParams.get('niche');
     const offset = (page - 1) * limit;
 
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
+    }
+
     let query = supabaseAdmin
       .from('goals')
       .select('*')
       .eq('user_id', userId)
+      .eq('niche', niche)
       .order('created_at', { ascending: false });
 
     if (status) {
       query = query.eq('status', status);
     }
-
     if (category) {
       query = query.eq('category', category);
     }
 
-    const { data: goals, error: goalsError } = await query
-      .range(offset, offset + limit - 1);
+    const { data: goals, error: goalsError } = await query.range(offset, offset + limit - 1);
 
     if (goalsError) {
       console.error('Error fetching goals:', goalsError);
       return NextResponse.json({ error: 'Failed to fetch goals' }, { status: 500 });
     }
 
-    // Get total count (temporarily without niche filtering)
+    // Get total count filtered by niche
     let countQuery = supabaseAdmin
       .from('goals')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('niche', niche);
 
     if (status) {
       countQuery = countQuery.eq('status', status);
     }
-
     if (category) {
       countQuery = countQuery.eq('category', category);
     }
@@ -63,15 +66,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       goals: goals || [],
-      pagination: {
-        page,
-        limit,
-        total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit)
-      }
+      total: count || 0,
+      page,
+      totalPages: Math.ceil((count || 0) / limit)
     });
   } catch (error) {
-    console.error('Error fetching goals:', error);
+    console.error('Error in GET /api/goals:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -85,22 +85,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { 
-      title, 
-      description, 
-      target_value, 
-      current_value, 
-      unit, 
-      deadline, 
+    const {
+      title,
+      description,
+      target_value,
+      current_value,
+      unit,
+      deadline,
       status, 
       category, 
       niche, 
       tags 
     } = body;
 
-    if (!title || !category) {
+    if (!title || !category || !niche) {
       return NextResponse.json({ 
-        error: 'Title and category are required' 
+        error: 'Title, category, and niche are required' 
       }, { status: 400 });
     }
 
@@ -116,6 +116,7 @@ export async function POST(request: NextRequest) {
         deadline: deadline || null,
         status: status || 'active',
         category,
+        niche,
         tags: tags || []
       })
       .select()
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(newGoal, { status: 201 });
   } catch (error) {
-    console.error('Error creating goal:', error);
+    console.error('Error in POST /api/goals:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

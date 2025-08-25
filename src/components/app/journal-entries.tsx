@@ -53,7 +53,7 @@ export default function JournalEntries() {
 
   const fetchEntries = async () => {
     try {
-      const response = await fetch('/api/journal-entries');
+      const response = await fetch(`/api/journal-entries?niche=${currentNiche}`);
       if (response.ok) {
         const data = await response.json();
         setEntries(data.entries || []);
@@ -78,7 +78,7 @@ export default function JournalEntries() {
 
     try {
       const url = editingEntry 
-        ? `/api/journal-entries/${editingEntry.id}`
+        ? `/api/journal-entries/${editingEntry.id}?niche=${currentNiche}`
         : '/api/journal-entries';
       
       const method = editingEntry ? 'PUT' : 'POST';
@@ -88,7 +88,10 @@ export default function JournalEntries() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          niche: currentNiche
+        }),
       });
 
       if (response.ok) {
@@ -112,7 +115,7 @@ export default function JournalEntries() {
     }
 
     try {
-      const response = await fetch(`/api/journal-entries/${id}`, {
+      const response = await fetch(`/api/journal-entries/${id}?niche=${currentNiche}`, {
         method: 'DELETE',
       });
 

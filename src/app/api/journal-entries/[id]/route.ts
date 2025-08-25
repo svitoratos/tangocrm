@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
@@ -14,11 +14,19 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const niche = searchParams.get('niche');
+
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
+    }
+
     const { data: entry, error } = await supabaseAdmin
       .from('journal_entries')
       .select('*')
       .eq('id', id)
       .eq('user_id', userId)
+      .eq('niche', niche)
       .single();
 
     if (error) {
@@ -49,10 +57,10 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, content, mood, tags } = body;
+    const { title, content, mood, tags, niche } = body;
 
-    if (!title || !content) {
-      return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
+    if (!title || !content || !niche) {
+      return NextResponse.json({ error: 'Title, content, and niche are required' }, { status: 400 });
     }
 
     const { data: updatedEntry, error } = await supabaseAdmin
@@ -62,10 +70,12 @@ export async function PUT(
         content,
         mood: mood || null,
         tags: tags || [],
+        niche,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .eq('user_id', userId)
+      .eq('niche', niche)
       .select()
       .single();
 
@@ -96,11 +106,19 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const niche = searchParams.get('niche');
+
+    if (!niche) {
+      return NextResponse.json({ error: 'Niche parameter is required' }, { status: 400 });
+    }
+
     const { error } = await supabaseAdmin
       .from('journal_entries')
       .delete()
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .eq('niche', niche);
 
     if (error) {
       console.error('Error deleting journal entry:', error);
